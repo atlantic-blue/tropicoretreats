@@ -1,0 +1,13 @@
+import path from 'path'
+
+import { WebpackPaths } from '../types'
+
+const createWebpackPaths = (root: string): WebpackPaths => {
+    return {
+        root,
+        src: path.resolve(root, 'src'),
+        build: path.resolve(root, 'dist'),
+    }
+}
+
+export default createWebpackPaths
