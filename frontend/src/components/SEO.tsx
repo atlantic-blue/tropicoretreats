@@ -181,7 +181,7 @@ export const faqSchema = {
       name: "What group sizes can you accommodate?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "We work with groups ranging from intimate executive retreats (8–15 guests) to larger corporate events (50+ attendees). Each experience is tailored to your specific group size and requirements.",
+        text: "We work with groups ranging from intimate executive retreats (8-15 guests) to larger corporate events (50+ attendees). Each experience is tailored to your specific group size and requirements.",
       },
     },
     {
@@ -189,7 +189,7 @@ export const faqSchema = {
       name: "How far in advance should we book?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "We recommend booking at least 3–6 months in advance for the best availability, especially during peak season (December–March). However, we can sometimes accommodate shorter notice requests.",
+        text: "We recommend booking at least 3-6 months in advance for the best availability, especially during peak season (December-March). However, we can sometimes accommodate shorter notice requests.",
       },
     },
     {

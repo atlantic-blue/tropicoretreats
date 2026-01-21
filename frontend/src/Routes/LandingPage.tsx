@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 
 /**
- * Tropico Retreats – Corporate Wellness Retreats Landing Page
+ * Tropico Retreats - Corporate Wellness Retreats Landing Page
  * React + TypeScript + Tailwind v4
  * Typography: Playfair Display (headings) + Inter (body)
  * Colour palette: Emerald + Gold accent
@@ -126,7 +126,7 @@ const FULL_SERVICES = [
     title: "ACCOMMODATION",
     subtitle: "Luxury Stays",
     description:
-      "We work with the finest exclusive properties across Colombia: luxury villas, colonial haciendas, eco-lodges and boutique hotels. Each accommodation is carefully selected to meet your needs—from intimate retreats for 8 guests to corporate events for 50+ attendees. All our properties feature meeting spaces, wellness areas, private pools and personalised service.",
+      "We work with the finest exclusive properties across Colombia: luxury villas, colonial haciendas, eco-lodges and boutique hotels. Each accommodation is carefully selected to meet your needs, from intimate retreats for 8 guests to corporate events for 50+ attendees. All our properties feature meeting spaces, wellness areas, private pools and personalised service.",
     highlights: ["Private villas with pools", "Historic haciendas", "Exclusive eco-lodges", "Boutique hotels"],
   },
   {
@@ -418,7 +418,7 @@ const TropicoRetreatsPage: React.FC = () => {
             heroReveal.shown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
           }`}
         >
-          <p className="mb-4 text-sm tracking-[0.35em] uppercase opacity-80 md:text-base">
+          <p className="mb-4 text-sm tracking-[0.35em] uppercase md:text-base font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
             corporate stays · wellness getaways · team retreats
           </p>
           <h1 className="text-[48px] leading-[1.1] drop-shadow-lg md:text-[80px]">
@@ -457,7 +457,7 @@ const TropicoRetreatsPage: React.FC = () => {
                 dedicated team support. We specialize in creating the perfect Corporate or Wellness event tailored to your needs.
               </p>
               <p>
-                Our specialised team will be delighted to assist you in creating your bespoke retreat—from venue selection
+                Our specialised team will be delighted to assist you in creating your bespoke retreat, from venue selection
                 to full logistics coordination.
               </p>
               <p className="mt-4 font-medium text-emerald-800">
@@ -507,13 +507,13 @@ const TropicoRetreatsPage: React.FC = () => {
               Everything You Need
             </h2>
             <p className="mx-auto mt-2 max-w-2xl text-sm text-gray-600">
-              From luxury accommodations to gourmet dining and unique experiences—we handle every detail.
+              From luxury accommodations to gourmet dining and unique experiences, we handle every detail.
             </p>
           </header>
           <div className="grid gap-8 md:grid-cols-3">
             <BespokeCard
               title="Accommodations"
-              description="Luxury villas and boutique lodges for 8–30 guests, featuring private pools, stunning views, and exclusive amenities."
+              description="Luxury villas and boutique lodges for 8-30 guests, featuring private pools, stunning views, and exclusive amenities."
               imageUrl={IMAGES.svc1b}
             />
             <BespokeCard
@@ -587,7 +587,7 @@ const TropicoRetreatsPage: React.FC = () => {
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#C9A227]">Conference Facilities</p>
             <h2 className="mt-3 text-[36px] md:text-[48px]">The Meeting Room</h2>
             <p className="mt-5 text-base leading-relaxed opacity-90 md:text-lg">
-              Our configurable meeting spaces accommodate up to 24 boardroom-style or 40 theatre-style attendees—perfect
+              Our configurable meeting spaces accommodate up to 24 boardroom-style or 40 theatre-style attendees, perfect
               for training sessions, presentations, or private meetings in a stunning natural setting.
             </p>
             <div className="mt-8">
@@ -607,7 +607,7 @@ const TropicoRetreatsPage: React.FC = () => {
           <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#C9A227]">Bespoke Packages</p>
           <h2 className="mt-3 text-[36px] md:text-[48px]">Tailor‑made for You</h2>
           <p className="mt-5 max-w-2xl text-base leading-relaxed opacity-90 md:text-lg">
-            Let us take care of every detail—ensuring a seamless stay with our bespoke itineraries curated to meet your
+            Let us take care of every detail, ensuring a seamless stay with our bespoke itineraries curated to meet your
             unique needs. From accommodation to activities, we'll handle all the details at a special rate.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
@@ -621,7 +621,7 @@ const TropicoRetreatsPage: React.FC = () => {
         </div>
       </section>
 
-      {/* SERVICES – four blocks matching final design */}
+      {/* SERVICES - four blocks matching final design */}
       <section className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-12 py-20 md:py-28" aria-labelledby="services-heading">
         <header className="mb-14 text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#C9A227]">What We Offer</p>
@@ -651,8 +651,8 @@ const TropicoRetreatsPage: React.FC = () => {
               CHOICE OF DESTINATION & VENUE
             </h3>
             <p className="mt-3 text-[14px] leading-relaxed text-gray-700">
-              The venue makes all the difference. Our team guides you in selecting the perfect property—from beachfront
-              villas to mountain lodges—tailored to your needs and desires.
+              The venue makes all the difference. Our team guides you in selecting the perfect property, from beachfront
+              villas to mountain lodges, tailored to your needs and desires.
             </p>
             <div className="mt-5">
               <PillButton
@@ -721,8 +721,8 @@ const TropicoRetreatsPage: React.FC = () => {
               EXCURSIONS & CULTURAL IMMERSION
             </h3>
             <p className="mt-3 text-[14px] leading-relaxed text-gray-700">
-              Give your team a true taste of Colombia. We organise curated excursions—from private coffee farm tours and
-              historical city walks to jungle hikes and sailing trips—creating unforgettable shared memories.
+              Give your team a true taste of Colombia. We organise curated excursions, from private coffee farm tours and
+              historical city walks to jungle hikes and sailing trips, creating unforgettable shared memories.
             </p>
             <div className="mt-5">
               <PillButton
@@ -744,7 +744,7 @@ const TropicoRetreatsPage: React.FC = () => {
             </h3>
             <p className="mt-3 text-[14px] leading-relaxed text-gray-700">
               We handle full logistics, transportation, and coordination for your entire retreat. This includes all
-              airport transfers, internal travel, scheduling, and vendor management—so you can focus on your team.
+              airport transfers, internal travel, scheduling, and vendor management, so you can focus on your team.
             </p>
             <div className="mt-5">
               <PillButton
@@ -784,7 +784,7 @@ const TropicoRetreatsPage: React.FC = () => {
         <div className="mx-auto max-w-3xl rounded-3xl bg-white p-8 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] md:p-12">
           <FAQItem
             question="What is the minimum group size for a corporate retreat?"
-            answer="We typically accommodate groups of 8–30 guests, though we can arrange larger events upon request. Each retreat is customised to your specific team size and requirements."
+            answer="We typically accommodate groups of 8-30 guests, though we can arrange larger events upon request. Each retreat is customised to your specific team size and requirements."
           />
           <FAQItem
             question="Can you accommodate dietary restrictions and special requests?"
@@ -792,15 +792,15 @@ const TropicoRetreatsPage: React.FC = () => {
           />
           <FAQItem
             question="What's the best time of year to visit Colombia?"
-            answer="Colombia offers great weather year-round depending on the region. The dry seasons (December–March and July–August) are popular, but each destination has its own microclimate. We'll help you choose the ideal timing for your retreat."
+            answer="Colombia offers great weather year-round depending on the region. The dry seasons (December-March and July-August) are popular, but each destination has its own microclimate. We'll help you choose the ideal timing for your retreat."
           />
           <FAQItem
             question="How far in advance should we book?"
-            answer="We recommend booking at least 2–3 months in advance to secure your preferred dates and accommodations, especially during peak season. However, we can sometimes accommodate shorter notice depending on availability."
+            answer="We recommend booking at least 2-3 months in advance to secure your preferred dates and accommodations, especially during peak season. However, we can sometimes accommodate shorter notice depending on availability."
           />
           <FAQItem
             question="Is transportation included in the package?"
-            answer="Yes, all our corporate retreat packages include full transportation logistics—from airport pickups to internal transfers between activities and venues. You won't need to worry about any travel arrangements."
+            answer="Yes, all our corporate retreat packages include full transportation logistics, from airport pickups to internal transfers between activities and venues. You won't need to worry about any travel arrangements."
           />
           <FAQItem
             question="Can we customise the itinerary?"
@@ -865,8 +865,8 @@ const TropicoRetreatsPage: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-sm font-semibold uppercase tracking-wider opacity-70">Business Hours</p>
-                    <p className="text-lg">Mon–Thu: 9am – 6pm</p>
-                    <p className="text-lg">Friday: 9am – 1pm</p>
+                    <p className="text-lg">Mon-Thu: 9am - 6pm</p>
+                    <p className="text-lg">Friday: 9am - 1pm</p>
                   </div>
                 </div>
               </div>
@@ -945,9 +945,9 @@ const TropicoRetreatsPage: React.FC = () => {
                       className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-gray-900 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                     >
                       <option value="">Select size</option>
-                      <option value="8-15">8–15 guests</option>
-                      <option value="16-25">16–25 guests</option>
-                      <option value="26-40">26–40 guests</option>
+                      <option value="8-15">8-15 guests</option>
+                      <option value="16-25">16-25 guests</option>
+                      <option value="26-40">26-40 guests</option>
                       <option value="40+">40+ guests</option>
                     </select>
                   </div>
@@ -1067,8 +1067,8 @@ const TropicoRetreatsPage: React.FC = () => {
                 </a>
               </div>
               <div className="mt-5 space-y-1 text-sm opacity-60">
-                <p>Mon–Thu: 9am – 6pm</p>
-                <p>Friday: 9am – 1pm</p>
+                <p>Mon-Thu: 9am - 6pm</p>
+                <p>Friday: 9am - 1pm</p>
               </div>
             </div>
 

@@ -60,8 +60,8 @@ const AboutPage: React.FC = () => {
                   exclusive venues and experiences that cater to every corporate need.
                 </p>
                 <p>
-                  We handle every detail—accommodation, transport, activities, catering, and
-                  entertainment—so you can focus on what matters most: connecting with your team
+                  We handle every detail including accommodation, transport, activities, catering and
+                  entertainment, so you can focus on what matters most: connecting with your team
                   and achieving your objectives.
                 </p>
               </div>

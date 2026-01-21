@@ -42,11 +42,14 @@ const Navigation: React.FC = () => {
     { label: "Contact", action: () => scrollToSection("contact-heading") },
   ];
 
+  // On non-home pages, always show solid nav; on home page, show solid after scroll
+  const showSolidNav = !isHomePage || isScrolled || isMobileMenuOpen;
+
   return (
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled || isMobileMenuOpen
+          showSolidNav
             ? "bg-white/95 backdrop-blur-md shadow-lg"
             : "bg-transparent"
         }`}
@@ -57,7 +60,7 @@ const Navigation: React.FC = () => {
             <Link
               to="/"
               className={`text-xl font-bold tracking-wide transition-colors md:text-2xl ${
-                isScrolled || isMobileMenuOpen ? "text-gray-900" : "text-white"
+                showSolidNav ? "text-gray-900" : "text-white"
               }`}
             >
               TROPICO RETREATS
@@ -71,7 +74,7 @@ const Navigation: React.FC = () => {
                     key={link.label}
                     to={link.href}
                     className={`text-sm font-medium tracking-wide transition-colors hover:text-[#C9A227] ${
-                      isScrolled ? "text-gray-700" : "text-white/90"
+                      showSolidNav ? "text-gray-700" : "text-white/90"
                     }`}
                   >
                     {link.label}
@@ -81,7 +84,7 @@ const Navigation: React.FC = () => {
                     key={link.label}
                     onClick={link.action}
                     className={`text-sm font-medium tracking-wide transition-colors hover:text-[#C9A227] ${
-                      isScrolled ? "text-gray-700" : "text-white/90"
+                      showSolidNav ? "text-gray-700" : "text-white/90"
                     }`}
                   >
                     {link.label}
@@ -101,7 +104,7 @@ const Navigation: React.FC = () => {
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className={`p-2 lg:hidden ${
-                isScrolled || isMobileMenuOpen ? "text-gray-900" : "text-white"
+                showSolidNav ? "text-gray-900" : "text-white"
               }`}
               aria-label="Toggle menu"
             >
