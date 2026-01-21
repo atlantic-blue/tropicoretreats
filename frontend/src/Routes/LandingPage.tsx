@@ -1,9 +1,39 @@
 import React, { useEffect, useRef, useState } from "react";
+import {
+  Building2,
+  Bus,
+  ChefHat,
+  Coffee,
+  Dumbbell,
+  Globe,
+  Headphones,
+  Hotel,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Music,
+  Phone,
+  Plane,
+  Send,
+  Sparkles,
+  Target,
+  Theater,
+  TreePine,
+  Users,
+  Utensils,
+  Wifi,
+  Waves,
+  Calendar,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 
 /**
  * Tropico Retreats – Corporate Wellness Retreats Landing Page
  * React + TypeScript + Tailwind v4
- * Inspired by Bainland.co.uk corporate wellness design
+ * Typography: Playfair Display (headings) + Inter (body)
+ * Colour palette: Emerald + Gold accent
  */
 
 // ---- Simple in‑view reveal hook (no external deps) ----
@@ -48,13 +78,13 @@ const IMAGES = {
   driver: "/public/assets/landing-page/driver.jpg",
 };
 
-// ---- Amenity Icons (SVG components) ----
-const AmenityIcon: React.FC<{ icon: string; label: string }> = ({ icon, label }) => (
-  <div className="flex flex-col items-center gap-2 p-4">
-    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-      <span className="text-2xl">{icon}</span>
+// ---- Amenity Icons (using Lucide) ----
+const AmenityIcon: React.FC<{ icon: React.ReactNode; label: string }> = ({ icon, label }) => (
+  <div className="flex flex-col items-center gap-3 p-4">
+    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 transition-all duration-300 hover:bg-emerald-100 hover:scale-110">
+      {icon}
     </div>
-    <span className="text-center text-xs font-medium text-gray-700">{label}</span>
+    <span className="text-center text-xs font-medium leading-tight text-gray-700">{label}</span>
   </div>
 );
 
@@ -62,23 +92,25 @@ const AmenityIcon: React.FC<{ icon: string; label: string }> = ({ icon, label })
 const FAQItem: React.FC<{ question: string; answer: string }> = ({ question, answer }) => {
   const [isOpen, setIsOpen] = useState(false);
   return (
-    <div className="border-b border-emerald-900/10">
+    <div className="border-b border-emerald-900/10 last:border-b-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between py-5 text-left transition-colors hover:text-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
+        className="group flex w-full items-center justify-between py-6 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
         aria-expanded={isOpen}
       >
-        <span className="pr-4 font-medium text-gray-900">{question}</span>
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 transition-transform duration-200">
-          {isOpen ? "−" : "+"}
+        <span className="pr-6 text-lg font-semibold text-gray-900 transition-colors group-hover:text-emerald-700">
+          {question}
+        </span>
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 transition-all duration-300 group-hover:bg-emerald-200">
+          {isOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
         </span>
       </button>
       <div
-        className={`overflow-hidden transition-all duration-300 ${
-          isOpen ? "max-h-96 pb-5" : "max-h-0"
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          isOpen ? "max-h-96 pb-6" : "max-h-0"
         }`}
       >
-        <p className="text-sm leading-relaxed text-gray-600">{answer}</p>
+        <p className="text-base leading-relaxed text-gray-600 pr-12">{answer}</p>
       </div>
     </div>
   );
@@ -88,7 +120,7 @@ const FAQItem: React.FC<{ question: string; answer: string }> = ({ question, ans
 const FULL_SERVICES = [
   {
     id: "accommodation",
-    icon: "🏨",
+    icon: Hotel,
     title: "ACCOMMODATION",
     subtitle: "Luxury Stays",
     description:
@@ -97,7 +129,7 @@ const FULL_SERVICES = [
   },
   {
     id: "transport",
-    icon: "🚐",
+    icon: Bus,
     title: "TRANSPORT",
     subtitle: "Seamless Logistics",
     description:
@@ -106,7 +138,7 @@ const FULL_SERVICES = [
   },
   {
     id: "venues",
-    icon: "🏛️",
+    icon: Building2,
     title: "VENUES",
     subtitle: "Meeting Spaces",
     description:
@@ -115,7 +147,7 @@ const FULL_SERVICES = [
   },
   {
     id: "activities",
-    icon: "🎯",
+    icon: Target,
     title: "ACTIVITIES",
     subtitle: "Team Building",
     description:
@@ -124,7 +156,7 @@ const FULL_SERVICES = [
   },
   {
     id: "catering",
-    icon: "👨‍🍳",
+    icon: ChefHat,
     title: "CATERING",
     subtitle: "Dining Experiences",
     description:
@@ -133,7 +165,7 @@ const FULL_SERVICES = [
   },
   {
     id: "leisure",
-    icon: "🎭",
+    icon: Theater,
     title: "LEISURE",
     subtitle: "Entertainment",
     description:
@@ -146,55 +178,59 @@ const FULL_SERVICES = [
 const ServiceTabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState(FULL_SERVICES[0].id);
   const activeService = FULL_SERVICES.find((s) => s.id === activeTab) || FULL_SERVICES[0];
+  const IconComponent = activeService.icon;
 
   return (
     <div className="w-full">
       {/* Tab Navigation */}
-      <div className="flex flex-wrap justify-center gap-2 md:gap-4">
-        {FULL_SERVICES.map((service) => (
-          <button
-            key={service.id}
-            onClick={() => setActiveTab(service.id)}
-            className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all duration-300 md:px-5 md:text-sm ${
-              activeTab === service.id
-                ? "bg-emerald-700 text-white shadow-lg"
-                : "bg-white text-gray-700 shadow hover:bg-emerald-50 hover:text-emerald-700"
-            }`}
-            aria-pressed={activeTab === service.id}
-          >
-            <span className="text-base md:text-lg">{service.icon}</span>
-            <span className="hidden sm:inline">{service.title}</span>
-          </button>
-        ))}
+      <div className="flex flex-wrap justify-center gap-2 md:gap-3">
+        {FULL_SERVICES.map((service) => {
+          const TabIcon = service.icon;
+          return (
+            <button
+              key={service.id}
+              onClick={() => setActiveTab(service.id)}
+              className={`flex items-center gap-2 rounded-full px-4 py-3 text-xs font-semibold uppercase tracking-widest transition-all duration-300 md:px-6 md:text-sm ${
+                activeTab === service.id
+                  ? "bg-emerald-700 text-white shadow-lg shadow-emerald-700/25"
+                  : "bg-white text-gray-700 shadow-md hover:bg-emerald-50 hover:text-emerald-700 hover:shadow-lg"
+              }`}
+              aria-pressed={activeTab === service.id}
+            >
+              <TabIcon className="h-4 w-4 md:h-5 md:w-5" />
+              <span className="hidden sm:inline">{service.title}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Tab Content */}
-      <div className="mt-10 rounded-[22px] bg-white p-8 shadow-[0_10px_40px_-12px_rgba(0,0,0,0.15)] md:p-12">
-        <div className="grid gap-8 md:grid-cols-2 md:gap-12">
+      <div className="mt-12 rounded-3xl bg-white p-8 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] md:p-14">
+        <div className="grid gap-10 md:grid-cols-2 md:gap-14">
           {/* Left: Content */}
           <div>
-            <div className="mb-4 flex items-center gap-3">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-2xl">
-                {activeService.icon}
+            <div className="mb-6 flex items-center gap-4">
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-50 text-emerald-700">
+                <IconComponent className="h-7 w-7" />
               </span>
               <div>
-                <h3 className="text-xl font-bold text-emerald-800 md:text-2xl">{activeService.title}</h3>
-                <p className="text-sm text-gray-500">{activeService.subtitle}</p>
+                <h3 className="text-2xl font-bold text-gray-900 md:text-3xl">{activeService.title}</h3>
+                <p className="text-sm font-medium text-[#C9A227]">{activeService.subtitle}</p>
               </div>
             </div>
-            <p className="mt-4 text-[15px] leading-relaxed text-gray-700">{activeService.description}</p>
+            <p className="text-base leading-relaxed text-gray-600">{activeService.description}</p>
           </div>
 
           {/* Right: Highlights */}
           <div className="flex flex-col justify-center">
-            <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-emerald-700">What's Included</p>
+            <p className="mb-5 text-sm font-bold uppercase tracking-widest text-emerald-700">What's Included</p>
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {activeService.highlights.map((highlight, idx) => (
                 <li
                   key={idx}
-                  className="flex items-center gap-2 rounded-lg bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800"
+                  className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-emerald-50 to-emerald-50/50 px-4 py-4 text-sm font-medium text-emerald-900 transition-all hover:from-emerald-100 hover:to-emerald-50"
                 >
-                  <span className="text-emerald-600">✓</span>
+                  <Sparkles className="h-4 w-4 text-[#C9A227]" />
                   {highlight}
                 </li>
               ))}
@@ -207,24 +243,29 @@ const ServiceTabs: React.FC = () => {
 };
 
 // ---- Small UI atoms ----
-const PillButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { href?: string }> = ({
-  className = "",
-  children,
-  href,
-  ...props
-}) => {
-  const baseClasses = `inline-flex items-center justify-center rounded-full px-6 py-2.5 text-[13px] font-semibold tracking-wide shadow-[0_6px_18px_-6px_rgba(16,185,129,0.45)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 disabled:opacity-50 ${className}`;
+const PillButton: React.FC<
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { href?: string; variant?: "primary" | "secondary" | "gold" }
+> = ({ className = "", children, href, variant = "primary", ...props }) => {
+  const baseClasses = `inline-flex items-center justify-center rounded-full px-8 py-3.5 text-sm font-semibold tracking-widest uppercase transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50`;
+
+  const variantClasses = {
+    primary: "bg-emerald-700 text-white shadow-lg shadow-emerald-700/30 hover:bg-emerald-800 hover:shadow-xl hover:-translate-y-0.5 focus-visible:ring-emerald-600",
+    secondary: "bg-white text-gray-900 shadow-lg hover:bg-gray-50 hover:shadow-xl hover:-translate-y-0.5 focus-visible:ring-gray-400",
+    gold: "bg-[#C9A227] text-white shadow-lg shadow-[#C9A227]/30 hover:bg-[#B8860B] hover:shadow-xl hover:-translate-y-0.5 focus-visible:ring-[#C9A227]",
+  };
+
+  const combinedClasses = `${baseClasses} ${variantClasses[variant]} ${className}`;
 
   if (href) {
     return (
-      <a href={href} className={baseClasses}>
+      <a href={href} className={combinedClasses}>
         {children}
       </a>
     );
   }
 
   return (
-    <button {...props} className={baseClasses}>
+    <button {...props} className={combinedClasses}>
       {children}
     </button>
   );
@@ -322,35 +363,37 @@ const TropicoRetreatsPage: React.FC = () => {
     <main className="min-h-dvh w-full bg-[#F7F1EC] text-gray-900">
       {/* HERO */}
       <section className="relative w-full" role="banner" aria-label="Hero">
-        <img src={IMAGES.hero} alt="Jungle terrace in Colombia" className="h-[86dvh] w-full object-cover" />
-        <div className="absolute inset-0 bg-black/30" />
+        <img src={IMAGES.hero} alt="Jungle terrace in Colombia" className="h-[90dvh] w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/40" />
         <div
           ref={heroReveal.ref}
           className={`absolute inset-0 flex flex-col items-center justify-center px-4 text-center text-white transition-all duration-700 ${
             heroReveal.shown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
           }`}
         >
-          <p className="mb-3 text-sm tracking-[0.3em] uppercase opacity-90 md:text-base">
+          <p className="mb-4 text-sm tracking-[0.35em] uppercase opacity-80 md:text-base">
             corporate stays · wellness getaways · team retreats
           </p>
-          <h1 className="text-[44px] leading-tight drop-shadow md:text-[74px]">
-            <span className="font-serif">Tropico Retreats</span>
+          <h1 className="text-[48px] leading-[1.1] drop-shadow-lg md:text-[80px]">
+            Tropico Retreats
           </h1>
-          <p className="mt-2 text-lg/6 tracking-wide drop-shadow-md md:text-2xl">
-            Corporate & Wellness Retreats
+          <p className="mt-3 text-lg tracking-wide drop-shadow-md md:text-2xl font-light">
+            Corporate & Wellness Retreats in Colombia
           </p>
-          <PillButton
-            className="mt-8 bg-emerald-600 text-white hover:translate-y-[-1px] hover:bg-emerald-700"
-            aria-label="Enquire about a corporate retreat"
-          >
-            ENQUIRE HERE
-          </PillButton>
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <PillButton variant="gold" aria-label="Enquire about a corporate retreat">
+              ENQUIRE NOW
+            </PillButton>
+            <PillButton variant="secondary" className="bg-white/90 backdrop-blur-sm" aria-label="View our services">
+              OUR SERVICES
+            </PillButton>
+          </div>
         </div>
       </section>
 
       {/* TAILORED FOR YOU - Intro Section */}
-      <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-10">
-        <section className="grid grid-cols-1 gap-10 py-16 md:grid-cols-12" aria-labelledby="intro-heading">
+      <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-12">
+        <section className="grid grid-cols-1 gap-12 py-20 md:grid-cols-12 md:py-28" aria-labelledby="intro-heading">
           <div
             ref={introReveal.ref}
             className={`md:col-span-7 transition-all duration-700 ${
@@ -394,7 +437,7 @@ const TropicoRetreatsPage: React.FC = () => {
         </section>
 
         {/* WE HANDLE EVERYTHING - Full Services Section */}
-        <section className="border-t border-emerald-900/10 py-16" aria-labelledby="full-services-heading">
+        <section className="border-t border-emerald-900/10 py-20 md:py-28" aria-labelledby="full-services-heading">
           <header className="mb-10 text-center">
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-700">Full Service</p>
             <h2 id="full-services-heading" className="mt-2 font-serif text-[30px] md:text-[44px]">
@@ -410,7 +453,7 @@ const TropicoRetreatsPage: React.FC = () => {
         </section>
 
         {/* BESPOKE ESCAPES - 3 Cards */}
-        <section className="border-t border-emerald-900/10 py-14" aria-labelledby="bespoke-heading">
+        <section className="border-t border-emerald-900/10 py-20 md:py-24" aria-labelledby="bespoke-heading">
           <header className="mb-8 text-center">
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-700">Bespoke Escapes</p>
             <h2 id="bespoke-heading" className="mt-2 font-serif text-[30px] md:text-[36px]">
@@ -442,35 +485,35 @@ const TropicoRetreatsPage: React.FC = () => {
         {/* WHAT'S AVAILABLE - Amenities Icons */}
         <section
           ref={amenitiesReveal.ref}
-          className={`border-t border-emerald-900/10 py-14 transition-all duration-700 ${
+          className={`border-t border-emerald-900/10 py-20 md:py-24 transition-all duration-700 ${
             amenitiesReveal.shown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
           aria-labelledby="amenities-heading"
         >
-          <header className="mb-8 text-center">
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-700">
+          <header className="mb-12 text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#C9A227]">
               Corporate & Wellness Events
             </p>
-            <h2 id="amenities-heading" className="mt-2 font-serif text-[30px] md:text-[36px]">
+            <h2 id="amenities-heading" className="mt-3 text-[32px] md:text-[40px]">
               What's Available
             </h2>
           </header>
-          <div className="grid grid-cols-3 gap-4 sm:grid-cols-5 md:grid-cols-10">
-            <AmenityIcon icon="👨‍🍳" label="Private Chefs" />
-            <AmenityIcon icon="📋" label="Bespoke Itinerary" />
-            <AmenityIcon icon="🧘" label="Yoga Instructor" />
-            <AmenityIcon icon="🏢" label="Conference Room" />
-            <AmenityIcon icon="🎵" label="Live Music" />
-            <AmenityIcon icon="🛁" label="Private Pools" />
-            <AmenityIcon icon="🏊" label="Swimming Pool" />
-            <AmenityIcon icon="📶" label="Free WiFi" />
-            <AmenityIcon icon="🚐" label="Transportation" />
-            <AmenityIcon icon="🎯" label="Team Building" />
+          <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10">
+            <AmenityIcon icon={<ChefHat className="h-6 w-6" />} label="Private Chefs" />
+            <AmenityIcon icon={<Calendar className="h-6 w-6" />} label="Bespoke Itinerary" />
+            <AmenityIcon icon={<Dumbbell className="h-6 w-6" />} label="Yoga & Wellness" />
+            <AmenityIcon icon={<Building2 className="h-6 w-6" />} label="Conference Room" />
+            <AmenityIcon icon={<Music className="h-6 w-6" />} label="Live Music" />
+            <AmenityIcon icon={<Waves className="h-6 w-6" />} label="Private Pools" />
+            <AmenityIcon icon={<TreePine className="h-6 w-6" />} label="Nature Access" />
+            <AmenityIcon icon={<Wifi className="h-6 w-6" />} label="Free WiFi" />
+            <AmenityIcon icon={<Bus className="h-6 w-6" />} label="Transportation" />
+            <AmenityIcon icon={<Users className="h-6 w-6" />} label="Team Building" />
           </div>
         </section>
 
         {/* DESTINATIONS */}
-        <section className="border-t border-emerald-900/10 py-14" aria-labelledby="collection-heading">
+        <section className="border-t border-emerald-900/10 py-20 md:py-24" aria-labelledby="collection-heading">
           <header className="mb-8 text-center">
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-700">Our Destinations</p>
             <h2 id="collection-heading" className="mt-2 font-serif text-[30px] md:text-[36px]">
@@ -490,42 +533,41 @@ const TropicoRetreatsPage: React.FC = () => {
 
       {/* MEETING SPACE BANNER */}
       <section className="relative w-full" aria-label="Meeting space">
-        <img src={IMAGES.svc2} alt="Meeting space venue" className="h-[50dvh] w-full object-cover" loading="lazy" />
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="absolute inset-0 mx-auto flex max-w-[1400px] items-center px-4 sm:px-6 lg:px-10">
+        <img src={IMAGES.svc2} alt="Meeting space venue" className="h-[60dvh] w-full object-cover" loading="lazy" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent" />
+        <div className="absolute inset-0 mx-auto flex max-w-[1400px] items-center px-4 sm:px-6 lg:px-12">
           <div className="max-w-xl text-white">
-            <p className="text-sm font-medium uppercase tracking-[0.2em] opacity-90">Conference Facilities</p>
-            <h2 className="mt-2 font-serif text-[34px] md:text-[44px]">The Meeting Room</h2>
-            <p className="mt-4 text-sm leading-relaxed md:text-base">
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#C9A227]">Conference Facilities</p>
+            <h2 className="mt-3 text-[36px] md:text-[48px]">The Meeting Room</h2>
+            <p className="mt-5 text-base leading-relaxed opacity-90 md:text-lg">
               Our configurable meeting spaces accommodate up to 24 boardroom-style or 40 theatre-style attendees—perfect
               for training sessions, presentations, or private meetings in a stunning natural setting.
             </p>
-            <PillButton
-              className="mt-6 bg-white/90 text-gray-900 hover:bg-white"
-              aria-label="Enquire about meeting space"
-            >
-              ENQUIRE HERE
-            </PillButton>
+            <div className="mt-8">
+              <PillButton variant="gold" aria-label="Enquire about meeting space">
+                ENQUIRE NOW
+              </PillButton>
+            </div>
           </div>
         </div>
       </section>
 
       {/* TAILOR-MADE BANNER */}
-      <section className="relative mt-0 w-full" aria-label="Tailor made banner">
-        <img src={IMAGES.svc1a} alt="Cocora Valley palms" className="h-[50dvh] w-full object-cover" loading="lazy" />
-        <div className="absolute inset-0 bg-black/35" />
-        <div className="absolute inset-0 mx-auto flex max-w-[1400px] flex-col justify-center px-4 sm:px-6 lg:px-10 text-white">
-          <p className="text-sm font-medium uppercase tracking-[0.2em] opacity-90">Bespoke Packages</p>
-          <h2 className="mt-2 font-serif text-[34px] md:text-[44px]">Tailor‑made for You</h2>
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed md:text-base">
+      <section className="relative w-full" aria-label="Tailor made banner">
+        <img src={IMAGES.svc1a} alt="Cocora Valley palms" className="h-[60dvh] w-full object-cover" loading="lazy" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent" />
+        <div className="absolute inset-0 mx-auto flex max-w-[1400px] flex-col justify-center px-4 sm:px-6 lg:px-12 text-white">
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#C9A227]">Bespoke Packages</p>
+          <h2 className="mt-3 text-[36px] md:text-[48px]">Tailor‑made for You</h2>
+          <p className="mt-5 max-w-2xl text-base leading-relaxed opacity-90 md:text-lg">
             Let us take care of every detail—ensuring a seamless stay with our bespoke itineraries curated to meet your
             unique needs. From accommodation to activities, we'll handle all the details at a special rate.
           </p>
-          <div className="mt-6 flex flex-wrap gap-4">
-            <PillButton className="bg-white/90 text-gray-900 hover:bg-white" aria-label="View sample itinerary">
+          <div className="mt-8 flex flex-wrap gap-4">
+            <PillButton variant="secondary" className="bg-white/95 backdrop-blur-sm" aria-label="View sample itinerary">
               Sample Itinerary
             </PillButton>
-            <PillButton className="bg-emerald-600 text-white hover:bg-emerald-700" aria-label="Contact us">
+            <PillButton variant="primary" aria-label="Contact us">
               CONTACT US
             </PillButton>
           </div>
@@ -533,10 +575,10 @@ const TropicoRetreatsPage: React.FC = () => {
       </section>
 
       {/* SERVICES – four blocks matching final design */}
-      <section className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-10 py-14" aria-labelledby="services-heading">
-        <header className="mb-10 text-center">
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-700">What We Offer</p>
-          <h2 id="services-heading" className="mt-2 font-serif text-[30px] md:text-[36px]">
+      <section className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-12 py-20 md:py-28" aria-labelledby="services-heading">
+        <header className="mb-14 text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#C9A227]">What We Offer</p>
+          <h2 id="services-heading" className="mt-3 text-[32px] md:text-[40px]">
             Our Corporate Services
           </h2>
         </header>
@@ -567,7 +609,7 @@ const TropicoRetreatsPage: React.FC = () => {
             </p>
             <div className="mt-5">
               <PillButton
-                className="bg-emerald-700 text-white hover:bg-emerald-800"
+                variant="primary"
                 aria-label="Contact us about destination"
               >
                 CONTACT US
@@ -586,7 +628,7 @@ const TropicoRetreatsPage: React.FC = () => {
             </p>
             <div className="mt-5">
               <PillButton
-                className="bg-emerald-700 text-white hover:bg-emerald-800"
+                variant="primary"
                 aria-label="Contact us about catering"
               >
                 CONTACT US
@@ -635,7 +677,7 @@ const TropicoRetreatsPage: React.FC = () => {
             </p>
             <div className="mt-5">
               <PillButton
-                className="bg-emerald-700 text-white hover:bg-emerald-800"
+                variant="primary"
                 aria-label="Contact us about excursions"
               >
                 CONTACT US
@@ -656,7 +698,7 @@ const TropicoRetreatsPage: React.FC = () => {
             </p>
             <div className="mt-5">
               <PillButton
-                className="bg-emerald-700 text-white hover:bg-emerald-800"
+                variant="primary"
                 aria-label="Contact us about logistics"
               >
                 CONTACT US
@@ -681,14 +723,14 @@ const TropicoRetreatsPage: React.FC = () => {
       </section>
 
       {/* FAQ SECTION */}
-      <section className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-10 py-14" aria-labelledby="faq-heading">
-        <header className="mb-8 text-center">
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-700">Common Questions</p>
-          <h2 id="faq-heading" className="mt-2 font-serif text-[30px] md:text-[36px]">
+      <section className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-12 py-20 md:py-28" aria-labelledby="faq-heading">
+        <header className="mb-12 text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#C9A227]">Common Questions</p>
+          <h2 id="faq-heading" className="mt-3 text-[32px] md:text-[40px]">
             Frequently Asked Questions
           </h2>
         </header>
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-3xl rounded-3xl bg-white p-8 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] md:p-12">
           <FAQItem
             question="What is the minimum group size for a corporate retreat?"
             answer="We typically accommodate groups of 8–30 guests, though we can arrange larger events upon request. Each retreat is customised to your specific team size and requirements."
@@ -716,62 +758,224 @@ const TropicoRetreatsPage: React.FC = () => {
         </div>
       </section>
 
-      {/* CTA BANNER */}
-      <section className="bg-emerald-800 py-16 text-center text-white">
-        <div className="mx-auto max-w-2xl px-4">
-          <h2 className="font-serif text-[28px] md:text-[36px]">Ready to Plan Your Retreat?</h2>
-          <p className="mt-4 text-sm leading-relaxed opacity-90 md:text-base">
-            Get in touch with our team to start planning your unforgettable corporate experience in Colombia.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <PillButton className="bg-white text-emerald-800 hover:bg-gray-100" aria-label="Enquire now">
-              ENQUIRE NOW
-            </PillButton>
-            <PillButton
-              className="border border-white/50 bg-transparent text-white hover:bg-white/10"
-              aria-label="View sample itinerary"
-            >
-              VIEW SAMPLE ITINERARY
-            </PillButton>
+      {/* CONTACT FORM SECTION */}
+      <section className="bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-900 py-20 md:py-28" aria-labelledby="contact-heading">
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-12">
+          <div className="grid gap-12 md:grid-cols-2 md:gap-16">
+            {/* Left: Contact Info */}
+            <div className="text-white">
+              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#C9A227]">Get in Touch</p>
+              <h2 id="contact-heading" className="mt-3 text-[32px] md:text-[44px]">
+                Ready to Plan Your Retreat?
+              </h2>
+              <p className="mt-6 text-lg leading-relaxed opacity-90">
+                Get in touch with our team to start planning your unforgettable corporate experience in Colombia.
+                We'll respond within 24 hours.
+              </p>
+
+              <div className="mt-10 space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10">
+                    <Mail className="h-5 w-5 text-[#C9A227]" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-wider opacity-70">Email</p>
+                    <a href="mailto:hello@tropicoretreats.com" className="text-lg hover:text-[#C9A227] transition-colors">
+                      hello@tropicoretreats.com
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10">
+                    <Phone className="h-5 w-5 text-[#C9A227]" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-wider opacity-70">Phone</p>
+                    <a href="tel:+447806705494" className="text-lg hover:text-[#C9A227] transition-colors">
+                      +44 78 0670 5494
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10">
+                    <MapPin className="h-5 w-5 text-[#C9A227]" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-wider opacity-70">Location</p>
+                    <p className="text-lg">London, United Kingdom</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10">
+                    <Clock className="h-5 w-5 text-[#C9A227]" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-wider opacity-70">Business Hours</p>
+                    <p className="text-lg">Mon–Thu: 9am – 6pm</p>
+                    <p className="text-lg">Friday: 9am – 1pm</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Contact Form */}
+            <div className="rounded-3xl bg-white p-8 shadow-2xl md:p-10">
+              <h3 className="text-2xl font-bold text-gray-900">Send Us an Enquiry</h3>
+              <p className="mt-2 text-gray-600">Fill out the form below and we'll be in touch shortly.</p>
+
+              <form className="mt-8 space-y-5">
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700">
+                      First Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="firstName"
+                      name="firstName"
+                      required
+                      className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-gray-900 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      placeholder="John"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700">
+                      Last Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="lastName"
+                      name="lastName"
+                      required
+                      className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-gray-900 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      placeholder="Smith"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    required
+                    className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-gray-900 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    placeholder="john@company.com"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="company" className="block text-sm font-semibold text-gray-700">
+                    Company Name
+                  </label>
+                  <input
+                    type="text"
+                    id="company"
+                    name="company"
+                    className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-gray-900 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    placeholder="Company Ltd"
+                  />
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="groupSize" className="block text-sm font-semibold text-gray-700">
+                      Group Size
+                    </label>
+                    <select
+                      id="groupSize"
+                      name="groupSize"
+                      className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-gray-900 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    >
+                      <option value="">Select size</option>
+                      <option value="8-15">8–15 guests</option>
+                      <option value="16-25">16–25 guests</option>
+                      <option value="26-40">26–40 guests</option>
+                      <option value="40+">40+ guests</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="preferredDates" className="block text-sm font-semibold text-gray-700">
+                      Preferred Dates
+                    </label>
+                    <input
+                      type="text"
+                      id="preferredDates"
+                      name="preferredDates"
+                      className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-gray-900 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      placeholder="e.g., March 2026"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="message" className="block text-sm font-semibold text-gray-700">
+                    Tell Us About Your Retreat *
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    rows={4}
+                    required
+                    className="mt-2 w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-gray-900 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    placeholder="What are your goals for the retreat? Any specific activities or experiences you're interested in?"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-[#C9A227] px-8 py-4 text-sm font-bold uppercase tracking-widest text-white shadow-lg shadow-[#C9A227]/30 transition-all duration-300 hover:bg-[#B8860B] hover:shadow-xl hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227] focus-visible:ring-offset-2"
+                >
+                  <Send className="h-4 w-4" />
+                  Send Enquiry
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-gray-900 text-white" role="contentinfo" aria-label="Footer">
+      <footer className="bg-gray-950 text-white" role="contentinfo" aria-label="Footer">
         {/* Footer Image Banner */}
-        <div className="relative h-[30dvh] w-full">
+        <div className="relative h-[35dvh] w-full">
           <img src={IMAGES.footer} alt="Colourful colonial street" className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-900" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-gray-950" />
         </div>
 
         {/* Footer Content */}
-        <div className="mx-auto max-w-[1400px] px-4 py-12 sm:px-6 lg:px-10">
+        <div className="mx-auto max-w-[1400px] px-4 py-16 sm:px-6 lg:px-12">
           {/* Logo */}
-          <div className="mb-10 text-center">
-            <h2 className="font-serif text-[28px] md:text-[34px]">TROPICO RETREATS</h2>
-            <p className="mt-2 text-sm opacity-70">Corporate & Wellness Retreats in Colombia</p>
+          <div className="mb-14 text-center">
+            <h2 className="text-[32px] md:text-[40px]">TROPICO RETREATS</h2>
+            <p className="mt-3 text-base text-[#C9A227]">Corporate & Wellness Retreats in Colombia</p>
           </div>
 
           {/* Footer Grid */}
-          <div className="grid grid-cols-1 gap-10 border-t border-white/10 pt-10 md:grid-cols-4">
+          <div className="grid grid-cols-1 gap-12 border-t border-white/10 pt-12 sm:grid-cols-2 lg:grid-cols-4">
             {/* Browse */}
             <div>
-              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider opacity-90">Browse</h3>
-              <nav className="space-y-2">
-                <a href="#" className="block text-sm opacity-70 transition hover:opacity-100">
+              <h3 className="mb-5 text-sm font-bold uppercase tracking-widest text-[#C9A227]">Browse</h3>
+              <nav className="space-y-3">
+                <a href="#" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
                   Destinations
                 </a>
-                <a href="#" className="block text-sm opacity-70 transition hover:opacity-100">
+                <a href="#" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
                   Accommodations
                 </a>
-                <a href="#" className="block text-sm opacity-70 transition hover:opacity-100">
+                <a href="#" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
                   Experiences
                 </a>
-                <a href="#" className="block text-sm opacity-70 transition hover:opacity-100">
+                <a href="#" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
                   Corporate Services
                 </a>
-                <a href="#" className="block text-sm opacity-70 transition hover:opacity-100">
+                <a href="#" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
                   Sample Itinerary
                 </a>
               </nav>
@@ -779,18 +983,18 @@ const TropicoRetreatsPage: React.FC = () => {
 
             {/* Information */}
             <div>
-              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider opacity-90">Information</h3>
-              <nav className="space-y-2">
-                <a href="#" className="block text-sm opacity-70 transition hover:opacity-100">
+              <h3 className="mb-5 text-sm font-bold uppercase tracking-widest text-[#C9A227]">Information</h3>
+              <nav className="space-y-3">
+                <a href="#" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
                   About Us
                 </a>
-                <a href="#" className="block text-sm opacity-70 transition hover:opacity-100">
+                <a href="#" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
                   FAQs
                 </a>
-                <a href="#" className="block text-sm opacity-70 transition hover:opacity-100">
+                <a href="#" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
                   Terms & Conditions
                 </a>
-                <a href="#" className="block text-sm opacity-70 transition hover:opacity-100">
+                <a href="#" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
                   Privacy Policy
                 </a>
               </nav>
@@ -798,18 +1002,20 @@ const TropicoRetreatsPage: React.FC = () => {
 
             {/* Find Us */}
             <div>
-              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider opacity-90">Find Us</h3>
-              <div className="space-y-2 text-sm opacity-70">
-                <p>London, UK</p>
-                <p>+44 78 06705494</p>
+              <h3 className="mb-5 text-sm font-bold uppercase tracking-widest text-[#C9A227]">Find Us</h3>
+              <div className="space-y-3 text-sm">
+                <p className="opacity-70">London, United Kingdom</p>
+                <a href="tel:+447806705494" className="block opacity-70 transition hover:opacity-100">
+                  +44 78 0670 5494
+                </a>
                 <a
                   href="mailto:hello@tropicoretreats.com"
-                  className="block underline decoration-white/30 underline-offset-4 transition hover:decoration-white hover:opacity-100"
+                  className="block opacity-70 transition hover:opacity-100"
                 >
                   hello@tropicoretreats.com
                 </a>
               </div>
-              <div className="mt-4 text-sm opacity-70">
+              <div className="mt-5 space-y-1 text-sm opacity-60">
                 <p>Mon–Thu: 9am – 6pm</p>
                 <p>Friday: 9am – 1pm</p>
               </div>
@@ -817,34 +1023,38 @@ const TropicoRetreatsPage: React.FC = () => {
 
             {/* Social */}
             <div>
-              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider opacity-90">Get Social</h3>
+              <h3 className="mb-5 text-sm font-bold uppercase tracking-widest text-[#C9A227]">Get Social</h3>
               <nav aria-label="Social links" className="flex gap-3">
                 <a
                   href="#"
                   aria-label="Instagram"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-sm font-medium transition-all hover:bg-[#C9A227] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
                 >
                   IG
                 </a>
                 <a
                   href="#"
                   aria-label="LinkedIn"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-sm font-medium transition-all hover:bg-[#C9A227] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
                 >
                   IN
                 </a>
                 <a
                   href="#"
                   aria-label="Facebook"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-sm font-medium transition-all hover:bg-[#C9A227] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
                 >
                   FB
                 </a>
               </nav>
-              <p className="mt-6 text-xs opacity-50">
-                © {new Date().getFullYear()} Tropico Retreats. All rights reserved.
-              </p>
             </div>
+          </div>
+
+          {/* Copyright */}
+          <div className="mt-14 border-t border-white/10 pt-8 text-center">
+            <p className="text-sm opacity-50">
+              © {new Date().getFullYear()} Tropico Retreats. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>

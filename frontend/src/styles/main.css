@@ -3,3 +3,62 @@
 @tailwind utilities;
 
 @import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Typography */
+    --font-serif: 'Playfair Display', Georgia, serif;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+    /* Colours */
+    --color-gold: #C9A227;
+    --color-gold-light: #D4AF37;
+    --color-gold-dark: #B8860B;
+    --color-cream: #F7F1EC;
+    --color-emerald: #047857;
+    --color-emerald-dark: #065F46;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    line-height: 1.2;
+  }
+}
+
+@layer components {
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+
+  .font-sans {
+    font-family: var(--font-sans);
+  }
+
+  /* Gold accent utilities */
+  .text-gold {
+    color: var(--color-gold);
+  }
+
+  .bg-gold {
+    background-color: var(--color-gold);
+  }
+
+  .border-gold {
+    border-color: var(--color-gold);
+  }
+
+  .hover\:bg-gold-dark:hover {
+    background-color: var(--color-gold-dark);
+  }
+}
