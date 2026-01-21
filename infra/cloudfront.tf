@@ -5,8 +5,8 @@ resource "aws_cloudfront_origin_access_identity" "www" {
 resource "aws_cloudfront_cache_policy" "long_term_cache" {
   name        = "long-term-cache-policy"
   comment     = "1-year browser cache policy"
-  default_ttl = 31536000   # 1 year
-  max_ttl     = 31536000
+  default_ttl = 0   # 1 year
+  max_ttl     = 0
   min_ttl     = 0
 
   parameters_in_cache_key_and_forwarded_to_origin {

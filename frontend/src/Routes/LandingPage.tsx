@@ -84,6 +84,128 @@ const FAQItem: React.FC<{ question: string; answer: string }> = ({ question, ans
   );
 };
 
+// ---- Full Services Data ----
+const FULL_SERVICES = [
+  {
+    id: "accommodation",
+    icon: "🏨",
+    title: "ACCOMMODATION",
+    subtitle: "Luxury Stays",
+    description:
+      "We work with the finest exclusive properties across Colombia: luxury villas, colonial haciendas, eco-lodges and boutique hotels. Each accommodation is carefully selected to meet your needs—from intimate retreats for 8 guests to corporate events for 50+ attendees. All our properties feature meeting spaces, wellness areas, private pools and personalised service.",
+    highlights: ["Private villas with pools", "Historic haciendas", "Exclusive eco-lodges", "Boutique hotels"],
+  },
+  {
+    id: "transport",
+    icon: "🚐",
+    title: "TRANSPORT",
+    subtitle: "Seamless Logistics",
+    description:
+      "We manage all transport logistics from start to finish. We coordinate airport-hotel transfers, internal transport between activities, and any special journeys your group requires. We work with modern fleets and professional bilingual drivers who know every route and destination.",
+    highlights: ["Airport transfers", "Premium vehicles", "Bilingual drivers", "24/7 coordination"],
+  },
+  {
+    id: "venues",
+    icon: "🏛️",
+    title: "VENUES",
+    subtitle: "Meeting Spaces",
+    description:
+      "We provide versatile spaces for any type of corporate event: conference rooms equipped with audiovisual technology, outdoor spaces for team building activities, workshop rooms and private areas for networking. Each space adapts to your specific capacity and configuration requirements.",
+    highlights: ["Conference rooms", "Outdoor spaces", "Full AV equipment", "Flexible layouts"],
+  },
+  {
+    id: "activities",
+    icon: "🎯",
+    title: "ACTIVITIES",
+    subtitle: "Team Building",
+    description:
+      "We design activity programmes that strengthen teams and create lasting memories. From outdoor adventures such as rafting, hiking and cycling tours, to cultural experiences like Colombian cooking classes, coffee farm visits and artisan workshops. We also offer wellness programmes including yoga, meditation and spa treatments.",
+    highlights: ["Bespoke team building", "Outdoor adventures", "Cultural experiences", "Wellness programmes"],
+  },
+  {
+    id: "catering",
+    icon: "👨‍🍳",
+    title: "CATERING",
+    subtitle: "Dining Experiences",
+    description:
+      "Gastronomy is a fundamental part of the experience. We work with private chefs who create bespoke menus featuring the finest Colombian and international cuisine. We organise everything from executive breakfasts to gala dinners, outdoor barbecues and themed culinary experiences. All dietary requirements are catered for in advance.",
+    highlights: ["Private chefs", "Bespoke menus", "Local & international cuisine", "Culinary events"],
+  },
+  {
+    id: "leisure",
+    icon: "🎭",
+    title: "LEISURE",
+    subtitle: "Entertainment",
+    description:
+      "We complement your retreat with memorable leisure experiences. We organise live music performances, traditional dance shows, cultural tours with specialist guides, excursions to natural sites and relaxation activities. Every free moment becomes an opportunity to discover Colombia.",
+    highlights: ["Live music", "Cultural shows", "Guided tours", "Exclusive experiences"],
+  },
+];
+
+// ---- Service Tab Component ----
+const ServiceTabs: React.FC = () => {
+  const [activeTab, setActiveTab] = useState(FULL_SERVICES[0].id);
+  const activeService = FULL_SERVICES.find((s) => s.id === activeTab) || FULL_SERVICES[0];
+
+  return (
+    <div className="w-full">
+      {/* Tab Navigation */}
+      <div className="flex flex-wrap justify-center gap-2 md:gap-4">
+        {FULL_SERVICES.map((service) => (
+          <button
+            key={service.id}
+            onClick={() => setActiveTab(service.id)}
+            className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all duration-300 md:px-5 md:text-sm ${
+              activeTab === service.id
+                ? "bg-emerald-700 text-white shadow-lg"
+                : "bg-white text-gray-700 shadow hover:bg-emerald-50 hover:text-emerald-700"
+            }`}
+            aria-pressed={activeTab === service.id}
+          >
+            <span className="text-base md:text-lg">{service.icon}</span>
+            <span className="hidden sm:inline">{service.title}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Tab Content */}
+      <div className="mt-10 rounded-[22px] bg-white p-8 shadow-[0_10px_40px_-12px_rgba(0,0,0,0.15)] md:p-12">
+        <div className="grid gap-8 md:grid-cols-2 md:gap-12">
+          {/* Left: Content */}
+          <div>
+            <div className="mb-4 flex items-center gap-3">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-2xl">
+                {activeService.icon}
+              </span>
+              <div>
+                <h3 className="text-xl font-bold text-emerald-800 md:text-2xl">{activeService.title}</h3>
+                <p className="text-sm text-gray-500">{activeService.subtitle}</p>
+              </div>
+            </div>
+            <p className="mt-4 text-[15px] leading-relaxed text-gray-700">{activeService.description}</p>
+          </div>
+
+          {/* Right: Highlights */}
+          <div className="flex flex-col justify-center">
+            <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-emerald-700">What's Included</p>
+            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {activeService.highlights.map((highlight, idx) => (
+                <li
+                  key={idx}
+                  className="flex items-center gap-2 rounded-lg bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800"
+                >
+                  <span className="text-emerald-600">✓</span>
+                  {highlight}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ---- Small UI atoms ----
 const PillButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { href?: string }> = ({
   className = "",
@@ -245,7 +367,7 @@ const TropicoRetreatsPage: React.FC = () => {
                 dedicated team support. We specialize in creating the perfect Corporate or Wellness event tailored to your needs.
               </p>
               <p>
-                Our specialized team will be delighted to assist you in creating your bespoke retreat—from venue selection
+                Our specialised team will be delighted to assist you in creating your bespoke retreat—from venue selection
                 to full logistics coordination.
               </p>
               <p className="mt-4 font-medium text-emerald-800">
@@ -271,6 +393,22 @@ const TropicoRetreatsPage: React.FC = () => {
           </figure>
         </section>
 
+        {/* WE HANDLE EVERYTHING - Full Services Section */}
+        <section className="border-t border-emerald-900/10 py-16" aria-labelledby="full-services-heading">
+          <header className="mb-10 text-center">
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-700">Full Service</p>
+            <h2 id="full-services-heading" className="mt-2 font-serif text-[30px] md:text-[44px]">
+              We Handle the Entire Organisation
+            </h2>
+            <p className="mx-auto mt-4 max-w-3xl text-base leading-relaxed text-gray-600">
+              From the moment your team lands until the final day of the retreat, every detail is covered.
+              We are your single point of contact for accommodation, transport, venues, activities, catering and
+              entertainment—all coordinated to perfection.
+            </p>
+          </header>
+          <ServiceTabs />
+        </section>
+
         {/* BESPOKE ESCAPES - 3 Cards */}
         <section className="border-t border-emerald-900/10 py-14" aria-labelledby="bespoke-heading">
           <header className="mb-8 text-center">
@@ -290,7 +428,7 @@ const TropicoRetreatsPage: React.FC = () => {
             />
             <BespokeCard
               title="Gastronomy"
-              description="Private chefs crafting bespoke menus with local Colombian flavors and international cuisine tailored to your preferences."
+              description="Private chefs crafting bespoke menus with local Colombian flavours and international cuisine tailored to your preferences."
               imageUrl={IMAGES.svc2b}
             />
             <BespokeCard
@@ -444,7 +582,7 @@ const TropicoRetreatsPage: React.FC = () => {
             <h3 className="text-[18px] font-semibold tracking-[.12em] text-emerald-700">CATERING & PRIVATE CHEFS</h3>
             <p className="mt-3 text-[14px] leading-relaxed text-gray-700">
               Elevate your dining experience with private chefs and high‑end catering. We craft bespoke menus featuring
-              local Colombian flavors and international cuisine, tailored to your team's preferences and dietary needs.
+              local Colombian flavours and international cuisine, tailored to your team's preferences and dietary needs.
             </p>
             <div className="mt-5">
               <PillButton
@@ -476,7 +614,7 @@ const TropicoRetreatsPage: React.FC = () => {
           <div className="grid grid-cols-2 gap-4" aria-label="Excursions imagery">
             <img
               src={IMAGES.svc3b}
-              alt="Colorful town street"
+              alt="Colourful town street"
               className="aspect-[4/3] w-full rounded-[18px] object-cover shadow-md"
               loading="lazy"
             />
@@ -492,7 +630,7 @@ const TropicoRetreatsPage: React.FC = () => {
               EXCURSIONS & CULTURAL IMMERSION
             </h3>
             <p className="mt-3 text-[14px] leading-relaxed text-gray-700">
-              Give your team a true taste of Colombia. We organize curated excursions—from private coffee farm tours and
+              Give your team a true taste of Colombia. We organise curated excursions—from private coffee farm tours and
               historical city walks to jungle hikes and sailing trips—creating unforgettable shared memories.
             </p>
             <div className="mt-5">
@@ -553,7 +691,7 @@ const TropicoRetreatsPage: React.FC = () => {
         <div className="mx-auto max-w-3xl">
           <FAQItem
             question="What is the minimum group size for a corporate retreat?"
-            answer="We typically accommodate groups of 8–30 guests, though we can arrange larger events upon request. Each retreat is customized to your specific team size and requirements."
+            answer="We typically accommodate groups of 8–30 guests, though we can arrange larger events upon request. Each retreat is customised to your specific team size and requirements."
           />
           <FAQItem
             question="Can you accommodate dietary restrictions and special requests?"
@@ -572,7 +710,7 @@ const TropicoRetreatsPage: React.FC = () => {
             answer="Yes, all our corporate retreat packages include full transportation logistics—from airport pickups to internal transfers between activities and venues. You won't need to worry about any travel arrangements."
           />
           <FAQItem
-            question="Can we customize the itinerary?"
+            question="Can we customise the itinerary?"
             answer="Every retreat is fully customizable. Whether you want to focus on team building, wellness, cultural experiences, or a mix of everything, we'll create a bespoke itinerary tailored to your goals and preferences."
           />
         </div>
@@ -603,7 +741,7 @@ const TropicoRetreatsPage: React.FC = () => {
       <footer className="bg-gray-900 text-white" role="contentinfo" aria-label="Footer">
         {/* Footer Image Banner */}
         <div className="relative h-[30dvh] w-full">
-          <img src={IMAGES.footer} alt="Colorful colonial street" className="h-full w-full object-cover" />
+          <img src={IMAGES.footer} alt="Colourful colonial street" className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-900" />
         </div>
 
