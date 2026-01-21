@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { Link } from "react-router";
 import {
   Building2,
   Bus,
@@ -243,9 +244,16 @@ const ServiceTabs: React.FC = () => {
 };
 
 // ---- Small UI atoms ----
+const scrollToSection = (sectionId: string) => {
+  const element = document.getElementById(sectionId);
+  if (element) {
+    element.scrollIntoView({ behavior: "smooth" });
+  }
+};
+
 const PillButton: React.FC<
-  React.ButtonHTMLAttributes<HTMLButtonElement> & { href?: string; variant?: "primary" | "secondary" | "gold" }
-> = ({ className = "", children, href, variant = "primary", ...props }) => {
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { href?: string; to?: string; variant?: "primary" | "secondary" | "gold" }
+> = ({ className = "", children, href, to, variant = "primary", ...props }) => {
   const baseClasses = `inline-flex items-center justify-center rounded-full px-8 py-3.5 text-sm font-semibold tracking-widest uppercase transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50`;
 
   const variantClasses = {
@@ -255,6 +263,14 @@ const PillButton: React.FC<
   };
 
   const combinedClasses = `${baseClasses} ${variantClasses[variant]} ${className}`;
+
+  if (to) {
+    return (
+      <Link to={to} className={combinedClasses}>
+        {children}
+      </Link>
+    );
+  }
 
   if (href) {
     return (
@@ -276,9 +292,10 @@ type BespokeCardProps = {
   description: string;
   imageUrl: string;
   cta?: string;
+  scrollTo?: string;
 };
 
-const BespokeCard: React.FC<BespokeCardProps> = ({ title, description, imageUrl, cta = "Details" }) => {
+const BespokeCard: React.FC<BespokeCardProps> = ({ title, description, imageUrl, cta = "Details", scrollTo = "full-services-heading" }) => {
   const { ref, shown } = useReveal<HTMLDivElement>();
   return (
     <article
@@ -298,7 +315,10 @@ const BespokeCard: React.FC<BespokeCardProps> = ({ title, description, imageUrl,
       <div className="p-6">
         <h3 className="text-lg font-semibold tracking-wide text-emerald-800">{title}</h3>
         <p className="mt-2 text-sm leading-relaxed text-gray-600">{description}</p>
-        <button className="mt-4 text-sm font-medium text-emerald-700 underline decoration-emerald-300 underline-offset-4 transition hover:decoration-emerald-700">
+        <button
+          onClick={() => scrollToSection(scrollTo)}
+          className="mt-4 text-sm font-medium text-emerald-700 underline decoration-emerald-300 underline-offset-4 transition hover:decoration-emerald-700"
+        >
           {cta} →
         </button>
       </div>
@@ -310,19 +330,13 @@ type ImageCardProps = {
   title: string;
   cta?: string;
   imageUrl: string;
+  href?: string;
 };
 
-const ImageCard: React.FC<ImageCardProps> = ({ title, cta = "See More", imageUrl }) => {
+const ImageCard: React.FC<ImageCardProps> = ({ title, cta = "See More", imageUrl, href }) => {
   const { ref, shown } = useReveal<HTMLDivElement>();
-  return (
-    <article
-      ref={ref}
-      className={`h-[60dvh] group relative aspect-[4/3] w-full overflow-hidden rounded-[22px] shadow-[0_10px_30px_-12px_rgba(0,0,0,0.35)] transition-all ${
-        shown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
-      } duration-700`}
-      aria-label={`${title} destination card`}
-      role="article"
-    >
+  const content = (
+    <>
       <img
         src={imageUrl}
         alt={title}
@@ -336,13 +350,40 @@ const ImageCard: React.FC<ImageCardProps> = ({ title, cta = "See More", imageUrl
         </h3>
       </header>
       <div className="absolute inset-x-0 bottom-6 flex w-full justify-center">
-        <button
-          className="rounded-full bg-white/90 px-4 py-2 text-[11px] font-semibold text-gray-900 backdrop-blur-md transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
-          aria-label={`Open ${title}`}
+        <span
+          className="rounded-full bg-white/90 px-4 py-2 text-[11px] font-semibold text-gray-900 backdrop-blur-md transition group-hover:bg-white"
         >
           {cta}
-        </button>
+        </span>
       </div>
+    </>
+  );
+
+  const className = `h-[60dvh] group relative aspect-[4/3] w-full overflow-hidden rounded-[22px] shadow-[0_10px_30px_-12px_rgba(0,0,0,0.35)] transition-all ${
+    shown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
+  } duration-700 block`;
+
+  if (href) {
+    return (
+      <Link
+        ref={ref as React.Ref<HTMLAnchorElement>}
+        to={href}
+        className={className}
+        aria-label={`View ${title} destination`}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <article
+      ref={ref}
+      className={className}
+      aria-label={`${title} destination card`}
+      role="article"
+    >
+      {content}
     </article>
   );
 };
@@ -381,10 +422,10 @@ const TropicoRetreatsPage: React.FC = () => {
             Corporate & Wellness Retreats in Colombia
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <PillButton variant="gold" aria-label="Enquire about a corporate retreat">
+            <PillButton variant="gold" aria-label="Enquire about a corporate retreat" onClick={() => scrollToSection("contact-heading")}>
               ENQUIRE NOW
             </PillButton>
-            <PillButton variant="secondary" className="bg-white/90 backdrop-blur-sm" aria-label="View our services">
+            <PillButton variant="secondary" className="bg-white/90 backdrop-blur-sm" aria-label="View our services" onClick={() => scrollToSection("full-services-heading")}>
               OUR SERVICES
             </PillButton>
           </div>
@@ -446,7 +487,7 @@ const TropicoRetreatsPage: React.FC = () => {
             <p className="mx-auto mt-4 max-w-3xl text-base leading-relaxed text-gray-600">
               From the moment your team lands until the final day of the retreat, every detail is covered.
               We are your single point of contact for accommodation, transport, venues, activities, catering and
-              entertainment—all coordinated to perfection.
+              entertainment. All coordinated to perfection.
             </p>
           </header>
           <ServiceTabs />
@@ -524,9 +565,9 @@ const TropicoRetreatsPage: React.FC = () => {
             </p>
           </header>
           <div className="grid gap-7 md:grid-cols-3">
-            <ImageCard title="Caribbean" imageUrl={IMAGES.caribbean} />
-            <ImageCard title="Casanare" imageUrl={IMAGES.casanare} />
-            <ImageCard title="Coffee Region" imageUrl={IMAGES.coffee} />
+            <ImageCard title="Caribbean" imageUrl={IMAGES.caribbean} href="/destinations/caribbean" />
+            <ImageCard title="Casanare" imageUrl={IMAGES.casanare} href="/destinations/casanare" />
+            <ImageCard title="Coffee Region" imageUrl={IMAGES.coffee} href="/destinations/coffee-region" />
           </div>
         </section>
       </div>
@@ -544,7 +585,7 @@ const TropicoRetreatsPage: React.FC = () => {
               for training sessions, presentations, or private meetings in a stunning natural setting.
             </p>
             <div className="mt-8">
-              <PillButton variant="gold" aria-label="Enquire about meeting space">
+              <PillButton variant="gold" aria-label="Enquire about meeting space" onClick={() => scrollToSection("contact-heading")}>
                 ENQUIRE NOW
               </PillButton>
             </div>
@@ -564,10 +605,10 @@ const TropicoRetreatsPage: React.FC = () => {
             unique needs. From accommodation to activities, we'll handle all the details at a special rate.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
-            <PillButton variant="secondary" className="bg-white/95 backdrop-blur-sm" aria-label="View sample itinerary">
-              Sample Itinerary
+            <PillButton variant="secondary" className="bg-white/95 backdrop-blur-sm" aria-label="View sample itinerary" onClick={() => scrollToSection("contact-heading")}>
+              Request Itinerary
             </PillButton>
-            <PillButton variant="primary" aria-label="Contact us">
+            <PillButton variant="primary" aria-label="Contact us" onClick={() => scrollToSection("contact-heading")}>
               CONTACT US
             </PillButton>
           </div>
@@ -611,6 +652,7 @@ const TropicoRetreatsPage: React.FC = () => {
               <PillButton
                 variant="primary"
                 aria-label="Contact us about destination"
+                onClick={() => scrollToSection("contact-heading")}
               >
                 CONTACT US
               </PillButton>
@@ -630,6 +672,7 @@ const TropicoRetreatsPage: React.FC = () => {
               <PillButton
                 variant="primary"
                 aria-label="Contact us about catering"
+                onClick={() => scrollToSection("contact-heading")}
               >
                 CONTACT US
               </PillButton>
@@ -679,6 +722,7 @@ const TropicoRetreatsPage: React.FC = () => {
               <PillButton
                 variant="primary"
                 aria-label="Contact us about excursions"
+                onClick={() => scrollToSection("contact-heading")}
               >
                 CONTACT US
               </PillButton>
@@ -700,6 +744,7 @@ const TropicoRetreatsPage: React.FC = () => {
               <PillButton
                 variant="primary"
                 aria-label="Contact us about logistics"
+                onClick={() => scrollToSection("contact-heading")}
               >
                 CONTACT US
               </PillButton>
@@ -963,21 +1008,21 @@ const TropicoRetreatsPage: React.FC = () => {
             <div>
               <h3 className="mb-5 text-sm font-bold uppercase tracking-widest text-[#C9A227]">Browse</h3>
               <nav className="space-y-3">
-                <a href="#" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
-                  Destinations
-                </a>
-                <a href="#" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
-                  Accommodations
-                </a>
-                <a href="#" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
-                  Experiences
-                </a>
-                <a href="#" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
-                  Corporate Services
-                </a>
-                <a href="#" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
-                  Sample Itinerary
-                </a>
+                <Link to="/destinations/caribbean" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
+                  Caribbean
+                </Link>
+                <Link to="/destinations/casanare" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
+                  Casanare
+                </Link>
+                <Link to="/destinations/coffee-region" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
+                  Coffee Region
+                </Link>
+                <button onClick={() => document.getElementById('full-services-heading')?.scrollIntoView({ behavior: 'smooth' })} className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1 text-left">
+                  Our Services
+                </button>
+                <button onClick={() => document.getElementById('contact-heading')?.scrollIntoView({ behavior: 'smooth' })} className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1 text-left">
+                  Contact Us
+                </button>
               </nav>
             </div>
 
@@ -985,18 +1030,18 @@ const TropicoRetreatsPage: React.FC = () => {
             <div>
               <h3 className="mb-5 text-sm font-bold uppercase tracking-widest text-[#C9A227]">Information</h3>
               <nav className="space-y-3">
-                <a href="#" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
+                <Link to="/about" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
                   About Us
-                </a>
-                <a href="#" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
+                </Link>
+                <button onClick={() => document.getElementById('faq-heading')?.scrollIntoView({ behavior: 'smooth' })} className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1 text-left">
                   FAQs
-                </a>
-                <a href="#" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
+                </button>
+                <Link to="/terms" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
                   Terms & Conditions
-                </a>
-                <a href="#" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
+                </Link>
+                <Link to="/privacy" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
                   Privacy Policy
-                </a>
+                </Link>
               </nav>
             </div>
 

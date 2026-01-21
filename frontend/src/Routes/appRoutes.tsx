@@ -1,55 +1,40 @@
-/* eslint-disable */
 export enum Routes {
-  DASHBOARD = '/*',
-  COURSES = '/courses',
-  EXPLORE = '/explore',
-  MY_LEARNING = 'MY_LEARNING',
-  SETTINGS = '/settings',
-
-  AUTHZ_LOGIN = '/login',
-  AUTHZ_LOGOUT = '/logout',
-  AUTH_CALLBACK = '/callback',
-
-  USER_SETTINGS = '/user/settings',
-
-  PAYMENTS = '/payments/:priceId',
+  HOME = '/',
+  ABOUT = '/about',
+  PRIVACY = '/privacy',
+  TERMS = '/terms',
+  DESTINATION_CARIBBEAN = '/destinations/caribbean',
+  DESTINATION_CASANARE = '/destinations/casanare',
+  DESTINATION_COFFEE = '/destinations/coffee-region',
 }
 
 class AppRoutes {
   getHomeRoute() {
-    return `/`;
+    return Routes.HOME;
   }
 
-  getLoginRoute() {
-    return `${Routes.AUTHZ_LOGIN}`;
+  getAboutRoute() {
+    return Routes.ABOUT;
   }
 
-  getLogoutRoute() {
-    return `${Routes.AUTHZ_LOGOUT}`;
+  getPrivacyRoute() {
+    return Routes.PRIVACY;
   }
 
-  getCourses() {
-    return `${Routes.COURSES}`;
+  getTermsRoute() {
+    return Routes.TERMS;
   }
 
-  getExplore() {
-    return `${Routes.EXPLORE}`;
+  getCaribbeanRoute() {
+    return Routes.DESTINATION_CARIBBEAN;
   }
 
-  getMyLearning() {
-    return `${Routes.MY_LEARNING}`;
+  getCasanareRoute() {
+    return Routes.DESTINATION_CASANARE;
   }
 
-  getSettings() {
-    return `${Routes.SETTINGS}`;
-  }
-
-  getUserSettings() {
-    return `${Routes.USER_SETTINGS}`;
-  }
-
-  getPayment(priceId: string) {
-    return `payments/${priceId}`;
+  getCoffeeRegionRoute() {
+    return Routes.DESTINATION_COFFEE;
   }
 }
 
