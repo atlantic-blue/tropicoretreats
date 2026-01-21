@@ -2,11 +2,54 @@ resource "aws_cloudfront_origin_access_identity" "www" {
   comment = "access_identity_${local.bucket_name}.s3.amazonaws.com"
 }
 
+# Invalidate CloudFront cache after deployment
+resource "null_resource" "cloudfront_invalidation" {
+  count = var.invalidate_cache ? 1 : 0
+
+  triggers = {
+    distribution_id = aws_cloudfront_distribution.www.id
+    always_run      = timestamp()
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      echo "Waiting for distribution to be ready..."
+      sleep 10
+      aws cloudfront create-invalidation \
+        --profile ${var.aws_account} \
+        --distribution-id ${aws_cloudfront_distribution.www.id} \
+        --paths "/*"
+    EOT
+  }
+
+  depends_on = [aws_cloudfront_distribution.www]
+}
+
 resource "aws_cloudfront_cache_policy" "long_term_cache" {
   name        = "long-term-cache-policy"
-  comment     = "1-year browser cache policy"
-  default_ttl = 0   # 1 year
-  max_ttl     = 0
+  comment     = "1-year browser cache policy for static assets"
+  default_ttl = 31536000  # 1 year
+  max_ttl     = 31536000  # 1 year
+  min_ttl     = 31536000  # 1 year
+
+  parameters_in_cache_key_and_forwarded_to_origin {
+    cookies_config {
+      cookie_behavior = "none"
+    }
+    headers_config {
+      header_behavior = "none"
+    }
+    query_strings_config {
+      query_string_behavior = "none"
+    }
+  }
+}
+
+resource "aws_cloudfront_cache_policy" "short_term_cache" {
+  name        = "short-term-cache-policy"
+  comment     = "1-hour cache policy for HTML"
+  default_ttl = 3600   # 1 hour
+  max_ttl     = 86400  # 1 day
   min_ttl     = 0
 
   parameters_in_cache_key_and_forwarded_to_origin {
@@ -18,6 +61,44 @@ resource "aws_cloudfront_cache_policy" "long_term_cache" {
     }
     query_strings_config {
       query_string_behavior = "none"
+    }
+  }
+}
+
+resource "aws_cloudfront_response_headers_policy" "cache_headers" {
+  name    = "cache-control-headers-policy"
+  comment = "Add Cache-Control headers for browser caching"
+
+  custom_headers_config {
+    items {
+      header   = "Cache-Control"
+      value    = "public, max-age=31536000, immutable"
+      override = false
+    }
+  }
+
+  security_headers_config {
+    content_type_options {
+      override = true
+    }
+    frame_options {
+      frame_option = "DENY"
+      override     = true
+    }
+    referrer_policy {
+      referrer_policy = "strict-origin-when-cross-origin"
+      override        = true
+    }
+    xss_protection {
+      mode_block = true
+      protection = true
+      override   = true
+    }
+    strict_transport_security {
+      access_control_max_age_sec = 31536000
+      include_subdomains         = true
+      preload                    = true
+      override                   = true
     }
   }
 }
@@ -38,15 +119,92 @@ resource "aws_cloudfront_distribution" "www" {
   comment             = "CDN for ${local.domain_name}"
   default_root_object = "index.html"
 
+  # Default behavior for HTML files (short cache)
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "s3-${local.bucket_name}"
 
-    viewer_protocol_policy = "redirect-to-https"
-    compress    = true
+    viewer_protocol_policy     = "redirect-to-https"
+    compress                   = true
+    cache_policy_id            = aws_cloudfront_cache_policy.short_term_cache.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.cache_headers.id
+  }
 
-    cache_policy_id = aws_cloudfront_cache_policy.long_term_cache.id
+  # Static assets - JS files (long cache)
+  ordered_cache_behavior {
+    path_pattern     = "*.js"
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "s3-${local.bucket_name}"
+
+    viewer_protocol_policy     = "redirect-to-https"
+    compress                   = true
+    cache_policy_id            = aws_cloudfront_cache_policy.long_term_cache.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.cache_headers.id
+  }
+
+  # Static assets - CSS files (long cache)
+  ordered_cache_behavior {
+    path_pattern     = "*.css"
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "s3-${local.bucket_name}"
+
+    viewer_protocol_policy     = "redirect-to-https"
+    compress                   = true
+    cache_policy_id            = aws_cloudfront_cache_policy.long_term_cache.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.cache_headers.id
+  }
+
+  # Static assets - Images (long cache)
+  ordered_cache_behavior {
+    path_pattern     = "*.webp"
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "s3-${local.bucket_name}"
+
+    viewer_protocol_policy     = "redirect-to-https"
+    compress                   = true
+    cache_policy_id            = aws_cloudfront_cache_policy.long_term_cache.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.cache_headers.id
+  }
+
+  ordered_cache_behavior {
+    path_pattern     = "*.jpg"
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "s3-${local.bucket_name}"
+
+    viewer_protocol_policy     = "redirect-to-https"
+    compress                   = true
+    cache_policy_id            = aws_cloudfront_cache_policy.long_term_cache.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.cache_headers.id
+  }
+
+  ordered_cache_behavior {
+    path_pattern     = "*.png"
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "s3-${local.bucket_name}"
+
+    viewer_protocol_policy     = "redirect-to-https"
+    compress                   = true
+    cache_policy_id            = aws_cloudfront_cache_policy.long_term_cache.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.cache_headers.id
+  }
+
+  # Static assets - Fonts (long cache)
+  ordered_cache_behavior {
+    path_pattern     = "*.woff2"
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "s3-${local.bucket_name}"
+
+    viewer_protocol_policy     = "redirect-to-https"
+    compress                   = true
+    cache_policy_id            = aws_cloudfront_cache_policy.long_term_cache.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.cache_headers.id
   }
 
   custom_error_response {

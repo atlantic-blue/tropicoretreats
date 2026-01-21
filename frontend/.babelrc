@@ -1,12 +1,18 @@
 {
     "presets": [
-        "@babel/preset-env",
-        "@babel/preset-typescript",
-        "@babel/preset-react"
-    ],
-    "plugins": [
-        "@babel/proposal-class-properties",
-        "@babel/proposal-object-rest-spread",
-        "@babel/plugin-syntax-dynamic-import"
+        ["@babel/preset-env", {
+            "targets": {
+                "esmodules": true
+            },
+            "bugfixes": true,
+            "modules": false,
+            "useBuiltIns": false
+        }],
+        ["@babel/preset-typescript", {
+            "optimizeConstEnums": true
+        }],
+        ["@babel/preset-react", {
+            "runtime": "automatic"
+        }]
     ]
 }

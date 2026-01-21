@@ -404,7 +404,14 @@ const TropicoRetreatsPage: React.FC = () => {
 
       {/* HERO */}
       <section className="relative w-full" role="banner" aria-label="Hero">
-        <img src={IMAGES.hero} alt="Jungle terrace in Colombia" className="h-[90dvh] w-full object-cover" />
+        <img
+          src={IMAGES.hero}
+          alt="Jungle terrace in Colombia"
+          className="h-[90dvh] w-full object-cover"
+          fetchPriority="high"
+          loading="eager"
+          decoding="async"
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/40" />
         <div
           ref={heroReveal.ref}
@@ -824,7 +831,7 @@ const TropicoRetreatsPage: React.FC = () => {
                     <Mail className="h-5 w-5 text-[#C9A227]" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-wider opacity-70">Email</p>
+                    <p className="text-sm font-semibold uppercase tracking-wider text-emerald-200">Email</p>
                     <a href="mailto:hello@tropicoretreats.com" className="text-lg hover:text-[#C9A227] transition-colors">
                       hello@tropicoretreats.com
                     </a>
@@ -836,7 +843,7 @@ const TropicoRetreatsPage: React.FC = () => {
                     <Phone className="h-5 w-5 text-[#C9A227]" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-wider opacity-70">Phone</p>
+                    <p className="text-sm font-semibold uppercase tracking-wider text-emerald-200">Phone</p>
                     <a href="tel:+447806705494" className="text-lg hover:text-[#C9A227] transition-colors">
                       +44 78 0670 5494
                     </a>
@@ -848,7 +855,7 @@ const TropicoRetreatsPage: React.FC = () => {
                     <MapPin className="h-5 w-5 text-[#C9A227]" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-wider opacity-70">Location</p>
+                    <p className="text-sm font-semibold uppercase tracking-wider text-emerald-200">Location</p>
                     <p className="text-lg">London, United Kingdom</p>
                   </div>
                 </div>
@@ -858,7 +865,7 @@ const TropicoRetreatsPage: React.FC = () => {
                     <Clock className="h-5 w-5 text-[#C9A227]" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-wider opacity-70">Business Hours</p>
+                    <p className="text-sm font-semibold uppercase tracking-wider text-emerald-200">Business Hours</p>
                     <p className="text-lg">Mon-Thu: 9am - 6pm</p>
                     <p className="text-lg">Friday: 9am - 1pm</p>
                   </div>

@@ -22,10 +22,11 @@ const createWebpackConfig = (args: WebpackArgs): Configuration => {
         mode: env.isProduction() ? 'production' : 'development',
         entry: paths.src,
         output: {
-            chunkFilename: 'chunk.[name].[contenthash].js',
+            chunkFilename: env.isProduction() ? 'js/[name].[contenthash:8].js' : 'js/[name].js',
             path: paths.build,
-            filename: '[name].js',
+            filename: env.isProduction() ? 'js/[name].[contenthash:8].js' : 'js/[name].js',
             publicPath: '/',
+            clean: true,
         },
         resolve: {
             extensions: ['.tsx', '.ts', '.js', 'jsx'],
@@ -38,24 +39,71 @@ const createWebpackConfig = (args: WebpackArgs): Configuration => {
         cache: env.isProduction() ? false : true,
         optimization: {
             runtimeChunk: 'single',
+            usedExports: true,
+            sideEffects: true,
             splitChunks: {
-                chunks: 'initial',
+                chunks: 'all',
+                maxInitialRequests: 25,
+                minSize: 20000,
                 cacheGroups: {
+                    react: {
+                        test: /[\\/]node_modules[\\/](react|react-dom|react-router)[\\/]/,
+                        name: 'react',
+                        chunks: 'all',
+                        priority: 40,
+                    },
+                    lucide: {
+                        test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
+                        name: 'icons',
+                        chunks: 'all',
+                        priority: 30,
+                    },
                     vendor: {
                         test: /[\\/]node_modules[\\/]/,
                         name: 'vendors',
-                        chunks: 'all'
+                        chunks: 'all',
+                        priority: 20,
                     },
                 },
             },
-            minimizer: [new TerserPlugin({
-                terserOptions: {
-                    compress: {
-                        drop_console: true,
+            minimizer: [
+                new TerserPlugin({
+                    parallel: true,
+                    terserOptions: {
+                        parse: {
+                            ecma: 2020,
+                        },
+                        compress: {
+                            ecma: 2020,
+                            comparisons: false,
+                            inline: 2,
+                            drop_console: true,
+                            drop_debugger: true,
+                            pure_funcs: ['console.log', 'console.info', 'console.debug'],
+                            passes: 2,
+                        },
+                        mangle: {
+                            safari10: true,
+                        },
+                        output: {
+                            ecma: 2020,
+                            comments: false,
+                            ascii_only: true,
+                        },
                     },
-                    mangle: true,
-                },
-            }), new CssMinimizerPlugin()],
+                }),
+                new CssMinimizerPlugin({
+                    minimizerOptions: {
+                        preset: [
+                            'default',
+                            {
+                                discardComments: { removeAll: true },
+                                normalizeWhitespace: true,
+                            },
+                        ],
+                    },
+                }),
+            ],
             minimize: env.isProduction()
         },
         ...(env.isDevelopment() && {

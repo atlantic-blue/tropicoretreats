@@ -17,3 +17,9 @@ variable "product_name" {
 variable "www_google_site_verification_token" {
     type = string
 }
+
+variable "invalidate_cache" {
+    description = "Set to true to invalidate CloudFront cache"
+    type        = bool
+    default     = false
+}

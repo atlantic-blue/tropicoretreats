@@ -1,0 +1,18 @@
+# Modern browsers only - no IE11, no legacy Edge
+# This significantly reduces bundle size by avoiding polyfills
+
+# Production: Last 2 versions of major browsers with >0.5% market share
+# Excludes browsers that don't support ES modules
+[production]
+last 2 Chrome versions
+last 2 Firefox versions
+last 2 Safari versions
+last 2 Edge versions
+not dead
+not op_mini all
+
+# Development: Latest browsers only for faster builds
+[development]
+last 1 Chrome version
+last 1 Firefox version
+last 1 Safari version

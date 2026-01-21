@@ -25,19 +25,19 @@ const Footer: React.FC = () => {
             <div>
               <h3 className="mb-5 text-sm font-bold uppercase tracking-widest text-[#C9A227]">Browse</h3>
               <nav className="space-y-3">
-                <Link to="/destinations/caribbean" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
+                <Link to="/destinations/caribbean" className="block text-sm text-gray-300 transition-all hover:text-white hover:translate-x-1">
                   Caribbean
                 </Link>
-                <Link to="/destinations/casanare" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
+                <Link to="/destinations/casanare" className="block text-sm text-gray-300 transition-all hover:text-white hover:translate-x-1">
                   Casanare
                 </Link>
-                <Link to="/destinations/coffee-region" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
+                <Link to="/destinations/coffee-region" className="block text-sm text-gray-300 transition-all hover:text-white hover:translate-x-1">
                   Coffee Region
                 </Link>
-                <Link to="/services" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
+                <Link to="/services" className="block text-sm text-gray-300 transition-all hover:text-white hover:translate-x-1">
                   Our Services
                 </Link>
-                <Link to="/contact" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
+                <Link to="/contact" className="block text-sm text-gray-300 transition-all hover:text-white hover:translate-x-1">
                   Contact Us
                 </Link>
               </nav>
@@ -47,16 +47,16 @@ const Footer: React.FC = () => {
             <div>
               <h3 className="mb-5 text-sm font-bold uppercase tracking-widest text-[#C9A227]">Information</h3>
               <nav className="space-y-3">
-                <Link to="/about" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
+                <Link to="/about" className="block text-sm text-gray-300 transition-all hover:text-white hover:translate-x-1">
                   About Us
                 </Link>
-                <Link to="/faqs" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
+                <Link to="/faqs" className="block text-sm text-gray-300 transition-all hover:text-white hover:translate-x-1">
                   FAQs
                 </Link>
-                <Link to="/terms" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
+                <Link to="/terms" className="block text-sm text-gray-300 transition-all hover:text-white hover:translate-x-1">
                   Terms & Conditions
                 </Link>
-                <Link to="/privacy" className="block text-sm opacity-70 transition-all hover:opacity-100 hover:translate-x-1">
+                <Link to="/privacy" className="block text-sm text-gray-300 transition-all hover:text-white hover:translate-x-1">
                   Privacy Policy
                 </Link>
               </nav>
@@ -66,18 +66,18 @@ const Footer: React.FC = () => {
             <div>
               <h3 className="mb-5 text-sm font-bold uppercase tracking-widest text-[#C9A227]">Find Us</h3>
               <div className="space-y-3 text-sm">
-                <p className="opacity-70">London, United Kingdom</p>
-                <a href="tel:+447806705494" className="block opacity-70 transition hover:opacity-100">
+                <p className="text-gray-300">London, United Kingdom</p>
+                <a href="tel:+447806705494" className="block text-gray-300 transition hover:text-white">
                   +44 78 0670 5494
                 </a>
                 <a
                   href="mailto:hello@tropicoretreats.com"
-                  className="block opacity-70 transition hover:opacity-100"
+                  className="block text-gray-300 transition hover:text-white"
                 >
                   hello@tropicoretreats.com
                 </a>
               </div>
-              <div className="mt-5 space-y-1 text-sm opacity-60">
+              <div className="mt-5 space-y-1 text-sm text-gray-400">
                 <p>Mon-Thu: 9am - 6pm</p>
                 <p>Friday: 9am - 1pm</p>
               </div>
@@ -114,7 +114,7 @@ const Footer: React.FC = () => {
 
           {/* Copyright */}
           <div className="mt-14 border-t border-white/10 pt-8 text-center">
-            <p className="text-sm opacity-50">
+            <p className="text-sm text-gray-400">
               © {new Date().getFullYear()} Tropico Retreats. All rights reserved.
             </p>
           </div>
