@@ -1,6 +1,9 @@
 export enum Routes {
   HOME = '/',
   ABOUT = '/about',
+  SERVICES = '/services',
+  FAQS = '/faqs',
+  CONTACT = '/contact',
   PRIVACY = '/privacy',
   TERMS = '/terms',
   DESTINATION_CARIBBEAN = '/destinations/caribbean',
@@ -15,6 +18,18 @@ class AppRoutes {
 
   getAboutRoute() {
     return Routes.ABOUT;
+  }
+
+  getServicesRoute() {
+    return Routes.SERVICES;
+  }
+
+  getFAQsRoute() {
+    return Routes.FAQS;
+  }
+
+  getContactRoute() {
+    return Routes.CONTACT;
   }
 
   getPrivacyRoute() {

@@ -35,11 +35,11 @@ const Navigation: React.FC = () => {
   };
 
   const navLinks = [
-    { label: "Services", action: () => scrollToSection("full-services-heading") },
+    { label: "Services", href: "/services" },
     { label: "Destinations", action: () => scrollToSection("collection-heading") },
     { label: "About", href: "/about" },
-    { label: "FAQs", action: () => scrollToSection("faq-heading") },
-    { label: "Contact", action: () => scrollToSection("contact-heading") },
+    { label: "FAQs", href: "/faqs" },
+    { label: "Contact", href: "/contact" },
   ];
 
   // On non-home pages, always show solid nav; on home page, show solid after scroll
@@ -91,13 +91,13 @@ const Navigation: React.FC = () => {
                   </button>
                 )
               )}
-              <button
-                onClick={() => scrollToSection("contact-heading")}
+              <Link
+                to="/contact"
                 className="flex items-center gap-2 rounded-full bg-[#C9A227] px-6 py-2.5 text-sm font-semibold uppercase tracking-wider text-white shadow-lg transition-all hover:bg-[#B8860B] hover:shadow-xl"
               >
                 <Phone className="h-4 w-4" />
                 Enquire
-              </button>
+              </Link>
             </div>
 
             {/* Mobile Menu Button */}
@@ -140,13 +140,13 @@ const Navigation: React.FC = () => {
                   </button>
                 )
               )}
-              <button
-                onClick={() => scrollToSection("contact-heading")}
+              <Link
+                to="/contact"
                 className="mt-4 flex items-center justify-center gap-2 rounded-full bg-[#C9A227] px-6 py-3 text-sm font-semibold uppercase tracking-wider text-white shadow-lg transition-all hover:bg-[#B8860B]"
               >
                 <Phone className="h-4 w-4" />
                 Enquire Now
-              </button>
+              </Link>
             </div>
           </div>
         </div>

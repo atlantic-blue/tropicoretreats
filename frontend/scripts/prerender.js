@@ -8,6 +8,9 @@ const DIST_PATH = path.resolve(__dirname, '..', 'dist');
 const routes = [
   '/',
   '/about',
+  '/services',
+  '/faqs',
+  '/contact',
   '/privacy',
   '/terms',
   '/destinations/caribbean',
