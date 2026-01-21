@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "TS_NODE_PROJECT='tsconfig.webpack.json' webpack serve --mode development",
-    "build": "TS_NODE_PROJECT='tsconfig.webpack.json' webpack --mode production",
+    "dev": "TS_NODE_PROJECT='tsconfig.webpack.json' webpack serve --env NODE_ENV='development'",
+    "build": "TS_NODE_PROJECT='tsconfig.webpack.json' webpack --env NODE_ENV='production'",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "format:fix": "prettier --write 'src/**/*.{ts,tsx,js,jsx,json,css}'",

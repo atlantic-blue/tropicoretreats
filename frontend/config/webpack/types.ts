@@ -3,7 +3,7 @@
  */
 export interface WebpackEnv {
     /**
-     * webpack --env.NODE_EVN="production"
+     * webpack --env.NODE_ENV="production"
      */
     NODE_ENV: 'production' | 'development'
     /**
