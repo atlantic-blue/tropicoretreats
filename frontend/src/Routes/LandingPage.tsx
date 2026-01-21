@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
+import SEO, { localBusinessSchema, faqSchema } from "../components/SEO";
 import {
   Building2,
   Bus,
@@ -402,6 +403,11 @@ const TropicoRetreatsPage: React.FC = () => {
 
   return (
     <main className="min-h-dvh w-full bg-[#F7F1EC] text-gray-900">
+      <SEO
+        canonicalUrl="/"
+        structuredData={[localBusinessSchema, faqSchema]}
+      />
+
       {/* HERO */}
       <section className="relative w-full" role="banner" aria-label="Hero">
         <img src={IMAGES.hero} alt="Jungle terrace in Colombia" className="h-[90dvh] w-full object-cover" />

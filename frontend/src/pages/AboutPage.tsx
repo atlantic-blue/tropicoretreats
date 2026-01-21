@@ -1,10 +1,18 @@
 import React from "react";
 import { Link } from "react-router";
 import { Users, Heart, Globe, Award, MapPin, Phone, Mail } from "lucide-react";
+import SEO from "../components/SEO";
 
 const AboutPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-dvh w-full bg-[#F7F1EC] text-gray-900">
+      <SEO
+        title="About Us"
+        description="Learn about Tropico Retreats - your trusted partner for unforgettable corporate retreats in Colombia. We combine local expertise with international standards to create transformative team experiences."
+        canonicalUrl="/about"
+        keywords="about Tropico Retreats, corporate retreat planners, Colombia travel experts, team retreat organisers, wellness retreat company"
+      />
+
       {/* Hero Section */}
       <section className="relative h-[50vh] min-h-[400px]">
         <div className="absolute inset-0">
@@ -140,7 +148,7 @@ const AboutPage: React.FC = () => {
                   className="rounded-xl shadow-lg"
                 />
                 <img
-                  src="/public/assets/landing-page/coffee.webp"
+                  src="/public/assets/landing-page/svc2.jpg"
                   alt="Coffee region"
                   className="mt-8 rounded-xl shadow-lg"
                 />

@@ -13,6 +13,7 @@ import {
   ArrowRight,
   Check,
 } from "lucide-react";
+import SEO from "../../components/SEO";
 
 const CasanarePage: React.FC = () => {
   const highlights = [
@@ -70,7 +71,15 @@ const CasanarePage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-dvh w-full bg-[#F7F1EC] text-gray-900">
+      <SEO
+        title="Casanare Plains Retreats"
+        description="Experience Colombia's vast Llanos plains for your corporate retreat. Authentic ranch experiences, wildlife safaris, horseback riding, and team building in untamed wilderness."
+        canonicalUrl="/destinations/casanare"
+        keywords="Casanare corporate retreat, Los Llanos Colombia, ranch retreat, wildlife safari Colombia, cowboy experience, team building adventure"
+        ogImage="https://tropicoretreat.com/public/assets/landing-page/casanare.jpg"
+      />
+
       {/* Hero Section */}
       <section className="relative h-[60vh] min-h-[500px]">
         <div className="absolute inset-0">

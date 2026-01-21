@@ -1,10 +1,18 @@
 import React from "react";
 import { Link } from "react-router";
 import { FileText } from "lucide-react";
+import SEO from "../components/SEO";
 
 const TermsPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-dvh w-full bg-[#F7F1EC] text-gray-900">
+      <SEO
+        title="Terms & Conditions"
+        description="Review Tropico Retreats' Terms and Conditions. Understand our booking process, payment terms, cancellation policy, and service agreements for corporate retreats in Colombia."
+        canonicalUrl="/terms"
+        noIndex={false}
+      />
+
       {/* Header */}
       <section className="bg-emerald-900 py-16 lg:py-20">
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-12">

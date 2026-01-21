@@ -13,6 +13,7 @@ import {
   ArrowRight,
   Check,
 } from "lucide-react";
+import SEO from "../../components/SEO";
 
 const CoffeeRegionPage: React.FC = () => {
   const highlights = [
@@ -70,7 +71,15 @@ const CoffeeRegionPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-dvh w-full bg-[#F7F1EC] text-gray-900">
+      <SEO
+        title="Coffee Region Retreats"
+        description="Discover Colombia's UNESCO World Heritage Coffee Region for your corporate retreat. Coffee farm tours, mountain landscapes, hacienda stays, and inspiring team experiences."
+        canonicalUrl="/destinations/coffee-region"
+        keywords="Coffee Region corporate retreat, Eje Cafetero, Colombia coffee tour, UNESCO heritage retreat, mountain retreat Colombia, hacienda team building"
+        ogImage="https://tropicoretreat.com/public/assets/landing-page/valley.jpg"
+      />
+
       {/* Hero Section */}
       <section className="relative h-[60vh] min-h-[500px]">
         <div className="absolute inset-0">

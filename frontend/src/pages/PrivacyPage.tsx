@@ -1,10 +1,18 @@
 import React from "react";
 import { Link } from "react-router";
 import { Shield } from "lucide-react";
+import SEO from "../components/SEO";
 
 const PrivacyPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-dvh w-full bg-[#F7F1EC] text-gray-900">
+      <SEO
+        title="Privacy Policy"
+        description="Read Tropico Retreats' Privacy Policy. Learn how we collect, use, and protect your personal information when you use our corporate retreat planning services."
+        canonicalUrl="/privacy"
+        noIndex={false}
+      />
+
       {/* Header */}
       <section className="bg-emerald-900 py-16 lg:py-20">
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-12">

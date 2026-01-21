@@ -13,6 +13,7 @@ import {
   ArrowRight,
   Check,
 } from "lucide-react";
+import SEO from "../../components/SEO";
 
 const CaribbeanPage: React.FC = () => {
   const highlights = [
@@ -70,7 +71,15 @@ const CaribbeanPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-dvh w-full bg-[#F7F1EC] text-gray-900">
+      <SEO
+        title="Caribbean Coast Retreats"
+        description="Plan your corporate retreat on Colombia's stunning Caribbean coast. Turquoise waters, historic Cartagena, beachfront villas, water sports, and unforgettable team experiences."
+        canonicalUrl="/destinations/caribbean"
+        keywords="Caribbean corporate retreat, Cartagena team building, Colombia beach retreat, Caribbean corporate events, luxury beach villa Colombia"
+        ogImage="https://tropicoretreat.com/public/assets/landing-page/caribbean.webp"
+      />
+
       {/* Hero Section */}
       <section className="relative h-[60vh] min-h-[500px]">
         <div className="absolute inset-0">
