@@ -25,7 +25,7 @@ const createWebpackConfig = (args: WebpackArgs): Configuration => {
         output: {
             path: path.resolve(paths.root, "assets", "client-js"),
             filename: '[name].js',
-            publicPath: 'https://maistro.website/assets/client-js/',
+            publicPath: 'https://tropicoretreat.com/assets/client-js/',
         },
         resolve: {
             extensions: ['.tsx', '.ts', '.js', 'jsx'],

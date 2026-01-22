@@ -10,7 +10,6 @@ import {
   Sparkles,
   Phone,
   Mail,
-  ArrowRight,
 } from "lucide-react";
 import SEO from "../components/SEO";
 

@@ -29,12 +29,12 @@
 ## Code Style
 
 **Formatting:**
-- Tool: Prettier via `@maistro/prettier-config` (shared config in `.prettierrc.js`)
+- Tool: Prettier (local config in `.prettierrc.js`)
 - Commands: `npm run format` (check), `npm run format:fix` (apply)
 - Applies to: `src/**/*.{ts,tsx,js,jsx,json,css}`
 
 **Linting:**
-- Tool: ESLint via `@maistro/eslint-config` (shared config in `eslint.config.mjs`)
+- Tool: ESLint (local config in `eslint.config.mjs`)
 - Commands: `npm run lint` (check), `npm run lint:fix` (fix)
 - Scopes: `.ts` and `.tsx` files in `src/`
 - Uses: `@typescript-eslint/parser` for TypeScript support

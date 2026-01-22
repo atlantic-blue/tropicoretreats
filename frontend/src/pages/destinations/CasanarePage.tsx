@@ -3,11 +3,8 @@ import { Link } from "react-router";
 import {
   TreePine,
   Sun,
-  Users,
   Utensils,
-  Camera,
   Compass,
-  MapPin,
   Phone,
   Mail,
   ArrowRight,

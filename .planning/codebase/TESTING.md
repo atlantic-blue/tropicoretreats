@@ -6,7 +6,7 @@
 
 **Runner:**
 - Jest 29.6.1
-- Config: `frontend/jest.config.js` (extends `@maistro/jest-config`)
+- Config: `frontend/jest.config.js` (local configuration)
 - TypeScript support via ts-jest
 
 **Assertion Library:**

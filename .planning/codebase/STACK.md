@@ -40,10 +40,10 @@
 
 **Testing:**
 - Jest 29.6.1 - Testing framework with TypeScript support
-- Shared config via `@maistro/jest-config` - Centralized test configuration
+- Local Jest configuration in `frontend/jest.config.js`
 
 **Code Quality:**
-- ESLint 6.x - JavaScript linting (extended with `@maistro/eslint-config`)
+- ESLint 6.x - JavaScript linting (local configuration)
 - Prettier 3.5.3 - Code formatter for consistent styling
 
 **Prerendering:**
@@ -92,7 +92,7 @@
 **Environment:**
 - Environment variables stored in `frontend/.env`
 - Currently configured with:
-  - `AUTH_DOMAIN` - Authentication service base URL (https://auth.maistro.website)
+  - `AUTH_DOMAIN` - Authentication service base URL (https://auth.tropicoretreat.com)
   - `AUTH_CLIENT_ID` - OAuth 2.0 client identifier
   - `AUTH_CLIENT_SECRET` - OAuth 2.0 client secret
   - `PAYMENTS_STRIPE_KEY` - Stripe publishable API key (pk_live_)
@@ -103,7 +103,7 @@
 - `frontend/jest.config.js` - Jest testing configuration
 - `frontend/tailwind.config.js` - Tailwind CSS configuration
 - `frontend/postcss.config.js` - PostCSS configuration
-- `frontend/eslint.config.mjs` - ESLint configuration (extends @maistro/eslint-config)
+- `frontend/eslint.config.mjs` - ESLint configuration (local configuration)
 
 ## Platform Requirements
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router";
-import { Users, Heart, Globe, Award, MapPin, Phone, Mail } from "lucide-react";
+import { Users, Heart, Globe, Award, Phone, Mail } from "lucide-react";
 import SEO from "../components/SEO";
 
 const AboutPage: React.FC = () => {

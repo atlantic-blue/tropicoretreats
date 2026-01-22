@@ -5,9 +5,9 @@
 ## APIs & External Services
 
 **Authentication:**
-- Maistro Auth Service (Custom OAuth 2.0 Provider)
+- Custom OAuth 2.0 Provider
   - What it's used for: User authentication and authorization
-  - Endpoint: `https://auth.maistro.website`
+  - Endpoint: `https://auth.tropicoretreat.com`
   - Auth: Environment variables `AUTH_CLIENT_ID`, `AUTH_CLIENT_SECRET`
   - Config file: `frontend/src/env.ts` contains auth configuration
 
@@ -52,9 +52,9 @@
 ## Authentication & Identity
 
 **Auth Provider:**
-- Custom OAuth 2.0 via Maistro Auth Service
+- Custom OAuth 2.0 Service
   - Implementation: OAuth 2.0 with client credentials flow
-  - Base URL: `https://auth.maistro.website`
+  - Base URL: `https://auth.tropicoretreat.com`
   - Login endpoint: `${AUTH_DOMAIN}/login`
   - Logout endpoint: `${AUTH_DOMAIN}/logout`
   - Callback URL: `${window.location.origin}/callback/`
@@ -121,7 +121,7 @@ npm run test:coverage   # Jest with coverage report
 ## Environment Configuration
 
 **Required env vars:**
-- `AUTH_DOMAIN` - Maistro authentication service URL (https://auth.maistro.website)
+- `AUTH_DOMAIN` - Authentication service URL (https://auth.tropicoretreat.com)
 - `AUTH_CLIENT_ID` - OAuth 2.0 client identifier
 - `AUTH_CLIENT_SECRET` - OAuth 2.0 client secret
 - `PAYMENTS_STRIPE_KEY` - Stripe publishable API key (pk_live_*)

@@ -182,13 +182,12 @@
 - Impact: Style is tightly coupled to component; difficult to maintain consistent animations; potential for name collisions if multiple components define same animation
 - Fix approach: Move all styles to CSS modules or tailwind.config.js, use Tailwind's animation utilities
 
-## Dependency Management
+## Configuration Management
 
-**@maistro/ monorepo dependency:**
-- Issue: Project depends on `@maistro/jest-config` and `@maistro/prettier-config` from private monorepo
-- Files: `frontend/jest.config.js:1`, `frontend/.prettierrc.js:1`
-- Impact: Dependency on external organization config; version lock possible; no fallback if org mono is unavailable
-- Recommendation: Document dependency on @maistro monorepo, ensure CI/CD has access to private registry
+**Local configuration files:**
+- Status: Project uses local configuration files for Jest, Prettier, and ESLint
+- Files: `frontend/jest.config.js`, `frontend/.prettierrc.js`, `frontend/eslint.config.mjs`
+- Benefit: No external dependencies, all configuration is self-contained
 
 ## Missing Error Boundaries
 

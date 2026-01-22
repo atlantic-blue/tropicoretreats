@@ -383,12 +383,6 @@ const ImageCard: React.FC<ImageCardProps> = ({ title, cta = "See More", imageUrl
   );
 };
 
-const ListItem: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <li className="pl-2 leading-relaxed text-gray-700 before:mr-2 before:inline-block before:h-1.5 before:w-1.5 before:-translate-y-0.5 before:rounded-full before:bg-emerald-600">
-    {children}
-  </li>
-);
-
 // ---- Page ----
 const TropicoRetreatsPage: React.FC = () => {
   const heroReveal = useReveal<HTMLDivElement>();
