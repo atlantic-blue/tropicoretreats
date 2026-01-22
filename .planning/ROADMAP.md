@@ -27,6 +27,12 @@ This roadmap delivers a serverless lead management system for Tropico Retreats. 
 4. API returns CORS headers for marketing site origin
 5. Dev environment (-dev suffix) is deployed and functional
 
+**Plans:** 2 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Create Lambda handler with Zod validation and DynamoDB persistence
+- [ ] 01-02-PLAN.md — Deploy Terraform infrastructure (API Gateway, Lambda, DynamoDB)
+
 **Notes:**
 - Use terraform template with dev/prod parameter
 - Single-table DynamoDB design with GSI for status queries
@@ -141,7 +147,7 @@ This roadmap delivers a serverless lead management system for Tropico Retreats. 
 
 | Phase | Name | Status | Requirements |
 |-------|------|--------|--------------|
-| 1 | Core API | Pending | API-01, API-02 |
+| 1 | Core API | Planned | API-01, API-02 |
 | 2 | Frontend Integration | Pending | INT-01 |
 | 3 | Notifications | Pending | NOTF-01, NOTF-02 |
 | 4 | Admin Auth | Pending | AUTH-01 |
