@@ -1,69 +1,60 @@
-import React from "react";
-import { Link } from "react-router";
-import {
-  Coffee,
-  Mountain,
-  Utensils,
-  Leaf,
-  Phone,
-  Mail,
-  ArrowRight,
-  Check,
-} from "lucide-react";
-import SEO from "../../components/SEO";
+import React from 'react';
+import { Link } from 'react-router';
+import { Coffee, Mountain, Utensils, Leaf, Phone, Mail, ArrowRight, Check } from 'lucide-react';
+import SEO from '../../components/SEO';
 
 const CoffeeRegionPage: React.FC = () => {
   const highlights = [
     {
       icon: Coffee,
-      title: "Coffee Culture",
-      description: "UNESCO-recognised coffee cultural landscape with farm tours",
+      title: 'Coffee Culture',
+      description: 'UNESCO-recognised coffee cultural landscape with farm tours',
     },
     {
       icon: Mountain,
-      title: "Mountain Views",
-      description: "Stunning Andean scenery with rolling green hills",
+      title: 'Mountain Views',
+      description: 'Stunning Andean scenery with rolling green hills',
     },
     {
       icon: Leaf,
-      title: "Eco-Experiences",
-      description: "Sustainable practices and nature immersion",
+      title: 'Eco-Experiences',
+      description: 'Sustainable practices and nature immersion',
     },
     {
       icon: Utensils,
-      title: "Farm-to-Table",
-      description: "Fresh local cuisine featuring regional specialities",
+      title: 'Farm-to-Table',
+      description: 'Fresh local cuisine featuring regional specialities',
     },
   ];
 
   const activities = [
-    "Coffee farm tours and tastings",
-    "Coffee roasting workshops",
-    "Hiking through coffee plantations",
-    "Wax palm forest treks",
-    "Hot spring visits",
-    "Bird watching expeditions",
-    "Colombian cooking classes",
-    "Mountain biking",
-    "Wellness and yoga retreats",
-    "Village cultural tours",
+    'Coffee farm tours and tastings',
+    'Coffee roasting workshops',
+    'Hiking through coffee plantations',
+    'Wax palm forest treks',
+    'Hot spring visits',
+    'Bird watching expeditions',
+    'Colombian cooking classes',
+    'Mountain biking',
+    'Wellness and yoga retreats',
+    'Village cultural tours',
   ];
 
   const venues = [
     {
-      name: "Historic Coffee Hacienda",
-      capacity: "Up to 30 guests",
-      features: ["Heritage property", "Working farm", "Conference room", "Garden pool"],
+      name: 'Historic Coffee Hacienda',
+      capacity: 'Up to 30 guests',
+      features: ['Heritage property', 'Working farm', 'Conference room', 'Garden pool'],
     },
     {
-      name: "Boutique Mountain Lodge",
-      capacity: "Up to 40 guests",
-      features: ["Panoramic views", "Spa facilities", "Meeting spaces", "Fine dining"],
+      name: 'Boutique Mountain Lodge',
+      capacity: 'Up to 40 guests',
+      features: ['Panoramic views', 'Spa facilities', 'Meeting spaces', 'Fine dining'],
     },
     {
-      name: "Eco Coffee Retreat",
-      capacity: "Up to 25 guests",
-      features: ["Sustainable design", "Nature trails", "Private chef", "Yoga deck"],
+      name: 'Eco Coffee Retreat',
+      capacity: 'Up to 25 guests',
+      features: ['Sustainable design', 'Nature trails', 'Private chef', 'Yoga deck'],
     },
   ];
 
@@ -115,15 +106,15 @@ const CoffeeRegionPage: React.FC = () => {
               </h2>
               <div className="mt-6 space-y-4 text-gray-600 leading-relaxed">
                 <p>
-                  Colombia's Coffee Region, a UNESCO World Heritage Cultural Landscape,
-                  offers the perfect setting for retreats that inspire creativity and
-                  foster deep connections. Rolling hills covered with coffee plantations,
-                  charming colonial towns, and the freshest coffee in the world await.
+                  Colombia's Coffee Region, a UNESCO World Heritage Cultural Landscape, offers the
+                  perfect setting for retreats that inspire creativity and foster deep connections.
+                  Rolling hills covered with coffee plantations, charming colonial towns, and the
+                  freshest coffee in the world await.
                 </p>
                 <p>
-                  Your team will experience the magic of the coffee-making process from
-                  seed to cup, explore misty cloud forests, and unwind in the tranquillity
-                  of one of the world's most beautiful agricultural landscapes.
+                  Your team will experience the magic of the coffee-making process from seed to cup,
+                  explore misty cloud forests, and unwind in the tranquillity of one of the world's
+                  most beautiful agricultural landscapes.
                 </p>
               </div>
               <div className="mt-8 flex flex-wrap gap-4">
@@ -175,7 +166,7 @@ const CoffeeRegionPage: React.FC = () => {
             </h2>
           </div>
           <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {highlights.map((highlight) => (
+            {highlights.map(highlight => (
               <div
                 key={highlight.title}
                 className="rounded-2xl bg-white p-8 shadow-lg transition-all duration-300 hover:shadow-xl"
@@ -205,11 +196,11 @@ const CoffeeRegionPage: React.FC = () => {
                 Coffee Region Activities
               </h2>
               <p className="mt-6 text-gray-600 leading-relaxed">
-                From coffee workshops to mountain adventures, the Coffee Region offers
-                diverse experiences that combine learning, teamwork, and natural beauty.
+                From coffee workshops to mountain adventures, the Coffee Region offers diverse
+                experiences that combine learning, teamwork, and natural beauty.
               </p>
               <ul className="mt-8 grid gap-3 sm:grid-cols-2">
-                {activities.map((activity) => (
+                {activities.map(activity => (
                   <li key={activity} className="flex items-center gap-3 text-gray-700">
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
                       <Check className="h-4 w-4" />
@@ -246,7 +237,7 @@ const CoffeeRegionPage: React.FC = () => {
             </h2>
           </div>
           <div className="mt-16 grid gap-8 lg:grid-cols-3">
-            {venues.map((venue) => (
+            {venues.map(venue => (
               <div
                 key={venue.name}
                 className="overflow-hidden rounded-2xl bg-white shadow-lg transition-all duration-300 hover:shadow-xl"
@@ -259,12 +250,10 @@ const CoffeeRegionPage: React.FC = () => {
                   />
                 </div>
                 <div className="p-6">
-                  <h3 className="font-serif text-xl font-semibold text-gray-900">
-                    {venue.name}
-                  </h3>
+                  <h3 className="font-serif text-xl font-semibold text-gray-900">{venue.name}</h3>
                   <p className="mt-2 text-sm text-[#C9A227] font-medium">{venue.capacity}</p>
                   <ul className="mt-4 space-y-2">
-                    {venue.features.map((feature) => (
+                    {venue.features.map(feature => (
                       <li key={feature} className="flex items-center gap-2 text-sm text-gray-600">
                         <Check className="h-4 w-4 text-emerald-600" />
                         {feature}
@@ -285,8 +274,8 @@ const CoffeeRegionPage: React.FC = () => {
             Plan Your Coffee Region Retreat
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-emerald-100">
-            Discover the magic of Colombia's coffee heartland with your team.
-            Contact us today to start planning.
+            Discover the magic of Colombia's coffee heartland with your team. Contact us today to
+            start planning.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link

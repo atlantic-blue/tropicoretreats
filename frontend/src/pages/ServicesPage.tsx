@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "react-router";
+import React, { useState } from 'react';
+import { Link } from 'react-router';
 import {
   Building2,
   Bus,
@@ -10,75 +10,90 @@ import {
   Sparkles,
   Phone,
   Mail,
-} from "lucide-react";
-import SEO from "../components/SEO";
+} from 'lucide-react';
+import SEO from '../components/SEO';
 
 const FULL_SERVICES = [
   {
-    id: "accommodation",
+    id: 'accommodation',
     icon: Hotel,
-    title: "ACCOMMODATION",
-    subtitle: "Luxury Stays",
+    title: 'ACCOMMODATION',
+    subtitle: 'Luxury Stays',
     description:
-      "We work with the finest exclusive properties across Colombia: luxury villas, colonial haciendas, eco-lodges and boutique hotels. Each accommodation is carefully selected to meet your needs, from intimate retreats for 8 guests to corporate events for 50+ attendees. All our properties feature meeting spaces, wellness areas, private pools and personalised service.",
-    highlights: ["Private villas with pools", "Historic haciendas", "Exclusive eco-lodges", "Boutique hotels"],
+      'We work with the finest exclusive properties across Colombia: luxury villas, colonial haciendas, eco-lodges and boutique hotels. Each accommodation is carefully selected to meet your needs, from intimate retreats for 8 guests to corporate events for 50+ attendees. All our properties feature meeting spaces, wellness areas, private pools and personalised service.',
+    highlights: [
+      'Private villas with pools',
+      'Historic haciendas',
+      'Exclusive eco-lodges',
+      'Boutique hotels',
+    ],
   },
   {
-    id: "transport",
+    id: 'transport',
     icon: Bus,
-    title: "TRANSPORT",
-    subtitle: "Seamless Logistics",
+    title: 'TRANSPORT',
+    subtitle: 'Seamless Logistics',
     description:
-      "We manage all transport logistics from start to finish. We coordinate airport-hotel transfers, internal transport between activities, and any special journeys your group requires. We work with modern fleets and professional bilingual drivers who know every route and destination.",
-    highlights: ["Airport transfers", "Premium vehicles", "Bilingual drivers", "24/7 coordination"],
+      'We manage all transport logistics from start to finish. We coordinate airport-hotel transfers, internal transport between activities, and any special journeys your group requires. We work with modern fleets and professional bilingual drivers who know every route and destination.',
+    highlights: ['Airport transfers', 'Premium vehicles', 'Bilingual drivers', '24/7 coordination'],
   },
   {
-    id: "venues",
+    id: 'venues',
     icon: Building2,
-    title: "VENUES",
-    subtitle: "Meeting Spaces",
+    title: 'VENUES',
+    subtitle: 'Meeting Spaces',
     description:
-      "We provide versatile spaces for any type of corporate event: conference rooms equipped with audiovisual technology, outdoor spaces for team building activities, workshop rooms and private areas for networking. Each space adapts to your specific capacity and configuration requirements.",
-    highlights: ["Conference rooms", "Outdoor spaces", "Full AV equipment", "Flexible layouts"],
+      'We provide versatile spaces for any type of corporate event: conference rooms equipped with audiovisual technology, outdoor spaces for team building activities, workshop rooms and private areas for networking. Each space adapts to your specific capacity and configuration requirements.',
+    highlights: ['Conference rooms', 'Outdoor spaces', 'Full AV equipment', 'Flexible layouts'],
   },
   {
-    id: "activities",
+    id: 'activities',
     icon: Target,
-    title: "ACTIVITIES",
-    subtitle: "Team Building",
+    title: 'ACTIVITIES',
+    subtitle: 'Team Building',
     description:
-      "We design activity programmes that strengthen teams and create lasting memories. From outdoor adventures such as rafting, hiking and cycling tours, to cultural experiences like Colombian cooking classes, coffee farm visits and artisan workshops. We also offer wellness programmes including yoga, meditation and spa treatments.",
-    highlights: ["Bespoke team building", "Outdoor adventures", "Cultural experiences", "Wellness programmes"],
+      'We design activity programmes that strengthen teams and create lasting memories. From outdoor adventures such as rafting, hiking and cycling tours, to cultural experiences like Colombian cooking classes, coffee farm visits and artisan workshops. We also offer wellness programmes including yoga, meditation and spa treatments.',
+    highlights: [
+      'Bespoke team building',
+      'Outdoor adventures',
+      'Cultural experiences',
+      'Wellness programmes',
+    ],
   },
   {
-    id: "catering",
+    id: 'catering',
     icon: ChefHat,
-    title: "CATERING",
-    subtitle: "Dining Experiences",
+    title: 'CATERING',
+    subtitle: 'Dining Experiences',
     description:
-      "Gastronomy is a fundamental part of the experience. We work with private chefs who create bespoke menus featuring the finest Colombian and international cuisine. We organise everything from executive breakfasts to gala dinners, outdoor barbecues and themed culinary experiences. All dietary requirements are catered for in advance.",
-    highlights: ["Private chefs", "Bespoke menus", "Local & international cuisine", "Culinary events"],
+      'Gastronomy is a fundamental part of the experience. We work with private chefs who create bespoke menus featuring the finest Colombian and international cuisine. We organise everything from executive breakfasts to gala dinners, outdoor barbecues and themed culinary experiences. All dietary requirements are catered for in advance.',
+    highlights: [
+      'Private chefs',
+      'Bespoke menus',
+      'Local & international cuisine',
+      'Culinary events',
+    ],
   },
   {
-    id: "leisure",
+    id: 'leisure',
     icon: Theater,
-    title: "LEISURE",
-    subtitle: "Entertainment",
+    title: 'LEISURE',
+    subtitle: 'Entertainment',
     description:
-      "We complement your retreat with memorable leisure experiences. We organise live music performances, traditional dance shows, cultural tours with specialist guides, excursions to natural sites and relaxation activities. Every free moment becomes an opportunity to discover Colombia.",
-    highlights: ["Live music", "Cultural shows", "Guided tours", "Exclusive experiences"],
+      'We complement your retreat with memorable leisure experiences. We organise live music performances, traditional dance shows, cultural tours with specialist guides, excursions to natural sites and relaxation activities. Every free moment becomes an opportunity to discover Colombia.',
+    highlights: ['Live music', 'Cultural shows', 'Guided tours', 'Exclusive experiences'],
   },
 ];
 
 const ServiceTabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState(FULL_SERVICES[0].id);
-  const activeService = FULL_SERVICES.find((s) => s.id === activeTab) || FULL_SERVICES[0];
+  const activeService = FULL_SERVICES.find(s => s.id === activeTab) || FULL_SERVICES[0];
   const IconComponent = activeService.icon;
 
   return (
     <div className="w-full">
       <div className="flex flex-wrap justify-center gap-2 md:gap-3">
-        {FULL_SERVICES.map((service) => {
+        {FULL_SERVICES.map(service => {
           const TabIcon = service.icon;
           return (
             <button
@@ -86,8 +101,8 @@ const ServiceTabs: React.FC = () => {
               onClick={() => setActiveTab(service.id)}
               className={`flex items-center gap-2 rounded-full px-4 py-3 text-xs font-semibold uppercase tracking-widest transition-all duration-300 md:px-6 md:text-sm ${
                 activeTab === service.id
-                  ? "bg-emerald-700 text-white shadow-lg shadow-emerald-700/25"
-                  : "bg-white text-gray-700 shadow-md hover:bg-emerald-50 hover:text-emerald-700 hover:shadow-lg"
+                  ? 'bg-emerald-700 text-white shadow-lg shadow-emerald-700/25'
+                  : 'bg-white text-gray-700 shadow-md hover:bg-emerald-50 hover:text-emerald-700 hover:shadow-lg'
               }`}
               aria-pressed={activeTab === service.id}
             >
@@ -106,7 +121,9 @@ const ServiceTabs: React.FC = () => {
                 <IconComponent className="h-7 w-7" />
               </span>
               <div>
-                <h3 className="text-2xl font-bold text-gray-900 md:text-3xl">{activeService.title}</h3>
+                <h3 className="text-2xl font-bold text-gray-900 md:text-3xl">
+                  {activeService.title}
+                </h3>
                 <p className="text-sm font-medium text-[#C9A227]">{activeService.subtitle}</p>
               </div>
             </div>
@@ -114,7 +131,9 @@ const ServiceTabs: React.FC = () => {
           </div>
 
           <div className="flex flex-col justify-center">
-            <p className="mb-5 text-sm font-bold uppercase tracking-widest text-emerald-700">What's Included</p>
+            <p className="mb-5 text-sm font-bold uppercase tracking-widest text-emerald-700">
+              What's Included
+            </p>
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {activeService.highlights.map((highlight, idx) => (
                 <li
@@ -176,9 +195,9 @@ const ServicesPage: React.FC = () => {
               We Handle the Entire Organisation
             </h2>
             <p className="mx-auto mt-4 max-w-3xl text-base leading-relaxed text-gray-600">
-              From the moment your team lands until the final day of the retreat, every detail is covered.
-              We are your single point of contact for accommodation, transport, venues, activities, catering and
-              entertainment. All coordinated to perfection.
+              From the moment your team lands until the final day of the retreat, every detail is
+              covered. We are your single point of contact for accommodation, transport, venues,
+              activities, catering and entertainment. All coordinated to perfection.
             </p>
           </header>
           <ServiceTabs />
@@ -197,7 +216,7 @@ const ServicesPage: React.FC = () => {
             </h2>
           </div>
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {FULL_SERVICES.map((service) => {
+            {FULL_SERVICES.map(service => {
               const IconComponent = service.icon;
               return (
                 <div
@@ -215,7 +234,7 @@ const ServicesPage: React.FC = () => {
                     {service.description.substring(0, 150)}...
                   </p>
                   <ul className="mt-4 space-y-2">
-                    {service.highlights.slice(0, 3).map((highlight) => (
+                    {service.highlights.slice(0, 3).map(highlight => (
                       <li key={highlight} className="flex items-center gap-2 text-sm text-gray-700">
                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
                         {highlight}
@@ -236,8 +255,8 @@ const ServicesPage: React.FC = () => {
             Ready to Get Started?
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-emerald-100">
-            Let us create a bespoke retreat package tailored to your team's needs.
-            Contact us today to start planning.
+            Let us create a bespoke retreat package tailored to your team's needs. Contact us today
+            to start planning.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link

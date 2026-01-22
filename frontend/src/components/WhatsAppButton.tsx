@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { MessageCircle, X } from "lucide-react";
+import React, { useState } from 'react';
+import { MessageCircle, X } from 'lucide-react';
 
 interface WhatsAppButtonProps {
   phoneNumber?: string;
@@ -7,7 +7,7 @@ interface WhatsAppButtonProps {
 }
 
 const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({
-  phoneNumber = "447806705494",
+  phoneNumber = '447806705494',
   message = "Hello! I'm interested in learning more about Tropico Retreats corporate packages.",
 }) => {
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
@@ -45,8 +45,8 @@ const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({
       <div
         className={`transform transition-all duration-300 ${
           isTooltipVisible
-            ? "translate-y-0 opacity-100"
-            : "translate-y-2 opacity-0 pointer-events-none"
+            ? 'translate-y-0 opacity-100'
+            : 'translate-y-2 opacity-0 pointer-events-none'
         }`}
       >
         <div className="relative max-w-[280px] rounded-2xl bg-white p-4 shadow-2xl">

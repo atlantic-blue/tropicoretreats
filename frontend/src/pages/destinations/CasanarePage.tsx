@@ -1,69 +1,60 @@
-import React from "react";
-import { Link } from "react-router";
-import {
-  TreePine,
-  Sun,
-  Utensils,
-  Compass,
-  Phone,
-  Mail,
-  ArrowRight,
-  Check,
-} from "lucide-react";
-import SEO from "../../components/SEO";
+import React from 'react';
+import { Link } from 'react-router';
+import { TreePine, Sun, Utensils, Compass, Phone, Mail, ArrowRight, Check } from 'lucide-react';
+import SEO from '../../components/SEO';
 
 const CasanarePage: React.FC = () => {
   const highlights = [
     {
       icon: TreePine,
-      title: "Vast Plains",
-      description: "Endless horizons of the Colombian llanos, home to unique wildlife",
+      title: 'Vast Plains',
+      description: 'Endless horizons of the Colombian llanos, home to unique wildlife',
     },
     {
       icon: Sun,
-      title: "Golden Sunsets",
-      description: "Spectacular sunrises and sunsets over the savanna landscape",
+      title: 'Golden Sunsets',
+      description: 'Spectacular sunrises and sunsets over the savanna landscape',
     },
     {
       icon: Compass,
-      title: "Adventure",
-      description: "Horse riding, wildlife safaris, and authentic llanero experiences",
+      title: 'Adventure',
+      description: 'Horse riding, wildlife safaris, and authentic llanero experiences',
     },
     {
       icon: Utensils,
-      title: "Ranch Cuisine",
-      description: "Traditional Colombian dishes cooked over open fires",
+      title: 'Ranch Cuisine',
+      description: 'Traditional Colombian dishes cooked over open fires',
     },
   ];
 
   const activities = [
-    "Horseback riding across the plains",
-    "Wildlife observation safaris",
-    "Capybara and caiman spotting",
-    "Traditional llanero music and dance",
-    "Cattle herding experiences",
-    "Sunrise and sunset excursions",
-    "Birdwatching expeditions",
-    "River boat trips",
-    "Outdoor team building challenges",
-    "Stargazing sessions",
+    'Horseback riding across the plains',
+    'Wildlife observation safaris',
+    'Capybara and caiman spotting',
+    'Traditional llanero music and dance',
+    'Cattle herding experiences',
+    'Sunrise and sunset excursions',
+    'Birdwatching expeditions',
+    'River boat trips',
+    'Outdoor team building challenges',
+    'Stargazing sessions',
   ];
 
   const venues = [
     {
-      name: "Luxury Ranch Estate",
-      capacity: "Up to 25 guests",
-      features: ["Private hacienda", "Pool", "Meeting space", "Stables"],
+      name: 'Luxury Ranch Estate',
+      capacity: 'Up to 25 guests',
+      features: ['Private hacienda', 'Pool', 'Meeting space', 'Stables'],
     },
     {
-      name: "Eco-Lodge Retreat",
-      capacity: "Up to 35 guests",
-      features: ["Sustainable design", "Nature immersion", "Conference facilities", "Spa"],
+      name: 'Eco-Lodge Retreat',
+      capacity: 'Up to 35 guests',
+      features: ['Sustainable design', 'Nature immersion', 'Conference facilities', 'Spa'],
     },
     {
-      name: "Traditional Hato",
-      capacity: "Up to 20 guests",
-      features: ["Working ranch", "Authentic experience", "Private chef", "Exclusive use"],
+      name: 'Traditional Hato',
+      capacity: 'Up to 20 guests',
+      features: ['Working ranch', 'Authentic experience', 'Private chef', 'Exclusive use'],
     },
   ];
 
@@ -115,15 +106,15 @@ const CasanarePage: React.FC = () => {
               </h2>
               <div className="mt-6 space-y-4 text-gray-600 leading-relaxed">
                 <p>
-                  The Casanare plains, known as Los Llanos, offer a completely different
-                  side of Colombia. Here, vast savannas stretch to the horizon, and the
-                  rhythm of life follows the sun and the seasons.
+                  The Casanare plains, known as Los Llanos, offer a completely different side of
+                  Colombia. Here, vast savannas stretch to the horizon, and the rhythm of life
+                  follows the sun and the seasons.
                 </p>
                 <p>
-                  This is the perfect destination for teams seeking to disconnect from
-                  the digital world and reconnect with each other. Experience the authentic
-                  cowboy culture of the llaneros, encounter incredible wildlife, and find
-                  inspiration in the endless open spaces.
+                  This is the perfect destination for teams seeking to disconnect from the digital
+                  world and reconnect with each other. Experience the authentic cowboy culture of
+                  the llaneros, encounter incredible wildlife, and find inspiration in the endless
+                  open spaces.
                 </p>
               </div>
               <div className="mt-8 flex flex-wrap gap-4">
@@ -175,7 +166,7 @@ const CasanarePage: React.FC = () => {
             </h2>
           </div>
           <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {highlights.map((highlight) => (
+            {highlights.map(highlight => (
               <div
                 key={highlight.title}
                 className="rounded-2xl bg-white p-8 shadow-lg transition-all duration-300 hover:shadow-xl"
@@ -205,11 +196,11 @@ const CasanarePage: React.FC = () => {
                 Authentic Llanos Activities
               </h2>
               <p className="mt-6 text-gray-600 leading-relaxed">
-                Immerse your team in the cowboy culture of the Colombian plains with
-                unique experiences that foster teamwork and create lasting memories.
+                Immerse your team in the cowboy culture of the Colombian plains with unique
+                experiences that foster teamwork and create lasting memories.
               </p>
               <ul className="mt-8 grid gap-3 sm:grid-cols-2">
-                {activities.map((activity) => (
+                {activities.map(activity => (
                   <li key={activity} className="flex items-center gap-3 text-gray-700">
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
                       <Check className="h-4 w-4" />
@@ -242,7 +233,7 @@ const CasanarePage: React.FC = () => {
             </h2>
           </div>
           <div className="mt-16 grid gap-8 lg:grid-cols-3">
-            {venues.map((venue) => (
+            {venues.map(venue => (
               <div
                 key={venue.name}
                 className="overflow-hidden rounded-2xl bg-white shadow-lg transition-all duration-300 hover:shadow-xl"
@@ -255,12 +246,10 @@ const CasanarePage: React.FC = () => {
                   />
                 </div>
                 <div className="p-6">
-                  <h3 className="font-serif text-xl font-semibold text-gray-900">
-                    {venue.name}
-                  </h3>
+                  <h3 className="font-serif text-xl font-semibold text-gray-900">{venue.name}</h3>
                   <p className="mt-2 text-sm text-[#C9A227] font-medium">{venue.capacity}</p>
                   <ul className="mt-4 space-y-2">
-                    {venue.features.map((feature) => (
+                    {venue.features.map(feature => (
                       <li key={feature} className="flex items-center gap-2 text-sm text-gray-600">
                         <Check className="h-4 w-4 text-amber-600" />
                         {feature}
@@ -281,8 +270,8 @@ const CasanarePage: React.FC = () => {
             Plan Your Llanos Adventure
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-amber-100">
-            Experience the untamed beauty of Colombia's plains with your team.
-            Contact us today to start planning.
+            Experience the untamed beauty of Colombia's plains with your team. Contact us today to
+            start planning.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link

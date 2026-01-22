@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { Link } from "react-router";
-import { ChevronDown, ChevronUp, Phone, Mail } from "lucide-react";
-import SEO, { faqSchema } from "../components/SEO";
+import React, { useState } from 'react';
+import { Link } from 'react-router';
+import { ChevronDown, ChevronUp, Phone, Mail } from 'lucide-react';
+import SEO, { faqSchema } from '../components/SEO';
 
 const FAQItem: React.FC<{ question: string; answer: string }> = ({ question, answer }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,7 +21,7 @@ const FAQItem: React.FC<{ question: string; answer: string }> = ({ question, ans
       </button>
       <div
         className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          isOpen ? "max-h-96 pb-6" : "max-h-0"
+          isOpen ? 'max-h-96 pb-6' : 'max-h-0'
         }`}
       >
         <p className="text-base leading-relaxed text-gray-600 pr-12">{answer}</p>
@@ -32,12 +32,12 @@ const FAQItem: React.FC<{ question: string; answer: string }> = ({ question, ans
 
 const FAQS = [
   {
-    question: "What is the minimum group size for a corporate retreat?",
+    question: 'What is the minimum group size for a corporate retreat?',
     answer:
-      "We typically accommodate groups of 8-30 guests, though we can arrange larger events upon request. Each retreat is customised to your specific team size and requirements.",
+      'We typically accommodate groups of 8-30 guests, though we can arrange larger events upon request. Each retreat is customised to your specific team size and requirements.',
   },
   {
-    question: "Can you accommodate dietary restrictions and special requests?",
+    question: 'Can you accommodate dietary restrictions and special requests?',
     answer:
       "Absolutely. Our private chefs specialize in accommodating all dietary requirements including vegetarian, vegan, gluten-free, and allergy-specific menus. We'll work with you to ensure every team member is catered for.",
   },
@@ -47,49 +47,49 @@ const FAQS = [
       "Colombia offers great weather year-round depending on the region. The dry seasons (December-March and July-August) are popular, but each destination has its own microclimate. We'll help you choose the ideal timing for your retreat.",
   },
   {
-    question: "How far in advance should we book?",
+    question: 'How far in advance should we book?',
     answer:
-      "We recommend booking at least 2-3 months in advance to secure your preferred dates and accommodations, especially during peak season. However, we can sometimes accommodate shorter notice depending on availability.",
+      'We recommend booking at least 2-3 months in advance to secure your preferred dates and accommodations, especially during peak season. However, we can sometimes accommodate shorter notice depending on availability.',
   },
   {
-    question: "Is transportation included in the package?",
+    question: 'Is transportation included in the package?',
     answer:
       "Yes, all our corporate retreat packages include full transportation logistics, from airport pickups to internal transfers between activities and venues. You won't need to worry about any travel arrangements.",
   },
   {
-    question: "Can we customise the itinerary?",
+    question: 'Can we customise the itinerary?',
     answer:
       "Every retreat is fully customizable. Whether you want to focus on team building, wellness, cultural experiences, or a mix of everything, we'll create a bespoke itinerary tailored to your goals and preferences.",
   },
   {
-    question: "What group sizes can you accommodate?",
+    question: 'What group sizes can you accommodate?',
     answer:
-      "We work with groups ranging from intimate executive retreats (8-15 guests) to larger corporate events (50+ attendees). Each experience is tailored to your specific group size and requirements.",
+      'We work with groups ranging from intimate executive retreats (8-15 guests) to larger corporate events (50+ attendees). Each experience is tailored to your specific group size and requirements.',
   },
   {
     question: "What's included in your packages?",
     answer:
-      "Our packages can include accommodation, all meals and beverages, airport transfers, internal transportation, activities, meeting facilities, and dedicated on-site coordination. We customise each package to your needs.",
+      'Our packages can include accommodation, all meals and beverages, airport transfers, internal transportation, activities, meeting facilities, and dedicated on-site coordination. We customise each package to your needs.',
   },
   {
-    question: "Do you handle visa requirements and travel logistics?",
+    question: 'Do you handle visa requirements and travel logistics?',
     answer:
-      "While we provide guidance on visa requirements and travel tips, guests are responsible for their own travel documentation. We do coordinate all in-country logistics including airport pickups and internal travel.",
+      'While we provide guidance on visa requirements and travel tips, guests are responsible for their own travel documentation. We do coordinate all in-country logistics including airport pickups and internal travel.',
   },
   {
-    question: "What types of activities do you offer?",
+    question: 'What types of activities do you offer?',
     answer:
-      "We offer a wide range of activities including team building exercises, outdoor adventures (rafting, hiking, cycling), cultural experiences (coffee farm tours, cooking classes), wellness programmes (yoga, meditation, spa), and entertainment (live music, cultural shows).",
+      'We offer a wide range of activities including team building exercises, outdoor adventures (rafting, hiking, cycling), cultural experiences (coffee farm tours, cooking classes), wellness programmes (yoga, meditation, spa), and entertainment (live music, cultural shows).',
   },
   {
-    question: "Are your venues suitable for corporate meetings?",
+    question: 'Are your venues suitable for corporate meetings?',
     answer:
-      "Yes, all our partner venues feature dedicated meeting spaces with audiovisual equipment, reliable WiFi, and flexible configurations for presentations, workshops, and breakout sessions.",
+      'Yes, all our partner venues feature dedicated meeting spaces with audiovisual equipment, reliable WiFi, and flexible configurations for presentations, workshops, and breakout sessions.',
   },
   {
-    question: "What is your cancellation policy?",
+    question: 'What is your cancellation policy?',
     answer:
-      "Cancellation terms vary depending on the specific services booked. Generally, we offer flexible rescheduling options and partial refunds based on notice period. Full details are provided in your booking confirmation.",
+      'Cancellation terms vary depending on the specific services booked. Generally, we offer flexible rescheduling options and partial refunds based on notice period. Full details are provided in your booking confirmation.',
   },
 ];
 
@@ -140,7 +140,8 @@ const FAQsPage: React.FC = () => {
                   We're Here to Help
                 </h2>
                 <p className="mt-4 text-gray-600 leading-relaxed">
-                  Can't find the answer you're looking for? Our team is happy to help with any questions about planning your corporate retreat.
+                  Can't find the answer you're looking for? Our team is happy to help with any
+                  questions about planning your corporate retreat.
                 </p>
                 <div className="mt-8 space-y-4">
                   <Link
@@ -182,7 +183,8 @@ const FAQsPage: React.FC = () => {
             Still Have Questions?
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-emerald-100">
-            Our team is ready to answer any questions and help you plan the perfect retreat for your team.
+            Our team is ready to answer any questions and help you plan the perfect retreat for your
+            team.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link

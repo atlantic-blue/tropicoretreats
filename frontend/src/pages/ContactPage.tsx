@@ -1,6 +1,6 @@
-import React from "react";
-import { Mail, Phone, MapPin, Clock, Send } from "lucide-react";
-import SEO from "../components/SEO";
+import React from 'react';
+import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const ContactPage: React.FC = () => {
   return (
@@ -47,8 +47,8 @@ const ContactPage: React.FC = () => {
                 Ready to Plan Your Retreat?
               </h2>
               <p className="mt-6 text-lg leading-relaxed text-gray-600">
-                Get in touch with our team to start planning your unforgettable corporate experience in Colombia.
-                We'll respond within 24 hours.
+                Get in touch with our team to start planning your unforgettable corporate experience
+                in Colombia. We'll respond within 24 hours.
               </p>
 
               <div className="mt-10 space-y-6">
@@ -57,8 +57,13 @@ const ContactPage: React.FC = () => {
                     <Mail className="h-5 w-5 text-emerald-700" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-wider text-gray-500">Email</p>
-                    <a href="mailto:hello@tropicoretreats.com" className="text-lg text-gray-900 hover:text-emerald-700 transition-colors">
+                    <p className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+                      Email
+                    </p>
+                    <a
+                      href="mailto:hello@tropicoretreats.com"
+                      className="text-lg text-gray-900 hover:text-emerald-700 transition-colors"
+                    >
                       hello@tropicoretreats.com
                     </a>
                   </div>
@@ -69,8 +74,13 @@ const ContactPage: React.FC = () => {
                     <Phone className="h-5 w-5 text-emerald-700" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-wider text-gray-500">Phone / WhatsApp</p>
-                    <a href="tel:+447806705494" className="text-lg text-gray-900 hover:text-emerald-700 transition-colors">
+                    <p className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+                      Phone / WhatsApp
+                    </p>
+                    <a
+                      href="tel:+447806705494"
+                      className="text-lg text-gray-900 hover:text-emerald-700 transition-colors"
+                    >
                       +44 78 0670 5494
                     </a>
                   </div>
@@ -81,7 +91,9 @@ const ContactPage: React.FC = () => {
                     <MapPin className="h-5 w-5 text-emerald-700" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-wider text-gray-500">Location</p>
+                    <p className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+                      Location
+                    </p>
                     <p className="text-lg text-gray-900">London, United Kingdom</p>
                   </div>
                 </div>
@@ -91,7 +103,9 @@ const ContactPage: React.FC = () => {
                     <Clock className="h-5 w-5 text-emerald-700" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-wider text-gray-500">Business Hours</p>
+                    <p className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+                      Business Hours
+                    </p>
                     <p className="text-lg text-gray-900">Mon-Thu: 9am - 6pm</p>
                     <p className="text-lg text-gray-900">Friday: 9am - 1pm</p>
                   </div>
@@ -101,7 +115,9 @@ const ContactPage: React.FC = () => {
               {/* WhatsApp CTA */}
               <div className="mt-10 rounded-2xl bg-emerald-50 p-6">
                 <h3 className="font-semibold text-gray-900">Prefer WhatsApp?</h3>
-                <p className="mt-2 text-gray-600">Get a quick response via WhatsApp for immediate enquiries.</p>
+                <p className="mt-2 text-gray-600">
+                  Get a quick response via WhatsApp for immediate enquiries.
+                </p>
                 <a
                   href="https://wa.me/447806705494"
                   target="_blank"
@@ -117,12 +133,17 @@ const ContactPage: React.FC = () => {
             {/* Right: Contact Form */}
             <div className="rounded-3xl bg-white p-8 shadow-2xl md:p-10">
               <h3 className="text-2xl font-bold text-gray-900">Send Us an Enquiry</h3>
-              <p className="mt-2 text-gray-600">Fill out the form below and we'll be in touch shortly.</p>
+              <p className="mt-2 text-gray-600">
+                Fill out the form below and we'll be in touch shortly.
+              </p>
 
               <form className="mt-8 space-y-5">
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
-                    <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700">
+                    <label
+                      htmlFor="firstName"
+                      className="block text-sm font-semibold text-gray-700"
+                    >
                       First Name *
                     </label>
                     <input
@@ -191,7 +212,10 @@ const ContactPage: React.FC = () => {
 
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
-                    <label htmlFor="groupSize" className="block text-sm font-semibold text-gray-700">
+                    <label
+                      htmlFor="groupSize"
+                      className="block text-sm font-semibold text-gray-700"
+                    >
                       Group Size
                     </label>
                     <select
@@ -207,7 +231,10 @@ const ContactPage: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="preferredDates" className="block text-sm font-semibold text-gray-700">
+                    <label
+                      htmlFor="preferredDates"
+                      className="block text-sm font-semibold text-gray-700"
+                    >
                       Preferred Dates
                     </label>
                     <input
@@ -221,7 +248,10 @@ const ContactPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="destination" className="block text-sm font-semibold text-gray-700">
+                  <label
+                    htmlFor="destination"
+                    className="block text-sm font-semibold text-gray-700"
+                  >
                     Preferred Destination
                   </label>
                   <select

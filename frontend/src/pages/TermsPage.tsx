@@ -1,7 +1,7 @@
-import React from "react";
-import { Link } from "react-router";
-import { FileText } from "lucide-react";
-import SEO from "../components/SEO";
+import React from 'react';
+import { Link } from 'react-router';
+import { FileText } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const TermsPage: React.FC = () => {
   return (
@@ -32,17 +32,15 @@ const TermsPage: React.FC = () => {
           <div className="prose prose-lg max-w-none">
             <h2 className="font-serif text-2xl font-bold text-gray-900">1. Introduction</h2>
             <p className="mt-4 text-gray-600 leading-relaxed">
-              These Terms and Conditions ("Terms") govern your use of the Tropico Retreats
-              website and our corporate retreat planning services. By using our website or
-              engaging our services, you agree to be bound by these Terms.
+              These Terms and Conditions ("Terms") govern your use of the Tropico Retreats website
+              and our corporate retreat planning services. By using our website or engaging our
+              services, you agree to be bound by these Terms.
             </p>
 
-            <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">
-              2. Services
-            </h2>
+            <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">2. Services</h2>
             <p className="mt-4 text-gray-600 leading-relaxed">
-              Tropico Retreats provides corporate retreat planning and coordination services
-              in Colombia, including but not limited to:
+              Tropico Retreats provides corporate retreat planning and coordination services in
+              Colombia, including but not limited to:
             </p>
             <ul className="mt-4 space-y-2 text-gray-600">
               <li>Accommodation arrangements</li>
@@ -60,24 +58,20 @@ const TermsPage: React.FC = () => {
               3.1 Booking Process
             </h3>
             <p className="mt-4 text-gray-600 leading-relaxed">
-              All bookings are subject to availability and confirmation. A booking is only
-              confirmed once we have received the required deposit and issued a written
-              confirmation.
+              All bookings are subject to availability and confirmation. A booking is only confirmed
+              once we have received the required deposit and issued a written confirmation.
             </p>
-            <h3 className="mt-6 font-serif text-xl font-semibold text-gray-900">
-              3.2 Deposits
-            </h3>
+            <h3 className="mt-6 font-serif text-xl font-semibold text-gray-900">3.2 Deposits</h3>
             <p className="mt-4 text-gray-600 leading-relaxed">
-              A non-refundable deposit of 30% of the total estimated cost is required to
-              secure your booking. The remaining balance is due 30 days prior to the retreat
-              start date.
+              A non-refundable deposit of 30% of the total estimated cost is required to secure your
+              booking. The remaining balance is due 30 days prior to the retreat start date.
             </p>
             <h3 className="mt-6 font-serif text-xl font-semibold text-gray-900">
               3.3 Payment Methods
             </h3>
             <p className="mt-4 text-gray-600 leading-relaxed">
-              We accept bank transfers and major credit cards. All prices are quoted in GBP
-              unless otherwise specified.
+              We accept bank transfers and major credit cards. All prices are quoted in GBP unless
+              otherwise specified.
             </p>
 
             <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">
@@ -98,8 +92,8 @@ const TermsPage: React.FC = () => {
               </li>
             </ul>
             <p className="mt-4 text-gray-600 leading-relaxed">
-              We strongly recommend purchasing comprehensive travel insurance to cover
-              unforeseen circumstances.
+              We strongly recommend purchasing comprehensive travel insurance to cover unforeseen
+              circumstances.
             </p>
 
             <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">
@@ -108,29 +102,27 @@ const TermsPage: React.FC = () => {
             <p className="mt-4 text-gray-600 leading-relaxed">
               We reserve the right to make changes to your itinerary if circumstances require,
               including but not limited to weather conditions, venue availability, or safety
-              concerns. We will always endeavour to provide suitable alternatives of equal or
-              higher value.
+              concerns. We will always endeavour to provide suitable alternatives of equal or higher
+              value.
             </p>
 
-            <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">
-              6. Liability
-            </h2>
+            <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">6. Liability</h2>
             <h3 className="mt-6 font-serif text-xl font-semibold text-gray-900">
               6.1 Our Liability
             </h3>
             <p className="mt-4 text-gray-600 leading-relaxed">
-              Tropico Retreats acts as an intermediary between you and various service
-              providers. We are not liable for the acts, omissions, or defaults of any
-              third-party suppliers, including but not limited to hotels, transport companies,
-              restaurants, and activity providers.
+              Tropico Retreats acts as an intermediary between you and various service providers. We
+              are not liable for the acts, omissions, or defaults of any third-party suppliers,
+              including but not limited to hotels, transport companies, restaurants, and activity
+              providers.
             </p>
             <h3 className="mt-6 font-serif text-xl font-semibold text-gray-900">
               6.2 Limitation of Liability
             </h3>
             <p className="mt-4 text-gray-600 leading-relaxed">
-              To the maximum extent permitted by law, our total liability for any claim
-              arising from or related to our services shall not exceed the total amount
-              paid by you for those services.
+              To the maximum extent permitted by law, our total liability for any claim arising from
+              or related to our services shall not exceed the total amount paid by you for those
+              services.
             </p>
 
             <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">
@@ -138,8 +130,8 @@ const TermsPage: React.FC = () => {
             </h2>
             <p className="mt-4 text-gray-600 leading-relaxed">
               Participants are responsible for ensuring they are fit to participate in planned
-              activities. You must inform us of any medical conditions, dietary requirements,
-              or accessibility needs at the time of booking. We reserve the right to refuse
+              activities. You must inform us of any medical conditions, dietary requirements, or
+              accessibility needs at the time of booking. We reserve the right to refuse
               participation in activities if we believe it poses a safety risk.
             </p>
 
@@ -148,37 +140,34 @@ const TermsPage: React.FC = () => {
             </h2>
             <p className="mt-4 text-gray-600 leading-relaxed">
               You are responsible for ensuring all participants have valid passports and any
-              required visas for travel to Colombia. Tropico Retreats is not liable for any
-              issues arising from inadequate travel documentation.
+              required visas for travel to Colombia. Tropico Retreats is not liable for any issues
+              arising from inadequate travel documentation.
             </p>
 
             <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">
               9. Intellectual Property
             </h2>
             <p className="mt-4 text-gray-600 leading-relaxed">
-              All content on this website, including text, graphics, logos, and images, is
-              the property of Tropico Retreats and is protected by intellectual property laws.
-              You may not reproduce, distribute, or use our content without prior written
-              consent.
+              All content on this website, including text, graphics, logos, and images, is the
+              property of Tropico Retreats and is protected by intellectual property laws. You may
+              not reproduce, distribute, or use our content without prior written consent.
             </p>
 
             <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">
               10. Photography and Media
             </h2>
             <p className="mt-4 text-gray-600 leading-relaxed">
-              We may take photographs or videos during retreats for marketing purposes.
-              If you do not wish to be photographed, please inform us at the time of booking.
-              By participating in a retreat, you grant us permission to use images for
-              promotional purposes unless otherwise specified.
+              We may take photographs or videos during retreats for marketing purposes. If you do
+              not wish to be photographed, please inform us at the time of booking. By participating
+              in a retreat, you grant us permission to use images for promotional purposes unless
+              otherwise specified.
             </p>
 
-            <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">
-              11. Governing Law
-            </h2>
+            <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">11. Governing Law</h2>
             <p className="mt-4 text-gray-600 leading-relaxed">
-              These Terms are governed by the laws of England and Wales. Any disputes arising
-              from these Terms or our services shall be subject to the exclusive jurisdiction
-              of the courts of England and Wales.
+              These Terms are governed by the laws of England and Wales. Any disputes arising from
+              these Terms or our services shall be subject to the exclusive jurisdiction of the
+              courts of England and Wales.
             </p>
 
             <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">

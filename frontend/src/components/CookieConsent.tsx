@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { Cookie, X } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { Cookie, X } from 'lucide-react';
 
-const COOKIE_CONSENT_KEY = "tropico_cookie_consent";
+const COOKIE_CONSENT_KEY = 'tropico_cookie_consent';
 
 const CookieConsent: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -19,12 +19,12 @@ const CookieConsent: React.FC = () => {
   }, []);
 
   const handleAccept = () => {
-    localStorage.setItem(COOKIE_CONSENT_KEY, "accepted");
+    localStorage.setItem(COOKIE_CONSENT_KEY, 'accepted');
     setIsVisible(false);
   };
 
   const handleDecline = () => {
-    localStorage.setItem(COOKIE_CONSENT_KEY, "declined");
+    localStorage.setItem(COOKIE_CONSENT_KEY, 'declined');
     setIsVisible(false);
   };
 
@@ -47,7 +47,7 @@ const CookieConsent: React.FC = () => {
                 <h3 className="text-lg font-semibold text-white">We value your privacy</h3>
                 <p className="mt-1 text-sm leading-relaxed text-gray-400">
                   We use cookies to enhance your browsing experience, analyse site traffic, and
-                  personalise content. By clicking "Accept", you consent to our use of cookies.{" "}
+                  personalise content. By clicking "Accept", you consent to our use of cookies.{' '}
                   <a
                     href="/privacy"
                     className="text-[#C9A227] underline underline-offset-2 transition-colors hover:text-[#D4AF37]"

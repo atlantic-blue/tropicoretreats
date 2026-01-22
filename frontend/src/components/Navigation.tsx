@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router";
-import { Menu, X, Phone } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router';
+import { Menu, X, Phone } from 'lucide-react';
 
 const Navigation: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const isHomePage = location.pathname === "/";
+  const isHomePage = location.pathname === '/';
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   // Close mobile menu on route change
@@ -29,17 +29,17 @@ const Navigation: React.FC = () => {
     }
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+      element.scrollIntoView({ behavior: 'smooth' });
     }
     setIsMobileMenuOpen(false);
   };
 
   const navLinks = [
-    { label: "Services", href: "/services" },
-    { label: "Destinations", action: () => scrollToSection("collection-heading") },
-    { label: "About", href: "/about" },
-    { label: "FAQs", href: "/faqs" },
-    { label: "Contact", href: "/contact" },
+    { label: 'Services', href: '/services' },
+    { label: 'Destinations', action: () => scrollToSection('collection-heading') },
+    { label: 'About', href: '/about' },
+    { label: 'FAQs', href: '/faqs' },
+    { label: 'Contact', href: '/contact' },
   ];
 
   // On non-home pages, always show solid nav; on home page, show solid after scroll
@@ -49,9 +49,7 @@ const Navigation: React.FC = () => {
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          showSolidNav
-            ? "bg-white/95 backdrop-blur-md shadow-lg"
-            : "bg-transparent"
+          showSolidNav ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
         }`}
       >
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-12">
@@ -60,7 +58,7 @@ const Navigation: React.FC = () => {
             <Link
               to="/"
               className={`text-xl font-bold tracking-wide transition-colors md:text-2xl ${
-                showSolidNav ? "text-gray-900" : "text-white"
+                showSolidNav ? 'text-gray-900' : 'text-white'
               }`}
             >
               TROPICO RETREATS
@@ -68,13 +66,13 @@ const Navigation: React.FC = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden items-center gap-8 lg:flex">
-              {navLinks.map((link) =>
+              {navLinks.map(link =>
                 link.href ? (
                   <Link
                     key={link.label}
                     to={link.href}
                     className={`text-sm font-medium tracking-wide transition-colors hover:text-[#C9A227] ${
-                      showSolidNav ? "text-gray-700" : "text-white/90"
+                      showSolidNav ? 'text-gray-700' : 'text-white/90'
                     }`}
                   >
                     {link.label}
@@ -84,7 +82,7 @@ const Navigation: React.FC = () => {
                     key={link.label}
                     onClick={link.action}
                     className={`text-sm font-medium tracking-wide transition-colors hover:text-[#C9A227] ${
-                      showSolidNav ? "text-gray-700" : "text-white/90"
+                      showSolidNav ? 'text-gray-700' : 'text-white/90'
                     }`}
                   >
                     {link.label}
@@ -103,9 +101,7 @@ const Navigation: React.FC = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={`p-2 lg:hidden ${
-                showSolidNav ? "text-gray-900" : "text-white"
-              }`}
+              className={`p-2 lg:hidden ${showSolidNav ? 'text-gray-900' : 'text-white'}`}
               aria-label="Toggle menu"
             >
               {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -116,12 +112,12 @@ const Navigation: React.FC = () => {
         {/* Mobile Menu */}
         <div
           className={`lg:hidden overflow-hidden transition-all duration-300 ${
-            isMobileMenuOpen ? "max-h-[400px] border-t border-gray-100" : "max-h-0"
+            isMobileMenuOpen ? 'max-h-[400px] border-t border-gray-100' : 'max-h-0'
           }`}
         >
           <div className="bg-white px-4 py-6 sm:px-6">
             <div className="flex flex-col gap-4">
-              {navLinks.map((link) =>
+              {navLinks.map(link =>
                 link.href ? (
                   <Link
                     key={link.label}

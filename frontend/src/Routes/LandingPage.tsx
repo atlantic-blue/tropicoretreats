@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router";
-import SEO, { localBusinessSchema, faqSchema } from "../components/SEO";
+import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router';
+import SEO, { localBusinessSchema, faqSchema } from '../components/SEO';
 import {
   Building2,
   Bus,
@@ -23,7 +23,7 @@ import {
   Clock,
   ChevronDown,
   ChevronUp,
-} from "lucide-react";
+} from 'lucide-react';
 
 /**
  * Tropico Retreats - Corporate Wellness Retreats Landing Page
@@ -56,22 +56,22 @@ function useReveal<T extends HTMLElement>() {
 
 // ---- Image assets ----
 export const IMAGES = {
-  hero: "/public/assets/landing-page/hero.webp",
-  inset: "/public/assets/landing-page/inset.webp",
-  caribbean: "/public/assets/landing-page/caribbean.webp",
-  casanare: "/public/assets/landing-page/casanare.jpg",
-  coffee: "/public/assets/landing-page/valley.jpg",
-  valley: "/public/assets/landing-page/valley.jpg",
-  svc1a: "/public/assets/landing-page/svc1a.jpg",
-  svc1b: "/public/assets/landing-page/svc1b.jpg",
-  svc2: "/public/assets/landing-page/svc2.jpg",
-  svc2b: "/public/assets/landing-page/svc2b.jpg",
-  svc3: "/public/assets/landing-page/svc3.jpg",
-  svc3b: "/public/assets/landing-page/svc3b.jpg",
-  svc4: "/public/assets/landing-page/svc4.jpg",
-  footer: "/public/assets/landing-page/footer.jpg",
-  van: "/public/assets/landing-page/van.jpg",
-  driver: "/public/assets/landing-page/driver.jpg",
+  hero: '/public/assets/landing-page/hero.webp',
+  inset: '/public/assets/landing-page/inset.webp',
+  caribbean: '/public/assets/landing-page/caribbean.webp',
+  casanare: '/public/assets/landing-page/casanare.jpg',
+  coffee: '/public/assets/landing-page/valley.jpg',
+  valley: '/public/assets/landing-page/valley.jpg',
+  svc1a: '/public/assets/landing-page/svc1a.jpg',
+  svc1b: '/public/assets/landing-page/svc1b.jpg',
+  svc2: '/public/assets/landing-page/svc2.jpg',
+  svc2b: '/public/assets/landing-page/svc2b.jpg',
+  svc3: '/public/assets/landing-page/svc3.jpg',
+  svc3b: '/public/assets/landing-page/svc3b.jpg',
+  svc4: '/public/assets/landing-page/svc4.jpg',
+  footer: '/public/assets/landing-page/footer.jpg',
+  van: '/public/assets/landing-page/van.jpg',
+  driver: '/public/assets/landing-page/driver.jpg',
 };
 
 // ---- Amenity Icons (using Lucide) ----
@@ -103,7 +103,7 @@ const FAQItem: React.FC<{ question: string; answer: string }> = ({ question, ans
       </button>
       <div
         className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          isOpen ? "max-h-96 pb-6" : "max-h-0"
+          isOpen ? 'max-h-96 pb-6' : 'max-h-0'
         }`}
       >
         <p className="text-base leading-relaxed text-gray-600 pr-12">{answer}</p>
@@ -115,72 +115,87 @@ const FAQItem: React.FC<{ question: string; answer: string }> = ({ question, ans
 // ---- Full Services Data ----
 const FULL_SERVICES = [
   {
-    id: "accommodation",
+    id: 'accommodation',
     icon: Hotel,
-    title: "ACCOMMODATION",
-    subtitle: "Luxury Stays",
+    title: 'ACCOMMODATION',
+    subtitle: 'Luxury Stays',
     description:
-      "We work with the finest exclusive properties across Colombia: luxury villas, colonial haciendas, eco-lodges and boutique hotels. Each accommodation is carefully selected to meet your needs, from intimate retreats for 8 guests to corporate events for 50+ attendees. All our properties feature meeting spaces, wellness areas, private pools and personalised service.",
-    highlights: ["Private villas with pools", "Historic haciendas", "Exclusive eco-lodges", "Boutique hotels"],
+      'We work with the finest exclusive properties across Colombia: luxury villas, colonial haciendas, eco-lodges and boutique hotels. Each accommodation is carefully selected to meet your needs, from intimate retreats for 8 guests to corporate events for 50+ attendees. All our properties feature meeting spaces, wellness areas, private pools and personalised service.',
+    highlights: [
+      'Private villas with pools',
+      'Historic haciendas',
+      'Exclusive eco-lodges',
+      'Boutique hotels',
+    ],
   },
   {
-    id: "transport",
+    id: 'transport',
     icon: Bus,
-    title: "TRANSPORT",
-    subtitle: "Seamless Logistics",
+    title: 'TRANSPORT',
+    subtitle: 'Seamless Logistics',
     description:
-      "We manage all transport logistics from start to finish. We coordinate airport-hotel transfers, internal transport between activities, and any special journeys your group requires. We work with modern fleets and professional bilingual drivers who know every route and destination.",
-    highlights: ["Airport transfers", "Premium vehicles", "Bilingual drivers", "24/7 coordination"],
+      'We manage all transport logistics from start to finish. We coordinate airport-hotel transfers, internal transport between activities, and any special journeys your group requires. We work with modern fleets and professional bilingual drivers who know every route and destination.',
+    highlights: ['Airport transfers', 'Premium vehicles', 'Bilingual drivers', '24/7 coordination'],
   },
   {
-    id: "venues",
+    id: 'venues',
     icon: Building2,
-    title: "VENUES",
-    subtitle: "Meeting Spaces",
+    title: 'VENUES',
+    subtitle: 'Meeting Spaces',
     description:
-      "We provide versatile spaces for any type of corporate event: conference rooms equipped with audiovisual technology, outdoor spaces for team building activities, workshop rooms and private areas for networking. Each space adapts to your specific capacity and configuration requirements.",
-    highlights: ["Conference rooms", "Outdoor spaces", "Full AV equipment", "Flexible layouts"],
+      'We provide versatile spaces for any type of corporate event: conference rooms equipped with audiovisual technology, outdoor spaces for team building activities, workshop rooms and private areas for networking. Each space adapts to your specific capacity and configuration requirements.',
+    highlights: ['Conference rooms', 'Outdoor spaces', 'Full AV equipment', 'Flexible layouts'],
   },
   {
-    id: "activities",
+    id: 'activities',
     icon: Target,
-    title: "ACTIVITIES",
-    subtitle: "Team Building",
+    title: 'ACTIVITIES',
+    subtitle: 'Team Building',
     description:
-      "We design activity programmes that strengthen teams and create lasting memories. From outdoor adventures such as rafting, hiking and cycling tours, to cultural experiences like Colombian cooking classes, coffee farm visits and artisan workshops. We also offer wellness programmes including yoga, meditation and spa treatments.",
-    highlights: ["Bespoke team building", "Outdoor adventures", "Cultural experiences", "Wellness programmes"],
+      'We design activity programmes that strengthen teams and create lasting memories. From outdoor adventures such as rafting, hiking and cycling tours, to cultural experiences like Colombian cooking classes, coffee farm visits and artisan workshops. We also offer wellness programmes including yoga, meditation and spa treatments.',
+    highlights: [
+      'Bespoke team building',
+      'Outdoor adventures',
+      'Cultural experiences',
+      'Wellness programmes',
+    ],
   },
   {
-    id: "catering",
+    id: 'catering',
     icon: ChefHat,
-    title: "CATERING",
-    subtitle: "Dining Experiences",
+    title: 'CATERING',
+    subtitle: 'Dining Experiences',
     description:
-      "Gastronomy is a fundamental part of the experience. We work with private chefs who create bespoke menus featuring the finest Colombian and international cuisine. We organise everything from executive breakfasts to gala dinners, outdoor barbecues and themed culinary experiences. All dietary requirements are catered for in advance.",
-    highlights: ["Private chefs", "Bespoke menus", "Local & international cuisine", "Culinary events"],
+      'Gastronomy is a fundamental part of the experience. We work with private chefs who create bespoke menus featuring the finest Colombian and international cuisine. We organise everything from executive breakfasts to gala dinners, outdoor barbecues and themed culinary experiences. All dietary requirements are catered for in advance.',
+    highlights: [
+      'Private chefs',
+      'Bespoke menus',
+      'Local & international cuisine',
+      'Culinary events',
+    ],
   },
   {
-    id: "leisure",
+    id: 'leisure',
     icon: Theater,
-    title: "LEISURE",
-    subtitle: "Entertainment",
+    title: 'LEISURE',
+    subtitle: 'Entertainment',
     description:
-      "We complement your retreat with memorable leisure experiences. We organise live music performances, traditional dance shows, cultural tours with specialist guides, excursions to natural sites and relaxation activities. Every free moment becomes an opportunity to discover Colombia.",
-    highlights: ["Live music", "Cultural shows", "Guided tours", "Exclusive experiences"],
+      'We complement your retreat with memorable leisure experiences. We organise live music performances, traditional dance shows, cultural tours with specialist guides, excursions to natural sites and relaxation activities. Every free moment becomes an opportunity to discover Colombia.',
+    highlights: ['Live music', 'Cultural shows', 'Guided tours', 'Exclusive experiences'],
   },
 ];
 
 // ---- Service Tab Component ----
 const ServiceTabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState(FULL_SERVICES[0].id);
-  const activeService = FULL_SERVICES.find((s) => s.id === activeTab) || FULL_SERVICES[0];
+  const activeService = FULL_SERVICES.find(s => s.id === activeTab) || FULL_SERVICES[0];
   const IconComponent = activeService.icon;
 
   return (
     <div className="w-full">
       {/* Tab Navigation */}
       <div className="flex flex-wrap justify-center gap-2 md:gap-3">
-        {FULL_SERVICES.map((service) => {
+        {FULL_SERVICES.map(service => {
           const TabIcon = service.icon;
           return (
             <button
@@ -188,8 +203,8 @@ const ServiceTabs: React.FC = () => {
               onClick={() => setActiveTab(service.id)}
               className={`flex items-center gap-2 rounded-full px-4 py-3 text-xs font-semibold uppercase tracking-widest transition-all duration-300 md:px-6 md:text-sm ${
                 activeTab === service.id
-                  ? "bg-emerald-700 text-white shadow-lg shadow-emerald-700/25"
-                  : "bg-white text-gray-700 shadow-md hover:bg-emerald-50 hover:text-emerald-700 hover:shadow-lg"
+                  ? 'bg-emerald-700 text-white shadow-lg shadow-emerald-700/25'
+                  : 'bg-white text-gray-700 shadow-md hover:bg-emerald-50 hover:text-emerald-700 hover:shadow-lg'
               }`}
               aria-pressed={activeTab === service.id}
             >
@@ -210,7 +225,9 @@ const ServiceTabs: React.FC = () => {
                 <IconComponent className="h-7 w-7" />
               </span>
               <div>
-                <h3 className="text-2xl font-bold text-gray-900 md:text-3xl">{activeService.title}</h3>
+                <h3 className="text-2xl font-bold text-gray-900 md:text-3xl">
+                  {activeService.title}
+                </h3>
                 <p className="text-sm font-medium text-[#C9A227]">{activeService.subtitle}</p>
               </div>
             </div>
@@ -219,7 +236,9 @@ const ServiceTabs: React.FC = () => {
 
           {/* Right: Highlights */}
           <div className="flex flex-col justify-center">
-            <p className="mb-5 text-sm font-bold uppercase tracking-widest text-emerald-700">What's Included</p>
+            <p className="mb-5 text-sm font-bold uppercase tracking-widest text-emerald-700">
+              What's Included
+            </p>
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {activeService.highlights.map((highlight, idx) => (
                 <li
@@ -242,19 +261,25 @@ const ServiceTabs: React.FC = () => {
 const scrollToSection = (sectionId: string) => {
   const element = document.getElementById(sectionId);
   if (element) {
-    element.scrollIntoView({ behavior: "smooth" });
+    element.scrollIntoView({ behavior: 'smooth' });
   }
 };
 
 const PillButton: React.FC<
-  React.ButtonHTMLAttributes<HTMLButtonElement> & { href?: string; to?: string; variant?: "primary" | "secondary" | "gold" }
-> = ({ className = "", children, href, to, variant = "primary", ...props }) => {
+  React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    href?: string;
+    to?: string;
+    variant?: 'primary' | 'secondary' | 'gold';
+  }
+> = ({ className = '', children, href, to, variant = 'primary', ...props }) => {
   const baseClasses = `inline-flex items-center justify-center rounded-full px-8 py-3.5 text-sm font-semibold tracking-widest uppercase transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50`;
 
   const variantClasses = {
-    primary: "bg-emerald-700 text-white shadow-lg shadow-emerald-700/30 hover:bg-emerald-800 hover:shadow-xl hover:-translate-y-0.5 focus-visible:ring-emerald-600",
-    secondary: "bg-white text-gray-900 shadow-lg hover:bg-gray-50 hover:shadow-xl hover:-translate-y-0.5 focus-visible:ring-gray-400",
-    gold: "bg-[#C9A227] text-white shadow-lg shadow-[#C9A227]/30 hover:bg-[#B8860B] hover:shadow-xl hover:-translate-y-0.5 focus-visible:ring-[#C9A227]",
+    primary:
+      'bg-emerald-700 text-white shadow-lg shadow-emerald-700/30 hover:bg-emerald-800 hover:shadow-xl hover:-translate-y-0.5 focus-visible:ring-emerald-600',
+    secondary:
+      'bg-white text-gray-900 shadow-lg hover:bg-gray-50 hover:shadow-xl hover:-translate-y-0.5 focus-visible:ring-gray-400',
+    gold: 'bg-[#C9A227] text-white shadow-lg shadow-[#C9A227]/30 hover:bg-[#B8860B] hover:shadow-xl hover:-translate-y-0.5 focus-visible:ring-[#C9A227]',
   };
 
   const combinedClasses = `${baseClasses} ${variantClasses[variant]} ${className}`;
@@ -290,13 +315,19 @@ type BespokeCardProps = {
   scrollTo?: string;
 };
 
-const BespokeCard: React.FC<BespokeCardProps> = ({ title, description, imageUrl, cta = "Details", scrollTo = "full-services-heading" }) => {
+const BespokeCard: React.FC<BespokeCardProps> = ({
+  title,
+  description,
+  imageUrl,
+  cta = 'Details',
+  scrollTo = 'full-services-heading',
+}) => {
   const { ref, shown } = useReveal<HTMLDivElement>();
   return (
     <article
       ref={ref}
       className={`group relative overflow-hidden rounded-[22px] bg-white shadow-[0_10px_30px_-12px_rgba(0,0,0,0.2)] transition-all duration-700 hover:shadow-[0_15px_40px_-12px_rgba(0,0,0,0.3)] ${
-        shown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+        shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
       }`}
     >
       <div className="aspect-[4/3] overflow-hidden">
@@ -328,7 +359,7 @@ type ImageCardProps = {
   href?: string;
 };
 
-const ImageCard: React.FC<ImageCardProps> = ({ title, cta = "See More", imageUrl, href }) => {
+const ImageCard: React.FC<ImageCardProps> = ({ title, cta = 'See More', imageUrl, href }) => {
   const { ref, shown } = useReveal<HTMLDivElement>();
   const content = (
     <>
@@ -338,16 +369,17 @@ const ImageCard: React.FC<ImageCardProps> = ({ title, cta = "See More", imageUrl
         className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
         loading="lazy"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/15 to-transparent" aria-hidden />
+      <div
+        className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/15 to-transparent"
+        aria-hidden
+      />
       <header className="absolute inset-x-0 top-6 flex w-full justify-center">
         <h3 className="rounded-full bg-black/40 px-5 py-2 text-[15px] font-semibold tracking-wide text-white backdrop-blur-sm">
           {title}
         </h3>
       </header>
       <div className="absolute inset-x-0 bottom-6 flex w-full justify-center">
-        <span
-          className="rounded-full bg-white/90 px-4 py-2 text-[11px] font-semibold text-gray-900 backdrop-blur-md transition group-hover:bg-white"
-        >
+        <span className="rounded-full bg-white/90 px-4 py-2 text-[11px] font-semibold text-gray-900 backdrop-blur-md transition group-hover:bg-white">
           {cta}
         </span>
       </div>
@@ -355,7 +387,7 @@ const ImageCard: React.FC<ImageCardProps> = ({ title, cta = "See More", imageUrl
   );
 
   const className = `h-[60dvh] group relative aspect-[4/3] w-full overflow-hidden rounded-[22px] shadow-[0_10px_30px_-12px_rgba(0,0,0,0.35)] transition-all ${
-    shown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
+    shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
   } duration-700 block`;
 
   if (href) {
@@ -391,10 +423,7 @@ const TropicoRetreatsPage: React.FC = () => {
 
   return (
     <main className="min-h-dvh w-full bg-[#F7F1EC] text-gray-900">
-      <SEO
-        canonicalUrl="/"
-        structuredData={[localBusinessSchema, faqSchema]}
-      />
+      <SEO canonicalUrl="/" structuredData={[localBusinessSchema, faqSchema]} />
 
       {/* HERO */}
       <section className="relative w-full" role="banner" aria-label="Hero">
@@ -410,7 +439,7 @@ const TropicoRetreatsPage: React.FC = () => {
         <div
           ref={heroReveal.ref}
           className={`absolute inset-0 flex flex-col items-center justify-center px-4 text-center text-white transition-all duration-700 ${
-            heroReveal.shown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
+            heroReveal.shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
           }`}
         >
           <p className="mb-4 text-sm tracking-[0.35em] uppercase md:text-base font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
@@ -423,10 +452,19 @@ const TropicoRetreatsPage: React.FC = () => {
             Corporate & Wellness Retreats in Colombia
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <PillButton variant="gold" aria-label="Enquire about a corporate retreat" onClick={() => scrollToSection("contact-heading")}>
+            <PillButton
+              variant="gold"
+              aria-label="Enquire about a corporate retreat"
+              onClick={() => scrollToSection('contact-heading')}
+            >
               ENQUIRE NOW
             </PillButton>
-            <PillButton variant="secondary" className="bg-white/90 backdrop-blur-sm" aria-label="View our services" onClick={() => scrollToSection("full-services-heading")}>
+            <PillButton
+              variant="secondary"
+              className="bg-white/90 backdrop-blur-sm"
+              aria-label="View our services"
+              onClick={() => scrollToSection('full-services-heading')}
+            >
               OUR SERVICES
             </PillButton>
           </div>
@@ -435,28 +473,34 @@ const TropicoRetreatsPage: React.FC = () => {
 
       {/* TAILORED FOR YOU - Intro Section */}
       <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-12">
-        <section className="grid grid-cols-1 gap-12 py-20 md:grid-cols-12 md:py-28" aria-labelledby="intro-heading">
+        <section
+          className="grid grid-cols-1 gap-12 py-20 md:grid-cols-12 md:py-28"
+          aria-labelledby="intro-heading"
+        >
           <div
             ref={introReveal.ref}
             className={`md:col-span-7 transition-all duration-700 ${
-              introReveal.shown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
+              introReveal.shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
             }`}
           >
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-700">Tailored for You</p>
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-700">
+              Tailored for You
+            </p>
             <h2 id="intro-heading" className="mt-2 font-serif text-[30px] md:text-[40px]">
               Corporate & Wellness Retreats in Colombia
             </h2>
             <div className="mt-6 space-y-4 text-[15px] leading-relaxed text-gray-700">
               <p>
-                Experience Colombia's most spectacular destinations with our luxury villas, each featuring private pools and
-                dedicated team support. We specialize in creating the perfect Corporate or Wellness event tailored to your needs.
+                Experience Colombia's most spectacular destinations with our luxury villas, each
+                featuring private pools and dedicated team support. We specialize in creating the
+                perfect Corporate or Wellness event tailored to your needs.
               </p>
               <p>
-                Our specialised team will be delighted to assist you in creating your bespoke retreat, from venue selection
-                to full logistics coordination.
+                Our specialised team will be delighted to assist you in creating your bespoke
+                retreat, from venue selection to full logistics coordination.
               </p>
               <p className="mt-4 font-medium text-emerald-800">
-                Contact us:{" "}
+                Contact us:{' '}
                 <a
                   href="mailto:hello@tropicoretreats.com"
                   className="underline decoration-emerald-300 underline-offset-4 hover:decoration-emerald-700"
@@ -479,30 +523,41 @@ const TropicoRetreatsPage: React.FC = () => {
         </section>
 
         {/* WE HANDLE EVERYTHING - Full Services Section */}
-        <section className="border-t border-emerald-900/10 py-20 md:py-28" aria-labelledby="full-services-heading">
+        <section
+          className="border-t border-emerald-900/10 py-20 md:py-28"
+          aria-labelledby="full-services-heading"
+        >
           <header className="mb-10 text-center">
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-700">Full Service</p>
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-700">
+              Full Service
+            </p>
             <h2 id="full-services-heading" className="mt-2 font-serif text-[30px] md:text-[44px]">
               We Handle the Entire Organisation
             </h2>
             <p className="mx-auto mt-4 max-w-3xl text-base leading-relaxed text-gray-600">
-              From the moment your team lands until the final day of the retreat, every detail is covered.
-              We are your single point of contact for accommodation, transport, venues, activities, catering and
-              entertainment. All coordinated to perfection.
+              From the moment your team lands until the final day of the retreat, every detail is
+              covered. We are your single point of contact for accommodation, transport, venues,
+              activities, catering and entertainment. All coordinated to perfection.
             </p>
           </header>
           <ServiceTabs />
         </section>
 
         {/* BESPOKE ESCAPES - 3 Cards */}
-        <section className="border-t border-emerald-900/10 py-20 md:py-24" aria-labelledby="bespoke-heading">
+        <section
+          className="border-t border-emerald-900/10 py-20 md:py-24"
+          aria-labelledby="bespoke-heading"
+        >
           <header className="mb-8 text-center">
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-700">Bespoke Escapes</p>
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-700">
+              Bespoke Escapes
+            </p>
             <h2 id="bespoke-heading" className="mt-2 font-serif text-[30px] md:text-[36px]">
               Everything You Need
             </h2>
             <p className="mx-auto mt-2 max-w-2xl text-sm text-gray-600">
-              From luxury accommodations to gourmet dining and unique experiences, we handle every detail.
+              From luxury accommodations to gourmet dining and unique experiences, we handle every
+              detail.
             </p>
           </header>
           <div className="grid gap-8 md:grid-cols-3">
@@ -528,7 +583,7 @@ const TropicoRetreatsPage: React.FC = () => {
         <section
           ref={amenitiesReveal.ref}
           className={`border-t border-emerald-900/10 py-20 md:py-24 transition-all duration-700 ${
-            amenitiesReveal.shown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            amenitiesReveal.shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}
           aria-labelledby="amenities-heading"
         >
@@ -555,9 +610,14 @@ const TropicoRetreatsPage: React.FC = () => {
         </section>
 
         {/* DESTINATIONS */}
-        <section className="border-t border-emerald-900/10 py-20 md:py-24" aria-labelledby="collection-heading">
+        <section
+          className="border-t border-emerald-900/10 py-20 md:py-24"
+          aria-labelledby="collection-heading"
+        >
           <header className="mb-8 text-center">
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-700">Our Destinations</p>
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-700">
+              Our Destinations
+            </p>
             <h2 id="collection-heading" className="mt-2 font-serif text-[30px] md:text-[36px]">
               Collection of Special Places
             </h2>
@@ -566,27 +626,47 @@ const TropicoRetreatsPage: React.FC = () => {
             </p>
           </header>
           <div className="grid gap-7 md:grid-cols-3">
-            <ImageCard title="Caribbean" imageUrl={IMAGES.caribbean} href="/destinations/caribbean" />
+            <ImageCard
+              title="Caribbean"
+              imageUrl={IMAGES.caribbean}
+              href="/destinations/caribbean"
+            />
             <ImageCard title="Casanare" imageUrl={IMAGES.casanare} href="/destinations/casanare" />
-            <ImageCard title="Coffee Region" imageUrl={IMAGES.coffee} href="/destinations/coffee-region" />
+            <ImageCard
+              title="Coffee Region"
+              imageUrl={IMAGES.coffee}
+              href="/destinations/coffee-region"
+            />
           </div>
         </section>
       </div>
 
       {/* MEETING SPACE BANNER */}
       <section className="relative w-full" aria-label="Meeting space">
-        <img src={IMAGES.svc2} alt="Meeting space venue" className="h-[60dvh] w-full object-cover" loading="lazy" />
+        <img
+          src={IMAGES.svc2}
+          alt="Meeting space venue"
+          className="h-[60dvh] w-full object-cover"
+          loading="lazy"
+        />
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent" />
         <div className="absolute inset-0 mx-auto flex max-w-[1400px] items-center px-4 sm:px-6 lg:px-12">
           <div className="max-w-xl text-white">
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#C9A227]">Conference Facilities</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#C9A227]">
+              Conference Facilities
+            </p>
             <h2 className="mt-3 text-[36px] md:text-[48px]">The Meeting Room</h2>
             <p className="mt-5 text-base leading-relaxed opacity-90 md:text-lg">
-              Our configurable meeting spaces accommodate up to 24 boardroom-style or 40 theatre-style attendees, perfect
-              for training sessions, presentations, or private meetings in a stunning natural setting.
+              Our configurable meeting spaces accommodate up to 24 boardroom-style or 40
+              theatre-style attendees, perfect for training sessions, presentations, or private
+              meetings in a stunning natural setting.
             </p>
             <div className="mt-8">
-              <PillButton variant="gold" aria-label="Enquire about meeting space" onClick={() => scrollToSection("contact-heading")}>
+              <PillButton
+                variant="gold"
+                aria-label="Enquire about meeting space"
+                onClick={() => scrollToSection('contact-heading')}
+              >
                 ENQUIRE NOW
               </PillButton>
             </div>
@@ -596,20 +676,37 @@ const TropicoRetreatsPage: React.FC = () => {
 
       {/* TAILOR-MADE BANNER */}
       <section className="relative w-full" aria-label="Tailor made banner">
-        <img src={IMAGES.svc1a} alt="Cocora Valley palms" className="h-[60dvh] w-full object-cover" loading="lazy" />
+        <img
+          src={IMAGES.svc1a}
+          alt="Cocora Valley palms"
+          className="h-[60dvh] w-full object-cover"
+          loading="lazy"
+        />
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent" />
         <div className="absolute inset-0 mx-auto flex max-w-[1400px] flex-col justify-center px-4 sm:px-6 lg:px-12 text-white">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#C9A227]">Bespoke Packages</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#C9A227]">
+            Bespoke Packages
+          </p>
           <h2 className="mt-3 text-[36px] md:text-[48px]">Tailor‑made for You</h2>
           <p className="mt-5 max-w-2xl text-base leading-relaxed opacity-90 md:text-lg">
-            Let us take care of every detail, ensuring a seamless stay with our bespoke itineraries curated to meet your
-            unique needs. From accommodation to activities, we'll handle all the details at a special rate.
+            Let us take care of every detail, ensuring a seamless stay with our bespoke itineraries
+            curated to meet your unique needs. From accommodation to activities, we'll handle all
+            the details at a special rate.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
-            <PillButton variant="secondary" className="bg-white/95 backdrop-blur-sm" aria-label="View sample itinerary" onClick={() => scrollToSection("contact-heading")}>
+            <PillButton
+              variant="secondary"
+              className="bg-white/95 backdrop-blur-sm"
+              aria-label="View sample itinerary"
+              onClick={() => scrollToSection('contact-heading')}
+            >
               Request Itinerary
             </PillButton>
-            <PillButton variant="primary" aria-label="Contact us" onClick={() => scrollToSection("contact-heading")}>
+            <PillButton
+              variant="primary"
+              aria-label="Contact us"
+              onClick={() => scrollToSection('contact-heading')}
+            >
               CONTACT US
             </PillButton>
           </div>
@@ -617,9 +714,14 @@ const TropicoRetreatsPage: React.FC = () => {
       </section>
 
       {/* SERVICES - four blocks matching final design */}
-      <section className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-12 py-20 md:py-28" aria-labelledby="services-heading">
+      <section
+        className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-12 py-20 md:py-28"
+        aria-labelledby="services-heading"
+      >
         <header className="mb-14 text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#C9A227]">What We Offer</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#C9A227]">
+            What We Offer
+          </p>
           <h2 id="services-heading" className="mt-3 text-[32px] md:text-[40px]">
             Our Corporate Services
           </h2>
@@ -646,14 +748,15 @@ const TropicoRetreatsPage: React.FC = () => {
               CHOICE OF DESTINATION & VENUE
             </h3>
             <p className="mt-3 text-[14px] leading-relaxed text-gray-700">
-              The venue makes all the difference. Our team guides you in selecting the perfect property, from beachfront
-              villas to mountain lodges, tailored to your needs and desires.
+              The venue makes all the difference. Our team guides you in selecting the perfect
+              property, from beachfront villas to mountain lodges, tailored to your needs and
+              desires.
             </p>
             <div className="mt-5">
               <PillButton
                 variant="primary"
                 aria-label="Contact us about destination"
-                onClick={() => scrollToSection("contact-heading")}
+                onClick={() => scrollToSection('contact-heading')}
               >
                 CONTACT US
               </PillButton>
@@ -664,16 +767,19 @@ const TropicoRetreatsPage: React.FC = () => {
         {/* Row 2 */}
         <div className="mt-14 grid grid-cols-1 gap-10 md:grid-cols-2">
           <div className="flex flex-col justify-center order-2 md:order-1">
-            <h3 className="text-[18px] font-semibold tracking-[.12em] text-emerald-700">CATERING & PRIVATE CHEFS</h3>
+            <h3 className="text-[18px] font-semibold tracking-[.12em] text-emerald-700">
+              CATERING & PRIVATE CHEFS
+            </h3>
             <p className="mt-3 text-[14px] leading-relaxed text-gray-700">
-              Elevate your dining experience with private chefs and high‑end catering. We craft bespoke menus featuring
-              local Colombian flavours and international cuisine, tailored to your team's preferences and dietary needs.
+              Elevate your dining experience with private chefs and high‑end catering. We craft
+              bespoke menus featuring local Colombian flavours and international cuisine, tailored
+              to your team's preferences and dietary needs.
             </p>
             <div className="mt-5">
               <PillButton
                 variant="primary"
                 aria-label="Contact us about catering"
-                onClick={() => scrollToSection("contact-heading")}
+                onClick={() => scrollToSection('contact-heading')}
               >
                 CONTACT US
               </PillButton>
@@ -716,14 +822,15 @@ const TropicoRetreatsPage: React.FC = () => {
               EXCURSIONS & CULTURAL IMMERSION
             </h3>
             <p className="mt-3 text-[14px] leading-relaxed text-gray-700">
-              Give your team a true taste of Colombia. We organise curated excursions, from private coffee farm tours and
-              historical city walks to jungle hikes and sailing trips, creating unforgettable shared memories.
+              Give your team a true taste of Colombia. We organise curated excursions, from private
+              coffee farm tours and historical city walks to jungle hikes and sailing trips,
+              creating unforgettable shared memories.
             </p>
             <div className="mt-5">
               <PillButton
                 variant="primary"
                 aria-label="Contact us about excursions"
-                onClick={() => scrollToSection("contact-heading")}
+                onClick={() => scrollToSection('contact-heading')}
               >
                 CONTACT US
               </PillButton>
@@ -738,20 +845,24 @@ const TropicoRetreatsPage: React.FC = () => {
               FULL LOGISTICS & TRANSPORTATION
             </h3>
             <p className="mt-3 text-[14px] leading-relaxed text-gray-700">
-              We handle full logistics, transportation, and coordination for your entire retreat. This includes all
-              airport transfers, internal travel, scheduling, and vendor management, so you can focus on your team.
+              We handle full logistics, transportation, and coordination for your entire retreat.
+              This includes all airport transfers, internal travel, scheduling, and vendor
+              management, so you can focus on your team.
             </p>
             <div className="mt-5">
               <PillButton
                 variant="primary"
                 aria-label="Contact us about logistics"
-                onClick={() => scrollToSection("contact-heading")}
+                onClick={() => scrollToSection('contact-heading')}
               >
                 CONTACT US
               </PillButton>
             </div>
           </div>
-          <div className="order-1 md:order-2 grid grid-cols-2 gap-4" aria-label="Transportation imagery">
+          <div
+            className="order-1 md:order-2 grid grid-cols-2 gap-4"
+            aria-label="Transportation imagery"
+          >
             <img
               src={IMAGES.van}
               alt="SUV transportation"
@@ -769,9 +880,14 @@ const TropicoRetreatsPage: React.FC = () => {
       </section>
 
       {/* FAQ SECTION */}
-      <section className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-12 py-20 md:py-28" aria-labelledby="faq-heading">
+      <section
+        className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-12 py-20 md:py-28"
+        aria-labelledby="faq-heading"
+      >
         <header className="mb-12 text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#C9A227]">Common Questions</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#C9A227]">
+            Common Questions
+          </p>
           <h2 id="faq-heading" className="mt-3 text-[32px] md:text-[40px]">
             Frequently Asked Questions
           </h2>
@@ -805,18 +921,23 @@ const TropicoRetreatsPage: React.FC = () => {
       </section>
 
       {/* CONTACT FORM SECTION */}
-      <section className="bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-900 py-20 md:py-28" aria-labelledby="contact-heading">
+      <section
+        className="bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-900 py-20 md:py-28"
+        aria-labelledby="contact-heading"
+      >
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-12">
           <div className="grid gap-12 md:grid-cols-2 md:gap-16">
             {/* Left: Contact Info */}
             <div className="text-white">
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#C9A227]">Get in Touch</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#C9A227]">
+                Get in Touch
+              </p>
               <h2 id="contact-heading" className="mt-3 text-[32px] md:text-[44px]">
                 Ready to Plan Your Retreat?
               </h2>
               <p className="mt-6 text-lg leading-relaxed opacity-90">
-                Get in touch with our team to start planning your unforgettable corporate experience in Colombia.
-                We'll respond within 24 hours.
+                Get in touch with our team to start planning your unforgettable corporate experience
+                in Colombia. We'll respond within 24 hours.
               </p>
 
               <div className="mt-10 space-y-6">
@@ -825,8 +946,13 @@ const TropicoRetreatsPage: React.FC = () => {
                     <Mail className="h-5 w-5 text-[#C9A227]" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-wider text-emerald-200">Email</p>
-                    <a href="mailto:hello@tropicoretreats.com" className="text-lg hover:text-[#C9A227] transition-colors">
+                    <p className="text-sm font-semibold uppercase tracking-wider text-emerald-200">
+                      Email
+                    </p>
+                    <a
+                      href="mailto:hello@tropicoretreats.com"
+                      className="text-lg hover:text-[#C9A227] transition-colors"
+                    >
                       hello@tropicoretreats.com
                     </a>
                   </div>
@@ -837,8 +963,13 @@ const TropicoRetreatsPage: React.FC = () => {
                     <Phone className="h-5 w-5 text-[#C9A227]" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-wider text-emerald-200">Phone</p>
-                    <a href="tel:+447806705494" className="text-lg hover:text-[#C9A227] transition-colors">
+                    <p className="text-sm font-semibold uppercase tracking-wider text-emerald-200">
+                      Phone
+                    </p>
+                    <a
+                      href="tel:+447806705494"
+                      className="text-lg hover:text-[#C9A227] transition-colors"
+                    >
                       +44 78 0670 5494
                     </a>
                   </div>
@@ -849,7 +980,9 @@ const TropicoRetreatsPage: React.FC = () => {
                     <MapPin className="h-5 w-5 text-[#C9A227]" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-wider text-emerald-200">Location</p>
+                    <p className="text-sm font-semibold uppercase tracking-wider text-emerald-200">
+                      Location
+                    </p>
                     <p className="text-lg">London, United Kingdom</p>
                   </div>
                 </div>
@@ -859,7 +992,9 @@ const TropicoRetreatsPage: React.FC = () => {
                     <Clock className="h-5 w-5 text-[#C9A227]" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-wider text-emerald-200">Business Hours</p>
+                    <p className="text-sm font-semibold uppercase tracking-wider text-emerald-200">
+                      Business Hours
+                    </p>
                     <p className="text-lg">Mon-Thu: 9am - 6pm</p>
                     <p className="text-lg">Friday: 9am - 1pm</p>
                   </div>
@@ -870,12 +1005,17 @@ const TropicoRetreatsPage: React.FC = () => {
             {/* Right: Contact Form */}
             <div className="rounded-3xl bg-white p-8 shadow-2xl md:p-10">
               <h3 className="text-2xl font-bold text-gray-900">Send Us an Enquiry</h3>
-              <p className="mt-2 text-gray-600">Fill out the form below and we'll be in touch shortly.</p>
+              <p className="mt-2 text-gray-600">
+                Fill out the form below and we'll be in touch shortly.
+              </p>
 
               <form className="mt-8 space-y-5">
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
-                    <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700">
+                    <label
+                      htmlFor="firstName"
+                      className="block text-sm font-semibold text-gray-700"
+                    >
                       First Name *
                     </label>
                     <input
@@ -931,7 +1071,10 @@ const TropicoRetreatsPage: React.FC = () => {
 
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
-                    <label htmlFor="groupSize" className="block text-sm font-semibold text-gray-700">
+                    <label
+                      htmlFor="groupSize"
+                      className="block text-sm font-semibold text-gray-700"
+                    >
                       Group Size
                     </label>
                     <select
@@ -947,7 +1090,10 @@ const TropicoRetreatsPage: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="preferredDates" className="block text-sm font-semibold text-gray-700">
+                    <label
+                      htmlFor="preferredDates"
+                      className="block text-sm font-semibold text-gray-700"
+                    >
                       Preferred Dates
                     </label>
                     <input

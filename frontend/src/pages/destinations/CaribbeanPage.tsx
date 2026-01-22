@@ -1,69 +1,65 @@
-import React from "react";
-import { Link } from "react-router";
-import {
-  Waves,
-  Sun,
-  Users,
-  Utensils,
-  Phone,
-  Mail,
-  ArrowRight,
-  Check,
-} from "lucide-react";
-import SEO from "../../components/SEO";
+import React from 'react';
+import { Link } from 'react-router';
+import { Waves, Sun, Users, Utensils, Phone, Mail, ArrowRight, Check } from 'lucide-react';
+import SEO from '../../components/SEO';
 
 const CaribbeanPage: React.FC = () => {
   const highlights = [
     {
       icon: Waves,
-      title: "Beach Retreats",
-      description: "Private beachfront villas with direct access to crystal-clear waters",
+      title: 'Beach Retreats',
+      description: 'Private beachfront villas with direct access to crystal-clear waters',
     },
     {
       icon: Sun,
-      title: "Year-Round Sun",
-      description: "Tropical climate with warm temperatures throughout the year",
+      title: 'Year-Round Sun',
+      description: 'Tropical climate with warm temperatures throughout the year',
     },
     {
       icon: Users,
-      title: "Team Building",
-      description: "Water sports, sailing excursions, and beach activities",
+      title: 'Team Building',
+      description: 'Water sports, sailing excursions, and beach activities',
     },
     {
       icon: Utensils,
-      title: "Fresh Seafood",
-      description: "Caribbean cuisine featuring the freshest catch of the day",
+      title: 'Fresh Seafood',
+      description: 'Caribbean cuisine featuring the freshest catch of the day',
     },
   ];
 
   const activities = [
-    "Snorkelling and scuba diving",
-    "Catamaran sailing trips",
-    "Island hopping excursions",
-    "Beach yoga and wellness sessions",
-    "Sunset cocktail cruises",
-    "Water sports (kayaking, paddleboarding)",
-    "Fishing expeditions",
-    "Cultural tours to Cartagena",
-    "Private beach barbecues",
-    "Mangrove nature tours",
+    'Snorkelling and scuba diving',
+    'Catamaran sailing trips',
+    'Island hopping excursions',
+    'Beach yoga and wellness sessions',
+    'Sunset cocktail cruises',
+    'Water sports (kayaking, paddleboarding)',
+    'Fishing expeditions',
+    'Cultural tours to Cartagena',
+    'Private beach barbecues',
+    'Mangrove nature tours',
   ];
 
   const venues = [
     {
-      name: "Beachfront Villa Estate",
-      capacity: "Up to 30 guests",
-      features: ["Private beach", "Infinity pool", "Conference room", "Chef service"],
+      name: 'Beachfront Villa Estate',
+      capacity: 'Up to 30 guests',
+      features: ['Private beach', 'Infinity pool', 'Conference room', 'Chef service'],
     },
     {
-      name: "Boutique Island Resort",
-      capacity: "Up to 50 guests",
-      features: ["Multiple pools", "Spa facilities", "Meeting rooms", "Water sports centre"],
+      name: 'Boutique Island Resort',
+      capacity: 'Up to 50 guests',
+      features: ['Multiple pools', 'Spa facilities', 'Meeting rooms', 'Water sports centre'],
     },
     {
-      name: "Colonial Cartagena Palace",
-      capacity: "Up to 40 guests",
-      features: ["Historic setting", "Rooftop terrace", "City centre location", "Private courtyard"],
+      name: 'Colonial Cartagena Palace',
+      capacity: 'Up to 40 guests',
+      features: [
+        'Historic setting',
+        'Rooftop terrace',
+        'City centre location',
+        'Private courtyard',
+      ],
     },
   ];
 
@@ -115,15 +111,15 @@ const CaribbeanPage: React.FC = () => {
               </h2>
               <div className="mt-6 space-y-4 text-gray-600 leading-relaxed">
                 <p>
-                  Colombia's Caribbean coast offers the perfect blend of relaxation and
-                  inspiration for your corporate retreat. From the historic streets of Cartagena
-                  to the pristine beaches of the Rosario Islands, this region captivates with
-                  its vibrant culture and natural beauty.
+                  Colombia's Caribbean coast offers the perfect blend of relaxation and inspiration
+                  for your corporate retreat. From the historic streets of Cartagena to the pristine
+                  beaches of the Rosario Islands, this region captivates with its vibrant culture
+                  and natural beauty.
                 </p>
                 <p>
-                  Your team will bond over water activities, savour fresh seafood dinners
-                  on the beach, and find creative inspiration in one of the most beautiful
-                  coastal settings in South America.
+                  Your team will bond over water activities, savour fresh seafood dinners on the
+                  beach, and find creative inspiration in one of the most beautiful coastal settings
+                  in South America.
                 </p>
               </div>
               <div className="mt-8 flex flex-wrap gap-4">
@@ -175,7 +171,7 @@ const CaribbeanPage: React.FC = () => {
             </h2>
           </div>
           <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {highlights.map((highlight) => (
+            {highlights.map(highlight => (
               <div
                 key={highlight.title}
                 className="rounded-2xl bg-white p-8 shadow-lg transition-all duration-300 hover:shadow-xl"
@@ -205,11 +201,11 @@ const CaribbeanPage: React.FC = () => {
                 Team Activities & Experiences
               </h2>
               <p className="mt-6 text-gray-600 leading-relaxed">
-                From adventurous water sports to relaxing wellness sessions, the Caribbean
-                coast offers endless possibilities for team building and memorable experiences.
+                From adventurous water sports to relaxing wellness sessions, the Caribbean coast
+                offers endless possibilities for team building and memorable experiences.
               </p>
               <ul className="mt-8 grid gap-3 sm:grid-cols-2">
-                {activities.map((activity) => (
+                {activities.map(activity => (
                   <li key={activity} className="flex items-center gap-3 text-gray-700">
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
                       <Check className="h-4 w-4" />
@@ -242,7 +238,7 @@ const CaribbeanPage: React.FC = () => {
             </h2>
           </div>
           <div className="mt-16 grid gap-8 lg:grid-cols-3">
-            {venues.map((venue) => (
+            {venues.map(venue => (
               <div
                 key={venue.name}
                 className="overflow-hidden rounded-2xl bg-white shadow-lg transition-all duration-300 hover:shadow-xl"
@@ -255,12 +251,10 @@ const CaribbeanPage: React.FC = () => {
                   />
                 </div>
                 <div className="p-6">
-                  <h3 className="font-serif text-xl font-semibold text-gray-900">
-                    {venue.name}
-                  </h3>
+                  <h3 className="font-serif text-xl font-semibold text-gray-900">{venue.name}</h3>
                   <p className="mt-2 text-sm text-[#C9A227] font-medium">{venue.capacity}</p>
                   <ul className="mt-4 space-y-2">
-                    {venue.features.map((feature) => (
+                    {venue.features.map(feature => (
                       <li key={feature} className="flex items-center gap-2 text-sm text-gray-600">
                         <Check className="h-4 w-4 text-emerald-600" />
                         {feature}
@@ -281,8 +275,8 @@ const CaribbeanPage: React.FC = () => {
             Plan Your Caribbean Retreat
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-emerald-100">
-            Let us create an unforgettable Caribbean experience for your team.
-            Contact us today to start planning.
+            Let us create an unforgettable Caribbean experience for your team. Contact us today to
+            start planning.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link

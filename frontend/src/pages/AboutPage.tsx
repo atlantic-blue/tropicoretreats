@@ -1,7 +1,7 @@
-import React from "react";
-import { Link } from "react-router";
-import { Users, Heart, Globe, Award, Phone, Mail } from "lucide-react";
-import SEO from "../components/SEO";
+import React from 'react';
+import { Link } from 'react-router';
+import { Users, Heart, Globe, Award, Phone, Mail } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const AboutPage: React.FC = () => {
   return (
@@ -60,9 +60,9 @@ const AboutPage: React.FC = () => {
                   exclusive venues and experiences that cater to every corporate need.
                 </p>
                 <p>
-                  We handle every detail including accommodation, transport, activities, catering and
-                  entertainment, so you can focus on what matters most: connecting with your team
-                  and achieving your objectives.
+                  We handle every detail including accommodation, transport, activities, catering
+                  and entertainment, so you can focus on what matters most: connecting with your
+                  team and achieving your objectives.
                 </p>
               </div>
             </div>
@@ -96,29 +96,29 @@ const AboutPage: React.FC = () => {
             {[
               {
                 icon: Heart,
-                title: "Passion",
+                title: 'Passion',
                 description:
                   "We're passionate about Colombia and dedicated to sharing its beauty with the world through exceptional retreat experiences.",
               },
               {
                 icon: Users,
-                title: "Personalisation",
+                title: 'Personalisation',
                 description:
-                  "Every retreat is tailored to your unique needs. We listen, understand, and deliver bespoke experiences.",
+                  'Every retreat is tailored to your unique needs. We listen, understand, and deliver bespoke experiences.',
               },
               {
                 icon: Award,
-                title: "Excellence",
+                title: 'Excellence',
                 description:
-                  "We partner only with the finest venues and suppliers, ensuring every aspect of your retreat meets the highest standards.",
+                  'We partner only with the finest venues and suppliers, ensuring every aspect of your retreat meets the highest standards.',
               },
               {
                 icon: Globe,
-                title: "Sustainability",
+                title: 'Sustainability',
                 description:
                   "We're committed to responsible tourism, supporting local communities and protecting Colombia's natural heritage.",
               },
-            ].map((value) => (
+            ].map(value => (
               <div
                 key={value.title}
                 className="rounded-2xl bg-white p-8 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
@@ -179,18 +179,18 @@ const AboutPage: React.FC = () => {
                 </p>
                 <p>
                   The country's transformation over the past two decades has made it one of the
-                  world's most exciting emerging destinations, with world-class infrastructure,
-                  warm hospitality, and a vibrant culinary scene.
+                  world's most exciting emerging destinations, with world-class infrastructure, warm
+                  hospitality, and a vibrant culinary scene.
                 </p>
               </div>
               <ul className="mt-8 space-y-3">
                 {[
-                  "Year-round tropical climate",
-                  "Direct flights from major cities worldwide",
-                  "Rich biodiversity and natural wonders",
-                  "UNESCO World Heritage sites",
-                  "Award-winning gastronomy",
-                ].map((item) => (
+                  'Year-round tropical climate',
+                  'Direct flights from major cities worldwide',
+                  'Rich biodiversity and natural wonders',
+                  'UNESCO World Heritage sites',
+                  'Award-winning gastronomy',
+                ].map(item => (
                   <li key={item} className="flex items-center gap-3 text-gray-700">
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
                       ✓
@@ -211,8 +211,8 @@ const AboutPage: React.FC = () => {
             Ready to Plan Your Retreat?
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-emerald-100">
-            Let's create an unforgettable experience for your team. Get in touch today
-            and discover how we can bring your vision to life.
+            Let's create an unforgettable experience for your team. Get in touch today and discover
+            how we can bring your vision to life.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link

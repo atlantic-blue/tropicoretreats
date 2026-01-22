@@ -1,7 +1,7 @@
-import React from "react";
-import { Link } from "react-router";
-import { Shield } from "lucide-react";
-import SEO from "../components/SEO";
+import React from 'react';
+import { Link } from 'react-router';
+import { Shield } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const PrivacyPage: React.FC = () => {
   return (
@@ -32,9 +32,9 @@ const PrivacyPage: React.FC = () => {
           <div className="prose prose-lg max-w-none">
             <h2 className="font-serif text-2xl font-bold text-gray-900">1. Introduction</h2>
             <p className="mt-4 text-gray-600 leading-relaxed">
-              Tropico Retreats ("we", "our", or "us") is committed to protecting your privacy.
-              This Privacy Policy explains how we collect, use, disclose, and safeguard your
-              information when you visit our website or use our services.
+              Tropico Retreats ("we", "our", or "us") is committed to protecting your privacy. This
+              Privacy Policy explains how we collect, use, disclose, and safeguard your information
+              when you visit our website or use our services.
             </p>
 
             <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">
@@ -50,8 +50,8 @@ const PrivacyPage: React.FC = () => {
               <li>Communicate with us via email, phone, or WhatsApp</li>
             </ul>
             <p className="mt-4 text-gray-600 leading-relaxed">
-              This information may include your name, email address, phone number, company name,
-              and details about your retreat requirements.
+              This information may include your name, email address, phone number, company name, and
+              details about your retreat requirements.
             </p>
 
             <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">
@@ -97,14 +97,14 @@ const PrivacyPage: React.FC = () => {
               We do not sell your personal information. We may share your information with:
             </p>
             <ul className="mt-4 space-y-2 text-gray-600">
-              <li>Service providers who assist in delivering our services (venues, transport, etc.)</li>
+              <li>
+                Service providers who assist in delivering our services (venues, transport, etc.)
+              </li>
               <li>Professional advisers (lawyers, accountants)</li>
               <li>Regulatory authorities when required by law</li>
             </ul>
 
-            <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">
-              6. Data Security
-            </h2>
+            <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">6. Data Security</h2>
             <p className="mt-4 text-gray-600 leading-relaxed">
               We implement appropriate technical and organisational measures to protect your
               personal information against unauthorised access, alteration, disclosure, or
@@ -112,9 +112,7 @@ const PrivacyPage: React.FC = () => {
               guarantee absolute security.
             </p>
 
-            <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">
-              7. Your Rights
-            </h2>
+            <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">7. Your Rights</h2>
             <p className="mt-4 text-gray-600 leading-relaxed">
               Under applicable data protection laws, you may have the right to:
             </p>
@@ -128,9 +126,7 @@ const PrivacyPage: React.FC = () => {
               <li>Withdraw consent at any time</li>
             </ul>
 
-            <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">
-              8. Data Retention
-            </h2>
+            <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">8. Data Retention</h2>
             <p className="mt-4 text-gray-600 leading-relaxed">
               We retain your personal information only for as long as necessary to fulfil the
               purposes for which it was collected, including to satisfy legal, accounting, or
@@ -141,27 +137,24 @@ const PrivacyPage: React.FC = () => {
               9. International Transfers
             </h2>
             <p className="mt-4 text-gray-600 leading-relaxed">
-              Your information may be transferred to and processed in countries outside your
-              country of residence, including Colombia and the United Kingdom. We ensure
-              appropriate safeguards are in place to protect your information in accordance
-              with this Privacy Policy.
+              Your information may be transferred to and processed in countries outside your country
+              of residence, including Colombia and the United Kingdom. We ensure appropriate
+              safeguards are in place to protect your information in accordance with this Privacy
+              Policy.
             </p>
 
             <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">
               10. Changes to This Policy
             </h2>
             <p className="mt-4 text-gray-600 leading-relaxed">
-              We may update this Privacy Policy from time to time. We will notify you of any
-              changes by posting the new Privacy Policy on this page and updating the "Last
-              updated" date.
+              We may update this Privacy Policy from time to time. We will notify you of any changes
+              by posting the new Privacy Policy on this page and updating the "Last updated" date.
             </p>
 
-            <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">
-              11. Contact Us
-            </h2>
+            <h2 className="mt-12 font-serif text-2xl font-bold text-gray-900">11. Contact Us</h2>
             <p className="mt-4 text-gray-600 leading-relaxed">
-              If you have any questions about this Privacy Policy or our data practices,
-              please contact us:
+              If you have any questions about this Privacy Policy or our data practices, please
+              contact us:
             </p>
             <div className="mt-4 rounded-xl bg-gray-50 p-6">
               <p className="font-semibold text-gray-900">Tropico Retreats</p>
