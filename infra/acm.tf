@@ -5,7 +5,7 @@ resource "aws_acm_certificate" "www_certificate" {
   tags = merge(
     local.tags,
     {
-        managedBy = "Terraform",
+      managedBy = "Terraform",
     }
   )
 

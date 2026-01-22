@@ -16,3 +16,24 @@
 #   value     = module.ci_user.ci_secret_access_key
 #   sensitive = true
 # }
+
+# API Module Outputs
+output "api_endpoint" {
+  description = "API Gateway endpoint URL for the leads API"
+  value       = module.api.api_endpoint
+}
+
+output "api_id" {
+  description = "API Gateway ID"
+  value       = module.api.api_id
+}
+
+output "lambda_function_name" {
+  description = "Lambda function name for the create lead handler"
+  value       = module.api.lambda_function_name
+}
+
+output "dynamodb_table_name" {
+  description = "DynamoDB table name for leads"
+  value       = module.api.dynamodb_table_name
+}

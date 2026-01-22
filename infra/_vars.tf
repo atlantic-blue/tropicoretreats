@@ -11,15 +11,15 @@ variable "environment" {
 }
 
 variable "product_name" {
-    default = "tropico-retreats"
+  default = "tropico-retreats"
 }
 
 variable "www_google_site_verification_token" {
-    type = string
+  type = string
 }
 
 variable "invalidate_cache" {
-    description = "Set to true to invalidate CloudFront cache"
-    type        = bool
-    default     = false
+  description = "Set to true to invalidate CloudFront cache"
+  type        = bool
+  default     = false
 }

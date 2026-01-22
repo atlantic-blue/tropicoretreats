@@ -41,7 +41,7 @@ resource "aws_s3_bucket" "www" {
   tags = merge(
     local.tags,
     {
-        managedBy = "Terraform",
+      managedBy = "Terraform",
     }
   )
 }

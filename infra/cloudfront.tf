@@ -28,9 +28,9 @@ resource "null_resource" "cloudfront_invalidation" {
 resource "aws_cloudfront_cache_policy" "long_term_cache" {
   name        = "long-term-cache-policy"
   comment     = "1-year browser cache policy for static assets"
-  default_ttl = 31536000  # 1 year
-  max_ttl     = 31536000  # 1 year
-  min_ttl     = 31536000  # 1 year
+  default_ttl = 31536000 # 1 year
+  max_ttl     = 31536000 # 1 year
+  min_ttl     = 31536000 # 1 year
 
   parameters_in_cache_key_and_forwarded_to_origin {
     cookies_config {
@@ -48,8 +48,8 @@ resource "aws_cloudfront_cache_policy" "long_term_cache" {
 resource "aws_cloudfront_cache_policy" "short_term_cache" {
   name        = "short-term-cache-policy"
   comment     = "1-hour cache policy for HTML"
-  default_ttl = 3600   # 1 hour
-  max_ttl     = 86400  # 1 day
+  default_ttl = 3600  # 1 hour
+  max_ttl     = 86400 # 1 day
   min_ttl     = 0
 
   parameters_in_cache_key_and_forwarded_to_origin {
@@ -224,7 +224,7 @@ resource "aws_cloudfront_distribution" "www" {
   tags = merge(
     local.tags,
     {
-        managedBy = "Terraform",
+      managedBy = "Terraform",
     }
   )
 
