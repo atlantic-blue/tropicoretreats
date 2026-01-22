@@ -12,6 +12,9 @@ interface Env {
       key: string;
     };
   };
+  api: {
+    contactUrl: string;
+  };
 }
 
 const createEnv = (): Env => {
@@ -30,6 +33,9 @@ const createEnv = (): Env => {
       stripe: {
         key: process.env.PAYMENTS_STRIPE_KEY || '',
       },
+    },
+    api: {
+      contactUrl: process.env.API_URL || '',
     },
   };
 };
