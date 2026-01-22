@@ -1,3 +1,8 @@
+provider "aws" {
+  region  = var.aws_region
+  profile = var.aws_account
+}
+
 locals {
   tags = {
     product     = var.product_name
