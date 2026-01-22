@@ -8,10 +8,11 @@ interface Toast {
   type: ToastType;
   title: string;
   message?: string;
+  onRetry?: () => void;
 }
 
 interface ToastContextType {
-  showToast: (type: ToastType, title: string, message?: string) => void;
+  showToast: (type: ToastType, title: string, message?: string, onRetry?: () => void) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -27,9 +28,9 @@ export const useToast = () => {
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const showToast = useCallback((type: ToastType, title: string, message?: string) => {
+  const showToast = useCallback((type: ToastType, title: string, message?: string, onRetry?: () => void) => {
     const id = Math.random().toString(36).substring(2, 9);
-    setToasts(prev => [...prev, { id, type, title, message }]);
+    setToasts(prev => [...prev, { id, type, title, message, onRetry }]);
 
     // Auto-remove after 5 seconds
     setTimeout(() => {
@@ -68,11 +69,11 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       {children}
 
       {/* Toast Container */}
-      <div className="fixed right-4 top-24 z-[100] flex flex-col gap-3">
+      <div className="fixed bottom-6 left-1/2 z-[100] flex -translate-x-1/2 flex-col gap-3">
         {toasts.map(toast => (
           <div
             key={toast.id}
-            className={`flex w-80 items-start gap-3 rounded-xl border p-4 shadow-lg animate-in slide-in-from-right duration-300 ${getStyles(
+            className={`flex w-80 items-start gap-3 rounded-xl border p-4 shadow-lg animate-in slide-in-from-bottom duration-300 ${getStyles(
               toast.type
             )}`}
           >
@@ -80,6 +81,17 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             <div className="flex-1">
               <p className="font-semibold text-gray-900">{toast.title}</p>
               {toast.message && <p className="mt-1 text-sm text-gray-600">{toast.message}</p>}
+              {toast.onRetry && (
+                <button
+                  onClick={() => {
+                    removeToast(toast.id);
+                    toast.onRetry?.();
+                  }}
+                  className="mt-2 text-sm font-semibold text-red-700 hover:text-red-800 transition-colors"
+                >
+                  Try Again
+                </button>
+              )}
             </div>
             <button
               onClick={() => removeToast(toast.id)}
