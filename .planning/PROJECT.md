@@ -19,24 +19,29 @@ When a potential customer submits the contact form, the team is immediately noti
 - ✓ AWS infrastructure (S3, CloudFront, Route53, ACM) — existing
 - ✓ React 19 + TypeScript + Tailwind CSS design system — existing
 
-### Active
+### Active (MVP)
 
-- [ ] Backend API to receive and store contact form submissions
-- [ ] DynamoDB table to persist lead data
-- [ ] Email notification when form submitted
-- [ ] WhatsApp notification when form submitted
-- [ ] SMS notification when form submitted
-- [ ] Slack notification when form submitted
-- [ ] Admin dashboard frontend (separate from marketing site)
-- [ ] Cognito authentication for team members (6+ users)
-- [ ] Role-based access control for dashboard
-- [ ] Lead listing view with contact details
+- [ ] Backend API to receive and store contact form submissions (Lambda + API Gateway HTTP API)
+- [ ] DynamoDB table to persist lead data (single-table design with GSIs)
+- [ ] Connect marketing site contact form to API
+- [ ] Email notification when form submitted (SES)
+- [ ] Auto-reply email to customer confirming receipt
+- [ ] Cognito authentication for team members (6+ users, User Pool + Identity Pool)
+- [ ] Admin dashboard frontend (React 19, separate from marketing site)
+- [ ] Lead listing view with search/filter
 - [ ] Lead detail view with full information
-- [ ] Lead assignment to team members
-- [ ] Pipeline stage tracking (New → Contacted → Quoted → Won/Lost)
+- [ ] Lead status tracking (New → Contacted → Quoted → Won/Lost)
 - [ ] Temperature rating (Hot/Warm/Cold)
 - [ ] Notes on leads
-- [ ] Mark lead as contacted
+- [ ] Lead assignment to team members
+
+### Future (Post-MVP)
+
+- [ ] WhatsApp notification (requires Meta Business verification - 2-4 weeks)
+- [ ] SMS notification (SNS)
+- [ ] Slack notification (webhook)
+- [ ] Pipeline Kanban view
+- [ ] Follow-up reminders
 
 ### Out of Scope
 
@@ -67,11 +72,28 @@ The business uses AWS with a serverless approach. The marketing site is already 
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Build custom vs use CRM | Need control, avoid monthly fees, specific workflow requirements | — Pending |
-| AWS Cognito for auth | Already on AWS, serverless, handles user management | — Pending |
-| DynamoDB for storage | Serverless, scales to zero cost at low volume, fits AWS stack | — Pending |
-| Separate admin dashboard | Keep marketing site simple, different auth/access patterns | — Pending |
-| Multi-channel notifications | High-value leads, team must not miss any submission | — Pending |
+| Build custom vs use CRM | Need control, avoid monthly fees, specific workflow requirements | ✓ Build custom |
+| AWS Cognito for auth | Already on AWS, serverless, handles user management | ✓ Cognito User Pool + Identity Pool |
+| DynamoDB for storage | Serverless, scales to zero cost at low volume, fits AWS stack | ✓ On-Demand, single-table design |
+| Separate admin dashboard | Keep marketing site simple, different auth/access patterns | ✓ Separate React SPA |
+| Multi-channel notifications | High-value leads, team must not miss any submission | ✓ Email first, WhatsApp/SMS/Slack post-MVP |
+| API Gateway type | HTTP API 70% cheaper than REST, native JWT support | ✓ HTTP API |
+| Lambda runtime | Latest stable, cost-efficient architecture | ✓ Node.js 22.x on ARM64 |
+| IaC tool | Serverless-optimized, local testing, simplified syntax | ✓ AWS SAM |
+
+## Stack Summary
+
+| Layer | Technology |
+|-------|------------|
+| API | API Gateway HTTP API |
+| Compute | Lambda Node.js 22.x (ARM64) |
+| Database | DynamoDB On-Demand |
+| Auth | Cognito User Pool + Identity Pool |
+| Email | SES |
+| SMS | SNS (future) |
+| WhatsApp | Meta Cloud API (future) |
+| Frontend | React 19 + TypeScript + Tailwind + TanStack Query |
+| IaC | AWS SAM |
 
 ---
-*Last updated: 2026-01-22 after initialization*
+*Last updated: 2026-01-22 after requirements definition*
