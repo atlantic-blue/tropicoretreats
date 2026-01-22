@@ -1,22 +1,25 @@
-import { defineConfig } from "eslint/config";
-import typescriptParser from "@typescript-eslint/parser";
+import eslint from "@eslint/js";
+import tseslint from "typescript-eslint";
 
-export default defineConfig([
+export default tseslint.config(
+  eslint.configs.recommended,
+  ...tseslint.configs.recommended,
   {
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
-      parser: typescriptParser,
       parserOptions: {
-        ecmaVersion: "latest",
-        sourceType: "module",
         ecmaFeatures: {
           jsx: true,
         },
       },
     },
     rules: {
-      "no-unused-vars": "warn",
+      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-explicit-any": "warn",
       "no-console": "warn",
     },
   },
-]);
+  {
+    ignores: ["node_modules/**", "assets/**", "scripts/**"],
+  }
+);
