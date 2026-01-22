@@ -7,7 +7,7 @@ await esbuild.build({
   sourcemap: true,
   platform: 'node',
   target: 'node22',
-  outfile: 'dist/index.js',
+  outfile: 'dist/index.mjs',
   format: 'esm',
   external: ['@aws-sdk/*'],
   banner: {
@@ -15,4 +15,4 @@ await esbuild.build({
   },
 });
 
-console.log('Build complete: dist/index.js');
+console.log('Build complete: dist/index.mjs');
