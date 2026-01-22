@@ -30,7 +30,7 @@ This roadmap delivers a serverless lead management system for Tropico Retreats. 
 **Plans:** 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Create Lambda handler with Zod validation and DynamoDB persistence
+- [x] 01-01-PLAN.md — Create Lambda handler with Zod validation and DynamoDB persistence
 - [ ] 01-02-PLAN.md — Deploy Terraform infrastructure (API Gateway, Lambda, DynamoDB)
 
 **Notes:**
@@ -147,7 +147,7 @@ Plans:
 
 | Phase | Name | Status | Requirements |
 |-------|------|--------|--------------|
-| 1 | Core API | Planned | API-01, API-02 |
+| 1 | Core API | In Progress (1/2) | API-01, API-02 |
 | 2 | Frontend Integration | Pending | INT-01 |
 | 3 | Notifications | Pending | NOTF-01, NOTF-02 |
 | 4 | Admin Auth | Pending | AUTH-01 |

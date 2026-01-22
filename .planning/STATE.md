@@ -4,34 +4,35 @@
 
 **Core Value:** When a potential customer submits the contact form, the team is immediately notified and can access, track, and follow up on the lead through a central dashboard.
 
-**Current Focus:** Roadmap created, ready to begin Phase 1 (Core API).
+**Current Focus:** Phase 1 (Core API) in progress - Lambda handler code complete, infrastructure deployment next.
 
 ## Current Position
 
-**Phase:** Not started
-**Plan:** None active
-**Status:** Ready to plan Phase 1
+**Phase:** 1 of 5 (Core API)
+**Plan:** 1 of 2 in current phase
+**Status:** In progress
+**Last activity:** 2026-01-22 - Completed 01-01-PLAN.md
 
 ### Progress
 
 ```
-Phase 1: Core API          [ ] Not started
+Phase 1: Core API          [=] In progress (1/2 plans)
 Phase 2: Frontend Integration [ ] Not started
 Phase 3: Notifications     [ ] Not started
 Phase 4: Admin Auth        [ ] Not started
 Phase 5: Admin Dashboard   [ ] Not started
 ```
 
-**Overall:** 0/5 phases complete
+**Overall:** 1/10 plans complete (10%)
 
 ## Performance Metrics
 
 | Metric | Value |
 |--------|-------|
-| Plans completed | 0 |
-| Tasks completed | 0 |
+| Plans completed | 1 |
+| Tasks completed | 3 |
 | Blockers hit | 0 |
-| Decisions made | 0 |
+| Decisions made | 4 |
 
 ## Accumulated Context
 
@@ -43,6 +44,10 @@ Phase 5: Admin Dashboard   [ ] Not started
 | HTTP API over REST | 70% cheaper, native JWT support | Pre-planning |
 | Single-table DynamoDB | Simpler queries, cost-effective | Pre-planning |
 | Separate admin dashboard | Different auth patterns from marketing site | Pre-planning |
+| ESM module format | Node.js 22 Lambda runtime fully supports ESM | 01-01 |
+| External @aws-sdk/* | Pre-installed in Lambda runtime, reduces bundle | 01-01 |
+| ULID for lead IDs | Sortable, cryptographically secure | 01-01 |
+| Zod for validation | TypeScript-first, better type inference | 01-01 |
 
 ### Technical Notes
 
@@ -51,6 +56,8 @@ Phase 5: Admin Dashboard   [ ] Not started
 - **SES:** Verify domain and team emails before production
 - **Cognito:** Set up both User Pool AND Identity Pool
 - **WhatsApp:** Start Meta Business verification early if planning Phase 6
+- **Lambda handler pattern:** DynamoDB client singleton outside handler for warm starts
+- **Build artifact:** `backend/dist/index.js` (64KB) ready for Terraform deployment
 
 ### Open Questions
 
@@ -71,13 +78,13 @@ None at this time.
 ### Last Session
 
 **Date:** 2026-01-22
-**Activity:** Created roadmap with 5 phases covering 13 requirements
-**Outcome:** ROADMAP.md written, ready to plan Phase 1
+**Activity:** Executed 01-01-PLAN.md - Lambda handler code
+**Outcome:** 3 tasks completed, 3 commits made, build artifact ready
 
 ### Next Session
 
-**Resume with:** `/gsd:plan-phase 1` to create execution plan for Core API
-**Context needed:** SAM template structure, DynamoDB table design, Lambda handler patterns
+**Resume with:** `/gsd:execute-phase 1` to continue with 01-02-PLAN.md (Terraform infrastructure)
+**Context needed:** Backend dist artifact exists, ready for deployment
 
 ---
 
