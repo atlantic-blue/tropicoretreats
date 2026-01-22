@@ -22,7 +22,7 @@ Building a serverless lead management system on AWS to capture contact form subm
 - AWS Amplify Auth for Cognito integration
 
 **Infrastructure:**
-- AWS SAM for serverless deployment
+- Terraform for serverless deployment
 - Terraform for existing resources
 
 ## Table Stakes Features

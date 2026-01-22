@@ -79,7 +79,7 @@ The business uses AWS with a serverless approach. The marketing site is already 
 | Multi-channel notifications | High-value leads, team must not miss any submission | ✓ Email first, WhatsApp/SMS/Slack post-MVP |
 | API Gateway type | HTTP API 70% cheaper than REST, native JWT support | ✓ HTTP API |
 | Lambda runtime | Latest stable, cost-efficient architecture | ✓ Node.js 22.x on ARM64 |
-| IaC tool | Serverless-optimized, local testing, simplified syntax | ✓ AWS SAM |
+| IaC tool | Serverless-optimized, local testing, simplified syntax | ✓ Terraform |
 
 ## Stack Summary
 
@@ -93,7 +93,7 @@ The business uses AWS with a serverless approach. The marketing site is already 
 | SMS | SNS (future) |
 | WhatsApp | Meta Cloud API (future) |
 | Frontend | React 19 + TypeScript + Tailwind + TanStack Query |
-| IaC | AWS SAM |
+| IaC | Terraform |
 
 ---
 *Last updated: 2026-01-22 after requirements definition*

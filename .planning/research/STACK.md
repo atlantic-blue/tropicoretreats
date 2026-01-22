@@ -55,7 +55,7 @@
 - `uuid`, `zod`
 
 ### Infrastructure
-- **AWS SAM** - Serverless-optimized, local testing, simplified syntax
+- **Terraform** - Serverless-optimized, local testing, simplified syntax
 
 ## What NOT to Use
 
@@ -64,7 +64,7 @@
 | REST API | 3x more expensive | HTTP API |
 | AWS SDK v2 | Deprecated | AWS SDK v3 |
 | DynamoDB Provisioned | Over-engineering | On-Demand |
-| Serverless Framework | Vendor lock-in | AWS SAM |
+| Serverless Framework | Vendor lock-in | Terraform |
 | Express.js in Lambda | Unnecessary overhead | Native handlers |
 
 ## Confidence Assessment

@@ -39,7 +39,7 @@ Phase 5: Admin Dashboard   [ ] Not started
 
 | Decision | Rationale | Phase |
 |----------|-----------|-------|
-| AWS SAM for IaC | Serverless-optimized, local testing | Pre-planning |
+| Terraform for IaC | Serverless-optimized, local testing | Pre-planning |
 | HTTP API over REST | 70% cheaper, native JWT support | Pre-planning |
 | Single-table DynamoDB | Simpler queries, cost-effective | Pre-planning |
 | Separate admin dashboard | Different auth patterns from marketing site | Pre-planning |
