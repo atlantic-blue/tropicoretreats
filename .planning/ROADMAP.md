@@ -59,12 +59,13 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Create API service, types, and enhance Toast component
-- [ ] 02-02-PLAN.md — Wire ContactPage to API with loading/success/error states
+- [x] 02-01-PLAN.md — Create API service, types, and enhance Toast component
+- [x] 02-02-PLAN.md — Wire ContactPage to API with loading/success/error states
 
 **Notes:**
 - Environment-specific API URL (dev vs prod)
 - Handle network errors gracefully
+- Refactored to reusable ContactForm component used on both Contact page and Landing page
 
 ---
 
@@ -154,7 +155,7 @@ Plans:
 | Phase | Name | Status | Requirements |
 |-------|------|--------|--------------|
 | 1 | Core API | Complete (2/2) | API-01, API-02 |
-| 2 | Frontend Integration | Planned (0/2) | INT-01 |
+| 2 | Frontend Integration | Complete (2/2) | INT-01 |
 | 3 | Notifications | Pending | NOTF-01, NOTF-02 |
 | 4 | Admin Auth | Pending | AUTH-01 |
 | 5 | Admin Dashboard | Pending | DASH-01, DASH-02, DASH-03, DASH-04, DASH-05, DASH-06, DASH-07 |
