@@ -4,14 +4,14 @@
 
 **Core Value:** When a potential customer submits the contact form, the team is immediately notified and can access, track, and follow up on the lead through a central dashboard.
 
-**Current Focus:** Phase 3 (Notifications) complete. Ready for Phase 4 (Admin Auth).
+**Current Focus:** Phase 4 (Admin Auth) in progress. Plan 01 complete.
 
 ## Current Position
 
-**Phase:** 3 of 5 (Notifications) - COMPLETE
-**Plan:** 4 of 4 in current phase
-**Status:** Complete
-**Last activity:** 2026-01-23 - Completed 03-04-PLAN.md (Verification)
+**Phase:** 4 of 5 (Admin Auth) - IN PROGRESS
+**Plan:** 1 of 2 in current phase
+**Status:** In progress
+**Last activity:** 2026-01-23 - Completed 04-01-PLAN.md (Cognito Infrastructure)
 
 ### Progress
 
@@ -19,20 +19,20 @@
 Phase 1: Core API             [XX] Complete (2/2 plans)
 Phase 2: Frontend Integration [XX] Complete (2/2 plans)
 Phase 3: Notifications        [XXXX] Complete (4/4 plans)
-Phase 4: Admin Auth           [  ] Not started
+Phase 4: Admin Auth           [X ] In progress (1/2 plans)
 Phase 5: Admin Dashboard      [  ] Not started
 ```
 
-**Overall:** 8/10 plans complete (80%)
+**Overall:** 9/10 plans complete (90%)
 
 ## Performance Metrics
 
 | Metric | Value |
 |--------|-------|
-| Plans completed | 8 |
-| Tasks completed | 22 |
+| Plans completed | 9 |
+| Tasks completed | 25 |
 | Blockers hit | 0 |
-| Decisions made | 27 |
+| Decisions made | 32 |
 
 ## Accumulated Context
 
@@ -72,6 +72,12 @@ Phase 5: Admin Dashboard      [  ] Not started
 | Conditional SES IAM policy | Scoped to specific from-addresses for security | 03-03 |
 | Import existing AWS resources | Preserve data and avoid downtime vs recreate | 03-03 |
 | Production environment deployment | Dev resources didn't exist, production focus | 03-03 |
+| amazon-cognito-identity-js over Amplify | Terraform-managed Cognito, lighter bundle, no Amplify CLI dependency | 04-planning |
+| Admin-only user creation | No public sign-up, users created by admins only | 04-01 |
+| MFA optional with software token | Enabled but not required for flexibility | 04-01 |
+| No client secret for browser app | Browser cannot securely store secrets | 04-01 |
+| ALLOW_ADMIN_USER_PASSWORD_AUTH | Enables CLI testing in Plan 02 | 04-01 |
+| Localhost callback URLs in all environments | Simplifies dev testing across environments | 04-01 |
 
 ### Technical Notes
 
@@ -79,7 +85,8 @@ Phase 5: Admin Dashboard      [  ] Not started
 - **CORS:** Configured at API Gateway level with localhost + production origins
 - **SES:** Domain identity verified with DKIM SUCCESS status
 - **SES sandbox:** Still in sandbox mode - verify team emails or request production access
-- **Cognito:** Set up both User Pool AND Identity Pool
+- **Cognito:** User Pool only (no Identity Pool needed for API-only access)
+- **Frontend auth:** amazon-cognito-identity-js (not Amplify SDK - works with Terraform-managed pools)
 - **WhatsApp:** Start Meta Business verification early if planning Phase 6
 - **Lambda handler pattern:** DynamoDB/SES client singletons outside handler for warm starts
 - **Build artifact:** `backend/dist/*.mjs` - createLead.mjs (64KB), processLeadNotifications.mjs (19KB)
@@ -96,6 +103,10 @@ Phase 5: Admin Dashboard      [  ] Not started
 - **Event source mapping:** INSERT filter, batch_size=10, max_retry=3
 - **DLQ:** tropico-notifications-dlq-production with 14-day retention
 - **Terraform state:** All resources managed from `infra/` directory (not `infra/api/` separately)
+- **Cognito User Pool ID:** us-east-1_vWmyWWEwX
+- **Cognito Client ID:** i1req5nr80ihn4skjelp0ldp1
+- **Cognito Issuer:** https://cognito-idp.us-east-1.amazonaws.com/us-east-1_vWmyWWEwX
+- **JWT authorizer:** Protects GET /leads route, returns 401 without valid token
 
 ### Open Questions
 
@@ -116,13 +127,13 @@ None at this time.
 ### Last Session
 
 **Date:** 2026-01-23
-**Activity:** Completed 03-04-PLAN.md - End-to-end notification testing and verification
-**Outcome:** 3 tasks completed, test lead submitted, team and customer emails verified, user approved checkpoint, Phase 3 complete
+**Activity:** Completed 04-01-PLAN.md - Cognito User Pool, App Client, JWT Authorizer
+**Outcome:** 3 tasks completed, Cognito deployed, GET /leads returns 401 without token
 
 ### Next Session
 
-**Resume with:** Plan Phase 4 (Admin Auth) - Cognito User Pool setup for admin dashboard
-**Context needed:** Review admin authentication requirements in ROADMAP.md
+**Resume with:** Plan 04-02 (Admin Auth) - Create test admin user and verify authentication flow
+**Context needed:** Review 04-01-SUMMARY.md for deployed resource IDs
 
 ---
 
