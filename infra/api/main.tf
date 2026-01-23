@@ -11,6 +11,8 @@ locals {
     managed_by  = "terraform"
   }
 
+  domain_name = "tropicoretreat.com"
+
   cors_origins = length(var.cors_allowed_origins) > 0 ? var.cors_allowed_origins : (
     var.environment == "production"
     ? ["https://tropicoretreat.com", "https://www.tropicoretreat.com"]
