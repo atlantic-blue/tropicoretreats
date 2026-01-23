@@ -89,10 +89,10 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Configure SES domain identity with DKIM verification
-- [ ] 03-02-PLAN.md — Create notification Lambda handler and email templates
-- [ ] 03-03-PLAN.md — Deploy notification infrastructure (DynamoDB Streams, Lambda, DLQ)
-- [ ] 03-04-PLAN.md — Verify end-to-end notification flow
+- [x] 03-01-PLAN.md — Configure SES domain identity with DKIM verification
+- [x] 03-02-PLAN.md — Create notification Lambda handler and email templates
+- [x] 03-03-PLAN.md — Deploy notification infrastructure (DynamoDB Streams, Lambda, DLQ)
+- [x] 03-04-PLAN.md — Verify end-to-end notification flow
 
 **Notes:**
 - SES domain verification required before production
@@ -117,11 +117,17 @@ Plans:
 4. Token refresh works (session persists beyond 1 hour)
 5. Admin can sign out and token is invalidated
 
+**Plans:** 2 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Create Cognito User Pool, App Client, and JWT authorizer
+- [ ] 04-02-PLAN.md — Create admin user and verify authentication flow
+
 **Notes:**
-- Cognito User Pool for authentication
-- Cognito Identity Pool if AWS resource access needed
-- API Gateway JWT authorizer for protected routes
-- Register localhost, staging, and prod callback URLs
+- Cognito User Pool for authentication (no Identity Pool needed for API-only access)
+- API Gateway HTTP API native JWT authorizer
+- Admin-only user creation (no public sign-up)
+- Amplify v6 functional APIs for frontend integration in Phase 5
 
 ---
 
@@ -164,8 +170,8 @@ Plans:
 |-------|------|--------|--------------|
 | 1 | Core API | Complete (2/2) | API-01, API-02 |
 | 2 | Frontend Integration | Complete (2/2) | INT-01 |
-| 3 | Notifications | Pending (0/4) | NOTF-01, NOTF-02 |
-| 4 | Admin Auth | Pending | AUTH-01 |
+| 3 | Notifications | Complete (4/4) | NOTF-01, NOTF-02 |
+| 4 | Admin Auth | Pending (0/2) | AUTH-01 |
 | 5 | Admin Dashboard | Pending | DASH-01, DASH-02, DASH-03, DASH-04, DASH-05, DASH-06, DASH-07 |
 
 ---
