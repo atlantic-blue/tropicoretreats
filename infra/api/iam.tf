@@ -64,3 +64,97 @@ resource "aws_iam_role_policy" "lambda_logs" {
     ]
   })
 }
+
+# ====================================================================
+# Notification Lambda IAM Policies
+# ====================================================================
+
+# CloudWatch Logs permissions for Notification Lambda
+resource "aws_iam_role_policy" "notifications_logs" {
+  name = "cloudwatch-logs"
+  role = aws_iam_role.notifications_lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/tropico-notifications-${var.environment}:*"
+      }
+    ]
+  })
+}
+
+# DynamoDB Streams permissions for Notification Lambda
+resource "aws_iam_role_policy" "notifications_dynamodb_streams" {
+  name = "dynamodb-streams"
+  role = aws_iam_role.notifications_lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetRecords",
+          "dynamodb:GetShardIterator",
+          "dynamodb:DescribeStream",
+          "dynamodb:ListStreams"
+        ]
+        Resource = aws_dynamodb_table.leads.stream_arn
+      }
+    ]
+  })
+}
+
+# SES permissions for Notification Lambda
+resource "aws_iam_role_policy" "notifications_ses" {
+  name = "ses-send"
+  role = aws_iam_role.notifications_lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ses:SendEmail",
+          "ses:SendRawEmail"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "ses:FromAddress" = [
+              var.from_email_team,
+              var.from_email_customer
+            ]
+          }
+        }
+      }
+    ]
+  })
+}
+
+# SQS DLQ permissions for Notification Lambda (failed record destination)
+resource "aws_iam_role_policy" "notifications_dlq" {
+  name = "sqs-dlq"
+  role = aws_iam_role.notifications_lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:SendMessage"
+        ]
+        Resource = aws_sqs_queue.notifications_dlq.arn
+      }
+    ]
+  })
+}
