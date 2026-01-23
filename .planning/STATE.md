@@ -4,14 +4,14 @@
 
 **Core Value:** When a potential customer submits the contact form, the team is immediately notified and can access, track, and follow up on the lead through a central dashboard.
 
-**Current Focus:** Phase 4 (Admin Auth) in progress. Plan 01 complete.
+**Current Focus:** Phase 4 (Admin Auth) complete. Ready for Phase 5 (Admin Dashboard).
 
 ## Current Position
 
-**Phase:** 4 of 5 (Admin Auth) - IN PROGRESS
-**Plan:** 1 of 2 in current phase
-**Status:** In progress
-**Last activity:** 2026-01-23 - Completed 04-01-PLAN.md (Cognito Infrastructure)
+**Phase:** 4 of 5 (Admin Auth) - COMPLETE
+**Plan:** 2 of 2 in current phase
+**Status:** Phase complete
+**Last activity:** 2026-01-23 - Completed 04-02-PLAN.md (Admin User and Auth Flow Verification)
 
 ### Progress
 
@@ -19,20 +19,20 @@
 Phase 1: Core API             [XX] Complete (2/2 plans)
 Phase 2: Frontend Integration [XX] Complete (2/2 plans)
 Phase 3: Notifications        [XXXX] Complete (4/4 plans)
-Phase 4: Admin Auth           [X ] In progress (1/2 plans)
+Phase 4: Admin Auth           [XX] Complete (2/2 plans)
 Phase 5: Admin Dashboard      [  ] Not started
 ```
 
-**Overall:** 9/10 plans complete (90%)
+**Overall:** 10/12 plans complete (83%)
 
 ## Performance Metrics
 
 | Metric | Value |
 |--------|-------|
-| Plans completed | 9 |
-| Tasks completed | 25 |
+| Plans completed | 10 |
+| Tasks completed | 28 |
 | Blockers hit | 0 |
-| Decisions made | 32 |
+| Decisions made | 35 |
 
 ## Accumulated Context
 
@@ -78,6 +78,9 @@ Phase 5: Admin Dashboard      [  ] Not started
 | No client secret for browser app | Browser cannot securely store secrets | 04-01 |
 | ALLOW_ADMIN_USER_PASSWORD_AUTH | Enables CLI testing in Plan 02 | 04-01 |
 | Localhost callback URLs in all environments | Simplifies dev testing across environments | 04-01 |
+| Admin user email admin@tropicoretreat.com | Consistent with domain naming convention | 04-02 |
+| Password set via admin-set-user-password | Bypasses FORCE_CHANGE_PASSWORD for testing | 04-02 |
+| GET /leads 400 validates authorizer | Lambda reached means JWT passed; proves auth works | 04-02 |
 
 ### Technical Notes
 
@@ -107,6 +110,11 @@ Phase 5: Admin Dashboard      [  ] Not started
 - **Cognito Client ID:** i1req5nr80ihn4skjelp0ldp1
 - **Cognito Issuer:** https://cognito-idp.us-east-1.amazonaws.com/us-east-1_vWmyWWEwX
 - **JWT authorizer:** Protects GET /leads route, returns 401 without valid token
+- **Admin user:** admin@tropicoretreat.com (CONFIRMED status)
+- **Admin user sub:** 14480488-a031-7045-707c-dd115798955f
+- **Auth flow pattern:** USER_SRP_AUTH (browser), ADMIN_USER_PASSWORD_AUTH (CLI)
+- **Token refresh:** REFRESH_TOKEN_AUTH flow returns new access/id tokens
+- **Sign out:** admin-user-global-sign-out revokes all refresh tokens
 
 ### Open Questions
 
@@ -127,13 +135,13 @@ None at this time.
 ### Last Session
 
 **Date:** 2026-01-23
-**Activity:** Completed 04-01-PLAN.md - Cognito User Pool, App Client, JWT Authorizer
-**Outcome:** 3 tasks completed, Cognito deployed, GET /leads returns 401 without token
+**Activity:** Completed 04-02-PLAN.md - Admin user creation and authentication flow verification
+**Outcome:** Admin user created (admin@tropicoretreat.com), full auth flow tested (sign-in, tokens, protected endpoint, refresh, sign-out)
 
 ### Next Session
 
-**Resume with:** Plan 04-02 (Admin Auth) - Create test admin user and verify authentication flow
-**Context needed:** Review 04-01-SUMMARY.md for deployed resource IDs
+**Resume with:** Phase 5 (Admin Dashboard) - Build React admin dashboard with Cognito auth
+**Context needed:** Review 04-01-SUMMARY.md and 04-02-SUMMARY.md for Cognito configuration
 
 ---
 
