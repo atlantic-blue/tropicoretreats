@@ -4,35 +4,35 @@
 
 **Core Value:** When a potential customer submits the contact form, the team is immediately notified and can access, track, and follow up on the lead through a central dashboard.
 
-**Current Focus:** Phase 3 (Notifications) in progress - Notification Lambda handler and email templates complete. Ready for infrastructure deployment (Plan 03-03).
+**Current Focus:** Phase 3 (Notifications) in progress - Notification infrastructure deployed. Ready for end-to-end testing (Plan 03-04).
 
 ## Current Position
 
 **Phase:** 3 of 5 (Notifications)
-**Plan:** 2 of 4 in current phase
+**Plan:** 3 of 4 in current phase
 **Status:** In progress
-**Last activity:** 2026-01-23 - Completed 03-02-PLAN.md
+**Last activity:** 2026-01-23 - Completed 03-03-PLAN.md
 
 ### Progress
 
 ```
 Phase 1: Core API             [XX] Complete (2/2 plans)
 Phase 2: Frontend Integration [XX] Complete (2/2 plans)
-Phase 3: Notifications        [XX] In progress (2/4 plans)
+Phase 3: Notifications        [XXX] In progress (3/4 plans)
 Phase 4: Admin Auth           [  ] Not started
 Phase 5: Admin Dashboard      [  ] Not started
 ```
 
-**Overall:** 6/10 plans complete (60%)
+**Overall:** 7/10 plans complete (70%)
 
 ## Performance Metrics
 
 | Metric | Value |
 |--------|-------|
-| Plans completed | 6 |
-| Tasks completed | 16 |
+| Plans completed | 7 |
+| Tasks completed | 19 |
 | Blockers hit | 0 |
-| Decisions made | 21 |
+| Decisions made | 27 |
 
 ## Accumulated Context
 
@@ -66,6 +66,12 @@ Phase 5: Admin Dashboard      [  ] Not started
 | Email template { subject, html, text } | Consistent structure for all email types | 03-02 |
 | Independent email sends | Team/customer emails don't block each other on failure | 03-02 |
 | esbuild outdir + outExtension | Multi-entry build for separate handler bundles | 03-02 |
+| NEW_IMAGE stream view type | Only need new data for notifications, reduces payload | 03-03 |
+| Maximum 3 retry attempts | Balance between reliability and DLQ escalation | 03-03 |
+| 14-day DLQ message retention | Sufficient time for debugging failed notifications | 03-03 |
+| Conditional SES IAM policy | Scoped to specific from-addresses for security | 03-03 |
+| Import existing AWS resources | Preserve data and avoid downtime vs recreate | 03-03 |
+| Production environment deployment | Dev resources didn't exist, production focus | 03-03 |
 
 ### Technical Notes
 
@@ -77,7 +83,7 @@ Phase 5: Admin Dashboard      [  ] Not started
 - **WhatsApp:** Start Meta Business verification early if planning Phase 6
 - **Lambda handler pattern:** DynamoDB/SES client singletons outside handler for warm starts
 - **Build artifact:** `backend/dist/*.mjs` - createLead.mjs (64KB), processLeadNotifications.mjs (19KB)
-- **API endpoint (dev):** https://u57cra1p8h.execute-api.us-east-1.amazonaws.com
+- **API endpoint (production):** https://8wr3uo2gi5.execute-api.us-east-1.amazonaws.com
 - **Frontend API config:** env.api.contactUrl from process.env.API_URL
 - **Toast retry pattern:** onRetry callback for network error recovery
 - **Controlled form pattern:** useState + handleChange + handleSubmit
@@ -86,6 +92,9 @@ Phase 5: Admin Dashboard      [  ] Not started
 - **Email templates:** Table-based HTML with inline CSS, plain text alternative
 - **Stream handler:** Filter INSERT events, unmarshall NewImage, send emails
 - **Reference number format:** TR-YYYY-XXXXXX (e.g., TR-2026-A3F7B2)
+- **DynamoDB Streams:** Enabled on tropico-leads-production with NEW_IMAGE view type
+- **Event source mapping:** INSERT filter, batch_size=10, max_retry=3
+- **DLQ:** tropico-notifications-dlq-production with 14-day retention
 
 ### Open Questions
 
@@ -106,13 +115,13 @@ None at this time.
 ### Last Session
 
 **Date:** 2026-01-23
-**Activity:** Executed 03-02-PLAN.md - Notification Lambda handler and email templates
-**Outcome:** 3 tasks completed, SES client + templates + handler created, esbuild updated for multi-entry
+**Activity:** Executed 03-03-PLAN.md - Notification infrastructure deployment
+**Outcome:** 3 tasks completed, DynamoDB streams enabled, notification Lambda deployed with event source mapping, SQS DLQ configured, 4 IAM policies attached
 
 ### Next Session
 
-**Resume with:** Execute Plan 03-03 (Infrastructure) - DynamoDB streams, notification Lambda deployment
-**Context needed:** None - handler code complete and building successfully
+**Resume with:** Execute Plan 03-04 (Testing) - End-to-end notification flow verification
+**Context needed:** None - infrastructure deployed and ready for testing
 
 ---
 
