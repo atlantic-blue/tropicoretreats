@@ -1,7 +1,7 @@
 {
   "mode": "interactive",
   "depth": "comprehensive",
-  "parallelization": false,
+  "parallelization": true,
   "commit_docs": true,
   "model_profile": "quality",
   "workflow": {
