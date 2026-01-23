@@ -25,3 +25,28 @@ variable "cors_allowed_origins" {
   type        = list(string)
   default     = []
 }
+
+# Notification configuration variables
+variable "team_emails" {
+  description = "Comma-separated list of team email addresses for notifications"
+  type        = string
+  default     = ""
+}
+
+variable "from_email_team" {
+  description = "From email address for team notifications"
+  type        = string
+  default     = "leads@tropicoretreat.com"
+}
+
+variable "from_email_customer" {
+  description = "From email address for customer auto-replies"
+  type        = string
+  default     = "hello@tropicoretreat.com"
+}
+
+variable "from_name" {
+  description = "From name for all emails"
+  type        = string
+  default     = "Tropico Retreats"
+}

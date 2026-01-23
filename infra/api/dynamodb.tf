@@ -4,6 +4,10 @@ resource "aws_dynamodb_table" "leads" {
   hash_key     = "PK"
   range_key    = "SK"
 
+  # Enable streams for notification trigger
+  stream_enabled   = true
+  stream_view_type = "NEW_IMAGE" # Only need new data for notifications
+
   attribute {
     name = "PK"
     type = "S"
