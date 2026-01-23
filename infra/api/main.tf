@@ -32,7 +32,7 @@ resource "aws_apigatewayv2_api" "leads" {
 
   cors_configuration {
     allow_origins = local.cors_origins
-    allow_methods = ["POST", "OPTIONS"]
+    allow_methods = ["GET", "POST", "OPTIONS"]
     allow_headers = ["Content-Type", "Authorization"]
     max_age       = 3600
   }
@@ -74,4 +74,36 @@ resource "aws_apigatewayv2_route" "create_lead" {
   api_id    = aws_apigatewayv2_api.leads.id
   route_key = "POST /leads"
   target    = "integrations/${aws_apigatewayv2_integration.create_lead.id}"
+}
+
+# JWT Authorizer with Cognito
+# Source: https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-jwt-authorizer.html
+resource "aws_apigatewayv2_authorizer" "cognito" {
+  api_id           = aws_apigatewayv2_api.leads.id
+  authorizer_type  = "JWT"
+  identity_sources = ["$request.header.Authorization"]
+  name             = "tropico-cognito-authorizer-${var.environment}"
+
+  jwt_configuration {
+    audience = [aws_cognito_user_pool_client.admin.id]
+    issuer   = "https://${aws_cognito_user_pool.admin.endpoint}"
+  }
+}
+
+# Integration for GET /leads (reuses existing Lambda - will return 405 until Phase 5 adds GET handler)
+resource "aws_apigatewayv2_integration" "get_leads" {
+  api_id                 = aws_apigatewayv2_api.leads.id
+  integration_type       = "AWS_PROXY"
+  integration_method     = "POST"
+  integration_uri        = aws_lambda_function.create_lead.invoke_arn
+  payload_format_version = "2.0"
+}
+
+# Protected route for GET /leads (requires valid JWT)
+resource "aws_apigatewayv2_route" "get_leads" {
+  api_id             = aws_apigatewayv2_api.leads.id
+  route_key          = "GET /leads"
+  target             = "integrations/${aws_apigatewayv2_integration.get_leads.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
 }
