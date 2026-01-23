@@ -4,33 +4,33 @@
 
 **Core Value:** When a potential customer submits the contact form, the team is immediately notified and can access, track, and follow up on the lead through a central dashboard.
 
-**Current Focus:** Phase 3 (Notifications) in progress - Notification infrastructure deployed. Ready for end-to-end testing (Plan 03-04).
+**Current Focus:** Phase 3 (Notifications) complete. Ready for Phase 4 (Admin Auth).
 
 ## Current Position
 
-**Phase:** 3 of 5 (Notifications)
-**Plan:** 3 of 4 in current phase
-**Status:** In progress
-**Last activity:** 2026-01-23 - Completed 03-03-PLAN.md
+**Phase:** 3 of 5 (Notifications) - COMPLETE
+**Plan:** 4 of 4 in current phase
+**Status:** Complete
+**Last activity:** 2026-01-23 - Completed 03-04-PLAN.md (Verification)
 
 ### Progress
 
 ```
 Phase 1: Core API             [XX] Complete (2/2 plans)
 Phase 2: Frontend Integration [XX] Complete (2/2 plans)
-Phase 3: Notifications        [XXX] In progress (3/4 plans)
+Phase 3: Notifications        [XXXX] Complete (4/4 plans)
 Phase 4: Admin Auth           [  ] Not started
 Phase 5: Admin Dashboard      [  ] Not started
 ```
 
-**Overall:** 7/10 plans complete (70%)
+**Overall:** 8/10 plans complete (80%)
 
 ## Performance Metrics
 
 | Metric | Value |
 |--------|-------|
-| Plans completed | 7 |
-| Tasks completed | 19 |
+| Plans completed | 8 |
+| Tasks completed | 22 |
 | Blockers hit | 0 |
 | Decisions made | 27 |
 
@@ -83,7 +83,7 @@ Phase 5: Admin Dashboard      [  ] Not started
 - **WhatsApp:** Start Meta Business verification early if planning Phase 6
 - **Lambda handler pattern:** DynamoDB/SES client singletons outside handler for warm starts
 - **Build artifact:** `backend/dist/*.mjs` - createLead.mjs (64KB), processLeadNotifications.mjs (19KB)
-- **API endpoint (production):** https://8wr3uo2gi5.execute-api.us-east-1.amazonaws.com
+- **API endpoint (production):** https://u57cra1p8h.execute-api.us-east-1.amazonaws.com
 - **Frontend API config:** env.api.contactUrl from process.env.API_URL
 - **Toast retry pattern:** onRetry callback for network error recovery
 - **Controlled form pattern:** useState + handleChange + handleSubmit
@@ -95,6 +95,7 @@ Phase 5: Admin Dashboard      [  ] Not started
 - **DynamoDB Streams:** Enabled on tropico-leads-production with NEW_IMAGE view type
 - **Event source mapping:** INSERT filter, batch_size=10, max_retry=3
 - **DLQ:** tropico-notifications-dlq-production with 14-day retention
+- **Terraform state:** All resources managed from `infra/` directory (not `infra/api/` separately)
 
 ### Open Questions
 
@@ -115,13 +116,13 @@ None at this time.
 ### Last Session
 
 **Date:** 2026-01-23
-**Activity:** Executed 03-03-PLAN.md - Notification infrastructure deployment
-**Outcome:** 3 tasks completed, DynamoDB streams enabled, notification Lambda deployed with event source mapping, SQS DLQ configured, 4 IAM policies attached
+**Activity:** Completed 03-04-PLAN.md - End-to-end notification testing and verification
+**Outcome:** 3 tasks completed, test lead submitted, team and customer emails verified, user approved checkpoint, Phase 3 complete
 
 ### Next Session
 
-**Resume with:** Execute Plan 03-04 (Testing) - End-to-end notification flow verification
-**Context needed:** None - infrastructure deployed and ready for testing
+**Resume with:** Plan Phase 4 (Admin Auth) - Cognito User Pool setup for admin dashboard
+**Context needed:** Review admin authentication requirements in ROADMAP.md
 
 ---
 
