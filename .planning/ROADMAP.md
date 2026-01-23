@@ -156,11 +156,23 @@ Plans:
 7. Admin can add notes to a lead and see note history with timestamps
 8. Admin can assign a lead to a team member from a dropdown
 
+**Plans:** 7 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Extend backend types and DynamoDB operations (Lead temperature/assignee, Note type)
+- [ ] 05-02-PLAN.md — Create Lambda handlers for admin API endpoints (leadsAdmin, users)
+- [ ] 05-03-PLAN.md — Deploy Terraform infrastructure for admin API routes
+- [ ] 05-04-PLAN.md — Scaffold admin React app with Vite, Cognito auth, TanStack Query
+- [ ] 05-05-PLAN.md — Create admin dashboard hosting infrastructure (S3, CloudFront)
+- [ ] 05-06-PLAN.md — Build lead list page with card grid, filters, pagination
+- [ ] 05-07-PLAN.md — Build lead detail page with editing, notes, and deploy
+
 **Notes:**
 - React 19 SPA with TanStack Query for server state
-- AWS Amplify Auth for Cognito integration
+- amazon-cognito-identity-js for Cognito integration (Terraform-managed pools)
 - Deploy to S3/CloudFront at admin.tropicoretreat.com
 - Separate from marketing site (different auth patterns)
+- Wave structure: Backend (1-3), Frontend scaffold + Infra (4), UI features + Deploy (5-6)
 
 ---
 
@@ -172,7 +184,7 @@ Plans:
 | 2 | Frontend Integration | Complete (2/2) | INT-01 |
 | 3 | Notifications | Complete (4/4) | NOTF-01, NOTF-02 |
 | 4 | Admin Auth | Complete (2/2) | AUTH-01 |
-| 5 | Admin Dashboard | Pending | DASH-01, DASH-02, DASH-03, DASH-04, DASH-05, DASH-06, DASH-07 |
+| 5 | Admin Dashboard | Planned (0/7) | DASH-01, DASH-02, DASH-03, DASH-04, DASH-05, DASH-06, DASH-07 |
 
 ---
 
