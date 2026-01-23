@@ -1,13 +1,17 @@
 import * as esbuild from 'esbuild';
 
 await esbuild.build({
-  entryPoints: ['src/handlers/createLead.ts'],
+  entryPoints: [
+    'src/handlers/createLead.ts',
+    'src/handlers/processLeadNotifications.ts',
+  ],
   bundle: true,
   minify: true,
   sourcemap: true,
   platform: 'node',
   target: 'node22',
-  outfile: 'dist/index.mjs',
+  outdir: 'dist',
+  outExtension: { '.js': '.mjs' },
   format: 'esm',
   external: ['@aws-sdk/*'],
   banner: {
@@ -15,4 +19,4 @@ await esbuild.build({
   },
 });
 
-console.log('Build complete: dist/index.mjs');
+console.log('Build complete: dist/createLead.mjs, dist/processLeadNotifications.mjs');
