@@ -4,35 +4,35 @@
 
 **Core Value:** When a potential customer submits the contact form, the team is immediately notified and can access, track, and follow up on the lead through a central dashboard.
 
-**Current Focus:** Phase 3 (Notifications) in progress - SES domain identity verified with DKIM. Continuing with email templates and Lambda notification trigger.
+**Current Focus:** Phase 3 (Notifications) in progress - Notification Lambda handler and email templates complete. Ready for infrastructure deployment (Plan 03-03).
 
 ## Current Position
 
 **Phase:** 3 of 5 (Notifications)
-**Plan:** 1 of 4 in current phase
+**Plan:** 2 of 4 in current phase
 **Status:** In progress
-**Last activity:** 2026-01-23 - Completed 03-01-PLAN.md
+**Last activity:** 2026-01-23 - Completed 03-02-PLAN.md
 
 ### Progress
 
 ```
 Phase 1: Core API             [XX] Complete (2/2 plans)
 Phase 2: Frontend Integration [XX] Complete (2/2 plans)
-Phase 3: Notifications        [X ] In progress (1/4 plans)
+Phase 3: Notifications        [XX] In progress (2/4 plans)
 Phase 4: Admin Auth           [  ] Not started
 Phase 5: Admin Dashboard      [  ] Not started
 ```
 
-**Overall:** 5/10 plans complete (50%)
+**Overall:** 6/10 plans complete (60%)
 
 ## Performance Metrics
 
 | Metric | Value |
 |--------|-------|
-| Plans completed | 5 |
-| Tasks completed | 13 |
+| Plans completed | 6 |
+| Tasks completed | 16 |
 | Blockers hit | 0 |
-| Decisions made | 16 |
+| Decisions made | 21 |
 
 ## Accumulated Context
 
@@ -61,6 +61,11 @@ Phase 5: Admin Dashboard      [  ] Not started
 | ContactForm component extraction | Reusable form on Contact page and Landing page | 02-02 |
 | domain_name local in api module | Simpler than passing as variable, domain is constant | 03-01 |
 | Data source for Route53 zone lookup | Follows existing pattern, no module refactoring needed | 03-01 |
+| SES client singleton | Follows dynamodb.ts pattern for warm start reuse | 03-02 |
+| Reference number TR-YYYY-XXXXXX | crypto.randomBytes(3) for 6 hex chars, year prefix | 03-02 |
+| Email template { subject, html, text } | Consistent structure for all email types | 03-02 |
+| Independent email sends | Team/customer emails don't block each other on failure | 03-02 |
+| esbuild outdir + outExtension | Multi-entry build for separate handler bundles | 03-02 |
 
 ### Technical Notes
 
@@ -70,14 +75,17 @@ Phase 5: Admin Dashboard      [  ] Not started
 - **SES sandbox:** Still in sandbox mode - verify team emails or request production access
 - **Cognito:** Set up both User Pool AND Identity Pool
 - **WhatsApp:** Start Meta Business verification early if planning Phase 6
-- **Lambda handler pattern:** DynamoDB client singleton outside handler for warm starts
-- **Build artifact:** `backend/dist/index.mjs` (64KB) - note .mjs extension for ESM
+- **Lambda handler pattern:** DynamoDB/SES client singletons outside handler for warm starts
+- **Build artifact:** `backend/dist/*.mjs` - createLead.mjs (64KB), processLeadNotifications.mjs (19KB)
 - **API endpoint (dev):** https://u57cra1p8h.execute-api.us-east-1.amazonaws.com
 - **Frontend API config:** env.api.contactUrl from process.env.API_URL
 - **Toast retry pattern:** onRetry callback for network error recovery
 - **Controlled form pattern:** useState + handleChange + handleSubmit
 - **Loading UX pattern:** spinner + text change + fieldset disabled
 - **SES email addresses:** leads@tropicoretreat.com (team), hello@tropicoretreat.com (customer)
+- **Email templates:** Table-based HTML with inline CSS, plain text alternative
+- **Stream handler:** Filter INSERT events, unmarshall NewImage, send emails
+- **Reference number format:** TR-YYYY-XXXXXX (e.g., TR-2026-A3F7B2)
 
 ### Open Questions
 
@@ -98,13 +106,13 @@ None at this time.
 ### Last Session
 
 **Date:** 2026-01-23
-**Activity:** Executed 03-01-PLAN.md - SES domain identity with DKIM
-**Outcome:** 2 tasks completed, SES domain identity created, DKIM verification SUCCESS
+**Activity:** Executed 03-02-PLAN.md - Notification Lambda handler and email templates
+**Outcome:** 3 tasks completed, SES client + templates + handler created, esbuild updated for multi-entry
 
 ### Next Session
 
-**Resume with:** Execute 03-02-PLAN.md - Email templates for team notifications and customer auto-replies
-**Context needed:** SES domain identity is verified, ready to create email templates
+**Resume with:** Execute Plan 03-03 (Infrastructure) - DynamoDB streams, notification Lambda deployment
+**Context needed:** None - handler code complete and building successfully
 
 ---
 
