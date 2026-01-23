@@ -4,35 +4,35 @@
 
 **Core Value:** When a potential customer submits the contact form, the team is immediately notified and can access, track, and follow up on the lead through a central dashboard.
 
-**Current Focus:** Phase 2 (Frontend Integration) complete - Contact form on both landing page and contact page submits to API with loading/success/error feedback. Ready for Phase 3 (Notifications).
+**Current Focus:** Phase 3 (Notifications) in progress - SES domain identity verified with DKIM. Continuing with email templates and Lambda notification trigger.
 
 ## Current Position
 
-**Phase:** 2 of 5 (Frontend Integration)
-**Plan:** 2 of 2 in current phase
-**Status:** Phase complete
-**Last activity:** 2026-01-23 - Completed 02-02-PLAN.md
+**Phase:** 3 of 5 (Notifications)
+**Plan:** 1 of 4 in current phase
+**Status:** In progress
+**Last activity:** 2026-01-23 - Completed 03-01-PLAN.md
 
 ### Progress
 
 ```
 Phase 1: Core API             [XX] Complete (2/2 plans)
 Phase 2: Frontend Integration [XX] Complete (2/2 plans)
-Phase 3: Notifications        [  ] Not started
+Phase 3: Notifications        [X ] In progress (1/4 plans)
 Phase 4: Admin Auth           [  ] Not started
 Phase 5: Admin Dashboard      [  ] Not started
 ```
 
-**Overall:** 4/10 plans complete (40%)
+**Overall:** 5/10 plans complete (50%)
 
 ## Performance Metrics
 
 | Metric | Value |
 |--------|-------|
-| Plans completed | 4 |
-| Tasks completed | 11 |
+| Plans completed | 5 |
+| Tasks completed | 13 |
 | Blockers hit | 0 |
-| Decisions made | 14 |
+| Decisions made | 16 |
 
 ## Accumulated Context
 
@@ -59,12 +59,15 @@ Phase 5: Admin Dashboard      [  ] Not started
 | Submit button outside fieldset | Shows loading spinner while inputs disabled | 02-02 |
 | Generic handleChange with e.target.name | Handles all input types uniformly | 02-02 |
 | ContactForm component extraction | Reusable form on Contact page and Landing page | 02-02 |
+| domain_name local in api module | Simpler than passing as variable, domain is constant | 03-01 |
+| Data source for Route53 zone lookup | Follows existing pattern, no module refactoring needed | 03-01 |
 
 ### Technical Notes
 
 - **Dev environment:** Use `-dev` suffix for all resources
 - **CORS:** Configured at API Gateway level with localhost + production origins
-- **SES:** Verify domain and team emails before production
+- **SES:** Domain identity verified with DKIM SUCCESS status
+- **SES sandbox:** Still in sandbox mode - verify team emails or request production access
 - **Cognito:** Set up both User Pool AND Identity Pool
 - **WhatsApp:** Start Meta Business verification early if planning Phase 6
 - **Lambda handler pattern:** DynamoDB client singleton outside handler for warm starts
@@ -74,6 +77,7 @@ Phase 5: Admin Dashboard      [  ] Not started
 - **Toast retry pattern:** onRetry callback for network error recovery
 - **Controlled form pattern:** useState + handleChange + handleSubmit
 - **Loading UX pattern:** spinner + text change + fieldset disabled
+- **SES email addresses:** leads@tropicoretreat.com (team), hello@tropicoretreat.com (customer)
 
 ### Open Questions
 
@@ -94,13 +98,13 @@ None at this time.
 ### Last Session
 
 **Date:** 2026-01-23
-**Activity:** Executed 02-02-PLAN.md - Contact form API integration
-**Outcome:** 2 tasks completed (1 auto, 1 checkpoint), user verified all flows
+**Activity:** Executed 03-01-PLAN.md - SES domain identity with DKIM
+**Outcome:** 2 tasks completed, SES domain identity created, DKIM verification SUCCESS
 
 ### Next Session
 
-**Resume with:** Execute Phase 3 (Notifications) - email notifications on lead submission
-**Context needed:** None - frontend integration complete, API endpoint functional
+**Resume with:** Execute 03-02-PLAN.md - Email templates for team notifications and customer auto-replies
+**Context needed:** SES domain identity is verified, ready to create email templates
 
 ---
 
