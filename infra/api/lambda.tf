@@ -1,7 +1,7 @@
 data "archive_file" "lambda" {
   type        = "zip"
-  source_file = "${path.module}/../../backend/dist/index.mjs"
-  output_path = "${path.module}/../../backend/dist/lambda.zip"
+  source_file = "${path.module}/../../backend/dist/createLead.mjs"
+  output_path = "${path.module}/../../backend/dist/create-lead-lambda.zip"
 }
 
 resource "aws_cloudwatch_log_group" "lambda" {
@@ -14,7 +14,7 @@ resource "aws_lambda_function" "create_lead" {
   filename         = data.archive_file.lambda.output_path
   function_name    = "tropico-create-lead-${var.environment}"
   role             = aws_iam_role.lambda.arn
-  handler          = "index.handler"
+  handler          = "createLead.handler"
   source_code_hash = data.archive_file.lambda.output_base64sha256
   runtime          = "nodejs22.x"
   architectures    = ["arm64"]
