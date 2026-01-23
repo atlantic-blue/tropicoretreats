@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import SEO, { localBusinessSchema, faqSchema } from '../components/SEO';
+import ContactForm from '../components/ContactForm';
 import {
   Building2,
   Bus,
@@ -11,7 +12,6 @@ import {
   MapPin,
   Music,
   Phone,
-  Send,
   Sparkles,
   Target,
   Theater,
@@ -1004,130 +1004,7 @@ const TropicoRetreatsPage: React.FC = () => {
 
             {/* Right: Contact Form */}
             <div className="rounded-3xl bg-white p-8 shadow-2xl md:p-10">
-              <h3 className="text-2xl font-bold text-gray-900">Send Us an Enquiry</h3>
-              <p className="mt-2 text-gray-600">
-                Fill out the form below and we'll be in touch shortly.
-              </p>
-
-              <form className="mt-8 space-y-5">
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <div>
-                    <label
-                      htmlFor="firstName"
-                      className="block text-sm font-semibold text-gray-700"
-                    >
-                      First Name *
-                    </label>
-                    <input
-                      type="text"
-                      id="firstName"
-                      name="firstName"
-                      required
-                      className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-gray-900 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                      placeholder="John"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700">
-                      Last Name *
-                    </label>
-                    <input
-                      type="text"
-                      id="lastName"
-                      name="lastName"
-                      required
-                      className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-gray-900 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                      placeholder="Smith"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
-                    Email Address *
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    required
-                    className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-gray-900 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                    placeholder="john@company.com"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="company" className="block text-sm font-semibold text-gray-700">
-                    Company Name
-                  </label>
-                  <input
-                    type="text"
-                    id="company"
-                    name="company"
-                    className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-gray-900 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                    placeholder="Company Ltd"
-                  />
-                </div>
-
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <div>
-                    <label
-                      htmlFor="groupSize"
-                      className="block text-sm font-semibold text-gray-700"
-                    >
-                      Group Size
-                    </label>
-                    <select
-                      id="groupSize"
-                      name="groupSize"
-                      className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-gray-900 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                    >
-                      <option value="">Select size</option>
-                      <option value="8-15">8-15 guests</option>
-                      <option value="16-25">16-25 guests</option>
-                      <option value="26-40">26-40 guests</option>
-                      <option value="40+">40+ guests</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="preferredDates"
-                      className="block text-sm font-semibold text-gray-700"
-                    >
-                      Preferred Dates
-                    </label>
-                    <input
-                      type="text"
-                      id="preferredDates"
-                      name="preferredDates"
-                      className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-gray-900 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                      placeholder="e.g., March 2026"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="message" className="block text-sm font-semibold text-gray-700">
-                    Tell Us About Your Retreat *
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows={4}
-                    required
-                    className="mt-2 w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-gray-900 transition-colors focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                    placeholder="What are your goals for the retreat? Any specific activities or experiences you're interested in?"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-[#C9A227] px-8 py-4 text-sm font-bold uppercase tracking-widest text-white shadow-lg shadow-[#C9A227]/30 transition-all duration-300 hover:bg-[#B8860B] hover:shadow-xl hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227] focus-visible:ring-offset-2"
-                >
-                  <Send className="h-4 w-4" />
-                  Send Enquiry
-                </button>
-              </form>
+              <ContactForm />
             </div>
           </div>
         </div>
