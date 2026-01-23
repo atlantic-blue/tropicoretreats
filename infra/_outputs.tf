@@ -37,3 +37,19 @@ output "dynamodb_table_name" {
   description = "DynamoDB table name for leads"
   value       = module.api.dynamodb_table_name
 }
+
+# Cognito Outputs
+output "cognito_user_pool_id" {
+  description = "Cognito User Pool ID"
+  value       = module.api.cognito_user_pool_id
+}
+
+output "cognito_user_pool_endpoint" {
+  description = "Cognito User Pool endpoint"
+  value       = module.api.cognito_user_pool_endpoint
+}
+
+output "cognito_client_id" {
+  description = "Cognito App Client ID"
+  value       = module.api.cognito_client_id
+}
