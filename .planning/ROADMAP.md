@@ -120,14 +120,14 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Create Cognito User Pool, App Client, and JWT authorizer
-- [ ] 04-02-PLAN.md — Create admin user and verify authentication flow
+- [x] 04-01-PLAN.md — Create Cognito User Pool, App Client, and JWT authorizer
+- [x] 04-02-PLAN.md — Create admin user and verify authentication flow
 
 **Notes:**
 - Cognito User Pool for authentication (no Identity Pool needed for API-only access)
 - API Gateway HTTP API native JWT authorizer
 - Admin-only user creation (no public sign-up)
-- Amplify v6 functional APIs for frontend integration in Phase 5
+- amazon-cognito-identity-js for frontend integration in Phase 5 (Terraform-managed Cognito)
 
 ---
 
@@ -171,7 +171,7 @@ Plans:
 | 1 | Core API | Complete (2/2) | API-01, API-02 |
 | 2 | Frontend Integration | Complete (2/2) | INT-01 |
 | 3 | Notifications | Complete (4/4) | NOTF-01, NOTF-02 |
-| 4 | Admin Auth | Pending (0/2) | AUTH-01 |
+| 4 | Admin Auth | Complete (2/2) | AUTH-01 |
 | 5 | Admin Dashboard | Pending | DASH-01, DASH-02, DASH-03, DASH-04, DASH-05, DASH-06, DASH-07 |
 
 ---
