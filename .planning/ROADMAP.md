@@ -86,10 +86,18 @@ Plans:
 4. Auto-reply includes expected response timeframe
 5. Notification failures do not block lead storage (async/decoupled)
 
+**Plans:** 4 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Configure SES domain identity with DKIM verification
+- [ ] 03-02-PLAN.md — Create notification Lambda handler and email templates
+- [ ] 03-03-PLAN.md — Deploy notification infrastructure (DynamoDB Streams, Lambda, DLQ)
+- [ ] 03-04-PLAN.md — Verify end-to-end notification flow
+
 **Notes:**
 - SES domain verification required before production
 - Verify all team email addresses in SES sandbox for dev testing
-- Consider SQS for async notification processing
+- DynamoDB Streams for decoupled notification processing
 
 ---
 
@@ -156,7 +164,7 @@ Plans:
 |-------|------|--------|--------------|
 | 1 | Core API | Complete (2/2) | API-01, API-02 |
 | 2 | Frontend Integration | Complete (2/2) | INT-01 |
-| 3 | Notifications | Pending | NOTF-01, NOTF-02 |
+| 3 | Notifications | Pending (0/4) | NOTF-01, NOTF-02 |
 | 4 | Admin Auth | Pending | AUTH-01 |
 | 5 | Admin Dashboard | Pending | DASH-01, DASH-02, DASH-03, DASH-04, DASH-05, DASH-06, DASH-07 |
 
@@ -195,4 +203,4 @@ Plans:
 
 ---
 
-*Last updated: 2026-01-22*
+*Last updated: 2026-01-23*
