@@ -32,7 +32,7 @@ resource "aws_apigatewayv2_api" "leads" {
 
   cors_configuration {
     allow_origins = local.cors_origins
-    allow_methods = ["GET", "POST", "OPTIONS"]
+    allow_methods = ["GET", "POST", "PATCH", "OPTIONS"]
     allow_headers = ["Content-Type", "Authorization"]
     max_age       = 3600
   }
@@ -90,12 +90,14 @@ resource "aws_apigatewayv2_authorizer" "cognito" {
   }
 }
 
-# Integration for GET /leads (reuses existing Lambda - will return 405 until Phase 5 adds GET handler)
-resource "aws_apigatewayv2_integration" "get_leads" {
+# ====================================================================
+# Leads Admin Integration (single integration for multiple admin routes)
+# ====================================================================
+resource "aws_apigatewayv2_integration" "leads_admin" {
   api_id                 = aws_apigatewayv2_api.leads.id
   integration_type       = "AWS_PROXY"
   integration_method     = "POST"
-  integration_uri        = aws_lambda_function.create_lead.invoke_arn
+  integration_uri        = aws_lambda_function.leads_admin.invoke_arn
   payload_format_version = "2.0"
 }
 
@@ -103,7 +105,63 @@ resource "aws_apigatewayv2_integration" "get_leads" {
 resource "aws_apigatewayv2_route" "get_leads" {
   api_id             = aws_apigatewayv2_api.leads.id
   route_key          = "GET /leads"
-  target             = "integrations/${aws_apigatewayv2_integration.get_leads.id}"
+  target             = "integrations/${aws_apigatewayv2_integration.leads_admin.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+# Protected route for GET /leads/{id} (requires valid JWT)
+resource "aws_apigatewayv2_route" "get_lead" {
+  api_id             = aws_apigatewayv2_api.leads.id
+  route_key          = "GET /leads/{id}"
+  target             = "integrations/${aws_apigatewayv2_integration.leads_admin.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+# Protected route for PATCH /leads/{id} (requires valid JWT)
+resource "aws_apigatewayv2_route" "patch_lead" {
+  api_id             = aws_apigatewayv2_api.leads.id
+  route_key          = "PATCH /leads/{id}"
+  target             = "integrations/${aws_apigatewayv2_integration.leads_admin.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+# Protected route for POST /leads/{id}/notes (requires valid JWT)
+resource "aws_apigatewayv2_route" "create_note" {
+  api_id             = aws_apigatewayv2_api.leads.id
+  route_key          = "POST /leads/{id}/notes"
+  target             = "integrations/${aws_apigatewayv2_integration.leads_admin.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+# Protected route for PATCH /leads/{id}/notes/{noteId} (requires valid JWT)
+resource "aws_apigatewayv2_route" "patch_note" {
+  api_id             = aws_apigatewayv2_api.leads.id
+  route_key          = "PATCH /leads/{id}/notes/{noteId}"
+  target             = "integrations/${aws_apigatewayv2_integration.leads_admin.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+# ====================================================================
+# Users Integration (for GET /users - Cognito user listing)
+# ====================================================================
+resource "aws_apigatewayv2_integration" "users" {
+  api_id                 = aws_apigatewayv2_api.leads.id
+  integration_type       = "AWS_PROXY"
+  integration_method     = "POST"
+  integration_uri        = aws_lambda_function.users.invoke_arn
+  payload_format_version = "2.0"
+}
+
+# Protected route for GET /users (requires valid JWT)
+resource "aws_apigatewayv2_route" "get_users" {
+  api_id             = aws_apigatewayv2_api.leads.id
+  route_key          = "GET /users"
+  target             = "integrations/${aws_apigatewayv2_integration.users.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
 }
