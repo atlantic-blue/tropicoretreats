@@ -42,3 +42,23 @@ export const serverError = (
   statusCode: 500,
   body: JSON.stringify({ error: message }),
 });
+
+/**
+ * Returns a 200 OK response.
+ *
+ * @param data - Response body data
+ */
+export const ok = (data: unknown): APIGatewayProxyResultV2 => ({
+  statusCode: 200,
+  body: JSON.stringify(data),
+});
+
+/**
+ * Returns a 404 Not Found response.
+ *
+ * @param message - Error message (default: 'Not found')
+ */
+export const notFound = (message = 'Not found'): APIGatewayProxyResultV2 => ({
+  statusCode: 404,
+  body: JSON.stringify({ error: message }),
+});
