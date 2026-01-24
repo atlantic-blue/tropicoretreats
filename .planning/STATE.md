@@ -92,6 +92,10 @@ Phase 5: Admin Dashboard      [XXXX ] In progress (4/5 plans)
 | Shared Lambda IAM role | Reuse existing lambda role for all API Lambda functions | 05-03 |
 | data.archive_file for Lambda zipping | Consistent with existing pattern vs npm script | 05-03 |
 | Targeted terraform apply | Handle integration/route dependency order for API Gateway | 05-03 |
+| Vite React admin app on port 5174 | Different port from frontend marketing site at 5173 | 05-04 |
+| Tailwind CSS v4 with @import | Modern PostCSS integration, cleaner output | 05-04 |
+| AuthContext handles newPasswordRequired | Support first-time login after admin creates user | 05-04 |
+| TanStack Query 5min staleTime | Balance between freshness and API calls for lead data | 05-04 |
 | Reuse wildcard ACM certificate | Existing *.tropicoretreat.com covers admin subdomain, no new cert needed | 05-05 |
 | CloudFront OAC over OAI | Use modern Origin Access Control instead of legacy Origin Access Identity | 05-05 |
 | Share CloudFront cache policies | Reuse existing long_term_cache and short_term_cache policies | 05-05 |
@@ -145,6 +149,12 @@ Phase 5: Admin Dashboard      [XXXX ] In progress (4/5 plans)
 - **Admin URL:** https://admin.tropicoretreat.com
 - **Admin deploy command:** aws s3 sync ./dist s3://admin.tropicoretreat.com --delete
 - **Admin cache invalidation:** aws cloudfront create-invalidation --distribution-id E2PCJ44NUGPNHQ --paths "/*"
+- **Admin dashboard stack (05-04):** Vite + React 19 + TypeScript + TanStack Query v5 + React Router v7 + Tailwind v4
+- **Admin dev server:** Port 5174 (distinct from frontend at 5173)
+- **Admin auth pattern:** AuthContext with USER_SRP_AUTH flow, newPasswordRequired handling
+- **Admin protected routes:** AppShell component redirects to /login when not authenticated
+- **Admin QueryClient config:** 5min staleTime, 30min gcTime, 1 retry, refetchOnWindowFocus
+- **Admin build output:** 352KB JS bundle, 10KB CSS (Tailwind)
 
 ### Open Questions
 
