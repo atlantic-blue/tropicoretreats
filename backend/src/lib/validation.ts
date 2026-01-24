@@ -44,3 +44,73 @@ export const LeadSchema = z.object({
 
 /** TypeScript type inferred from the Zod schema */
 export type LeadInput = z.infer<typeof LeadSchema>;
+
+/**
+ * Zod schema for note creation (POST /leads/{id}/notes).
+ */
+export const NoteCreateSchema = z.object({
+  content: z.string().min(1, 'Note content is required').max(5000),
+});
+
+export type NoteCreateInput = z.infer<typeof NoteCreateSchema>;
+
+/**
+ * Zod schema for note update (PATCH /leads/{id}/notes/{noteId}).
+ */
+export const NoteUpdateSchema = z.object({
+  content: z.string().min(1, 'Note content is required').max(5000),
+});
+
+export type NoteUpdateInput = z.infer<typeof NoteUpdateSchema>;
+
+/**
+ * Zod schema for lead update (PATCH /leads/{id}).
+ * At least one field must be provided.
+ */
+export const LeadUpdateSchema = z
+  .object({
+    status: z.enum(['NEW', 'CONTACTED', 'QUOTED', 'WON', 'LOST']).optional(),
+    temperature: z.enum(['HOT', 'WARM', 'COLD']).optional(),
+    assigneeId: z.string().optional(),
+    assigneeName: z.string().optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: 'At least one field must be provided',
+  });
+
+export type LeadUpdateInput = z.infer<typeof LeadUpdateSchema>;
+
+/**
+ * Status progression order for validation.
+ * Leads should progress forward: NEW -> CONTACTED -> QUOTED -> WON/LOST
+ */
+const STATUS_ORDER: Record<string, number> = {
+  NEW: 0,
+  CONTACTED: 1,
+  QUOTED: 2,
+  WON: 3,
+  LOST: 3,
+};
+
+/**
+ * Validates that status progression is forward-only.
+ * Leads cannot move backwards in the pipeline.
+ *
+ * @param currentStatus - Current status of the lead
+ * @param newStatus - Proposed new status
+ * @returns true if progression is valid (forward or same level)
+ */
+export function validateStatusProgression(
+  currentStatus: string,
+  newStatus: string
+): boolean {
+  const currentOrder = STATUS_ORDER[currentStatus];
+  const newOrder = STATUS_ORDER[newStatus];
+
+  // Allow if both statuses are valid and new status is at same or higher order
+  if (currentOrder === undefined || newOrder === undefined) {
+    return false;
+  }
+
+  return newOrder >= currentOrder;
+}
