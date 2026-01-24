@@ -5,6 +5,7 @@ import { queryClient } from './lib/queryClient';
 import LoginPage from './pages/LoginPage';
 import AppShell from './components/layout/AppShell';
 import { LeadsListPage } from './pages/LeadsListPage';
+import { LeadDetailPage } from './pages/LeadDetailPage';
 
 function App() {
   return (
@@ -16,14 +17,7 @@ function App() {
             <Route path="/" element={<AppShell />}>
               <Route index element={<Navigate to="/leads" replace />} />
               <Route path="leads" element={<LeadsListPage />} />
-              <Route
-                path="leads/:id"
-                element={
-                  <div className="text-gray-600">
-                    Lead detail (Plan 05-07)
-                  </div>
-                }
-              />
+              <Route path="leads/:id" element={<LeadDetailPage />} />
             </Route>
           </Routes>
         </BrowserRouter>
