@@ -9,9 +9,9 @@
 ## Current Position
 
 **Phase:** 5 of 5 (Admin Dashboard)
-**Plan:** 1 of 4 in current phase
+**Plan:** 2 of 4 in current phase
 **Status:** In progress
-**Last activity:** 2026-01-24 - Completed 05-01-PLAN.md (Backend Types and DynamoDB Operations)
+**Last activity:** 2026-01-24 - Completed 05-02-PLAN.md (Lambda Handlers for Admin Dashboard)
 
 ### Progress
 
@@ -20,19 +20,19 @@ Phase 1: Core API             [XX] Complete (2/2 plans)
 Phase 2: Frontend Integration [XX] Complete (2/2 plans)
 Phase 3: Notifications        [XXXX] Complete (4/4 plans)
 Phase 4: Admin Auth           [XX] Complete (2/2 plans)
-Phase 5: Admin Dashboard      [X   ] In progress (1/4 plans)
+Phase 5: Admin Dashboard      [XX  ] In progress (2/4 plans)
 ```
 
-**Overall:** 11/14 plans complete (79%)
+**Overall:** 12/14 plans complete (86%)
 
 ## Performance Metrics
 
 | Metric | Value |
 |--------|-------|
-| Plans completed | 11 |
-| Tasks completed | 31 |
+| Plans completed | 12 |
+| Tasks completed | 34 |
 | Blockers hit | 0 |
-| Decisions made | 40 |
+| Decisions made | 43 |
 
 ## Accumulated Context
 
@@ -86,6 +86,9 @@ Phase 5: Admin Dashboard      [X   ] In progress (1/4 plans)
 | Note SK format NOTE#{timestamp}#{noteId} | Enables chronological sorting via SK comparison | 05-01 |
 | Forward-only status progression | Business rule preventing leads from moving backwards in pipeline | 05-01 |
 | Base64-encoded pagination cursor | Safely encodes DynamoDB LastEvaluatedKey for URL transport | 05-01 |
+| APIGatewayProxyEventV2WithJWTAuthorizer type | Proper typing for handlers with JWT authorizer, includes claims access | 05-02 |
+| Multi-route Lambda handler pattern | Single handler routes requests based on HTTP method and path | 05-02 |
+| System notes for field changes | Auto-log status/temperature/assignee changes as SYSTEM type notes | 05-02 |
 
 ### Technical Notes
 
@@ -124,6 +127,10 @@ Phase 5: Admin Dashboard      [X   ] In progress (1/4 plans)
 - **Lead assignee:** Optional assigneeId (Cognito sub) and assigneeName (denormalized)
 - **Note storage:** Co-located with leads using PK=LEAD#{leadId}, SK=NOTE#{timestamp}#{noteId}
 - **DynamoDB operations:** getLeads (filters/pagination), getLead, updateLead, getNotes, putNote, updateNote
+- **Lambda handlers (05-02):** leadsAdmin.mjs (72KB), users.mjs (1KB)
+- **leadsAdmin routes:** GET /leads, GET /leads/{id}, PATCH /leads/{id}, POST /leads/{id}/notes, PATCH /leads/{id}/notes/{noteId}
+- **users route:** GET /users (lists confirmed Cognito users for assignee dropdown)
+- **JWT claims extraction:** event.requestContext.authorizer.jwt.claims.sub/email
 
 ### Open Questions
 
@@ -144,13 +151,13 @@ None at this time.
 ### Last Session
 
 **Date:** 2026-01-24
-**Activity:** Completed 05-01-PLAN.md - Backend types and DynamoDB operations for admin dashboard
-**Outcome:** Extended Lead type with temperature/assignee, added Note type, implemented 6 DynamoDB operations for dashboard queries/updates
+**Activity:** Completed 05-02-PLAN.md - Lambda handlers for admin dashboard API endpoints
+**Outcome:** Created leadsAdmin handler (5 routes) and users handler, updated esbuild config
 
 ### Next Session
 
-**Resume with:** Phase 5 Plan 02 - API endpoints for leads and notes
-**Context needed:** Review 05-01-SUMMARY.md for types and DynamoDB operations
+**Resume with:** Phase 5 Plan 03 - API Gateway routes for admin endpoints
+**Context needed:** Review 05-02-SUMMARY.md for handler routes and patterns
 
 ---
 
