@@ -4,14 +4,14 @@
 
 **Core Value:** When a potential customer submits the contact form, the team is immediately notified and can access, track, and follow up on the lead through a central dashboard.
 
-**Current Focus:** Phase 4 (Admin Auth) complete. Ready for Phase 5 (Admin Dashboard).
+**Current Focus:** Phase 5 (Admin Dashboard) in progress.
 
 ## Current Position
 
-**Phase:** 4 of 5 (Admin Auth) - COMPLETE
-**Plan:** 2 of 2 in current phase
-**Status:** Phase complete
-**Last activity:** 2026-01-23 - Completed 04-02-PLAN.md (Admin User and Auth Flow Verification)
+**Phase:** 5 of 5 (Admin Dashboard)
+**Plan:** 1 of 4 in current phase
+**Status:** In progress
+**Last activity:** 2026-01-24 - Completed 05-01-PLAN.md (Backend Types and DynamoDB Operations)
 
 ### Progress
 
@@ -20,19 +20,19 @@ Phase 1: Core API             [XX] Complete (2/2 plans)
 Phase 2: Frontend Integration [XX] Complete (2/2 plans)
 Phase 3: Notifications        [XXXX] Complete (4/4 plans)
 Phase 4: Admin Auth           [XX] Complete (2/2 plans)
-Phase 5: Admin Dashboard      [  ] Not started
+Phase 5: Admin Dashboard      [X   ] In progress (1/4 plans)
 ```
 
-**Overall:** 10/12 plans complete (83%)
+**Overall:** 11/14 plans complete (79%)
 
 ## Performance Metrics
 
 | Metric | Value |
 |--------|-------|
-| Plans completed | 10 |
-| Tasks completed | 28 |
+| Plans completed | 11 |
+| Tasks completed | 31 |
 | Blockers hit | 0 |
-| Decisions made | 35 |
+| Decisions made | 40 |
 
 ## Accumulated Context
 
@@ -81,6 +81,11 @@ Phase 5: Admin Dashboard      [  ] Not started
 | Admin user email admin@tropicoretreat.com | Consistent with domain naming convention | 04-02 |
 | Password set via admin-set-user-password | Bypasses FORCE_CHANGE_PASSWORD for testing | 04-02 |
 | GET /leads 400 validates authorizer | Lambda reached means JWT passed; proves auth works | 04-02 |
+| Default temperature WARM for new leads | Middle priority for new leads; adjustable during qualification | 05-01 |
+| Scan-based lead queries for MVP | Acceptable with small dataset; production needs GSI per filter | 05-01 |
+| Note SK format NOTE#{timestamp}#{noteId} | Enables chronological sorting via SK comparison | 05-01 |
+| Forward-only status progression | Business rule preventing leads from moving backwards in pipeline | 05-01 |
+| Base64-encoded pagination cursor | Safely encodes DynamoDB LastEvaluatedKey for URL transport | 05-01 |
 
 ### Technical Notes
 
@@ -115,6 +120,10 @@ Phase 5: Admin Dashboard      [  ] Not started
 - **Auth flow pattern:** USER_SRP_AUTH (browser), ADMIN_USER_PASSWORD_AUTH (CLI)
 - **Token refresh:** REFRESH_TOKEN_AUTH flow returns new access/id tokens
 - **Sign out:** admin-user-global-sign-out revokes all refresh tokens
+- **Lead temperature:** Required field, default WARM, options: HOT, WARM, COLD
+- **Lead assignee:** Optional assigneeId (Cognito sub) and assigneeName (denormalized)
+- **Note storage:** Co-located with leads using PK=LEAD#{leadId}, SK=NOTE#{timestamp}#{noteId}
+- **DynamoDB operations:** getLeads (filters/pagination), getLead, updateLead, getNotes, putNote, updateNote
 
 ### Open Questions
 
@@ -134,15 +143,15 @@ None at this time.
 
 ### Last Session
 
-**Date:** 2026-01-23
-**Activity:** Completed 04-02-PLAN.md - Admin user creation and authentication flow verification
-**Outcome:** Admin user created (admin@tropicoretreat.com), full auth flow tested (sign-in, tokens, protected endpoint, refresh, sign-out)
+**Date:** 2026-01-24
+**Activity:** Completed 05-01-PLAN.md - Backend types and DynamoDB operations for admin dashboard
+**Outcome:** Extended Lead type with temperature/assignee, added Note type, implemented 6 DynamoDB operations for dashboard queries/updates
 
 ### Next Session
 
-**Resume with:** Phase 5 (Admin Dashboard) - Build React admin dashboard with Cognito auth
-**Context needed:** Review 04-01-SUMMARY.md and 04-02-SUMMARY.md for Cognito configuration
+**Resume with:** Phase 5 Plan 02 - API endpoints for leads and notes
+**Context needed:** Review 05-01-SUMMARY.md for types and DynamoDB operations
 
 ---
 
-*Last updated: 2026-01-23*
+*Last updated: 2026-01-24*
