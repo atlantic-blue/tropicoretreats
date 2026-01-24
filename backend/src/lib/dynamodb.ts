@@ -1,6 +1,13 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
-import type { Lead } from './types.js';
+import {
+  DynamoDBDocumentClient,
+  PutCommand,
+  QueryCommand,
+  UpdateCommand,
+  GetCommand,
+  ScanCommand,
+} from '@aws-sdk/lib-dynamodb';
+import type { Lead, Note } from './types.js';
 
 /**
  * DynamoDB client singleton - initialized outside handler for reuse across
@@ -42,4 +49,337 @@ export const putLead = async (lead: Lead): Promise<void> => {
       Item: lead,
     })
   );
+};
+
+/**
+ * Parameters for querying leads with optional filters and pagination.
+ */
+export interface GetLeadsParams {
+  /** Filter by status (multi-select) */
+  status?: string[];
+  /** Filter by temperature (multi-select) */
+  temperature?: string[];
+  /** Filter by assigned team member */
+  assigneeId?: string;
+  /** Page size (default 15) */
+  limit?: number;
+  /** Pagination cursor (base64 encoded LastEvaluatedKey) */
+  lastKey?: string;
+}
+
+/**
+ * Result from getLeads query including pagination info.
+ */
+export interface GetLeadsResult {
+  /** Array of matching leads */
+  leads: Lead[];
+  /** Pagination cursor for next page (undefined if no more results) */
+  nextKey?: string;
+  /** Count of leads returned in this page */
+  count: number;
+}
+
+/**
+ * Query leads with optional filters and pagination.
+ * Uses GSI1 for status-based queries or Scan for other filters.
+ *
+ * NOTE: For MVP with small dataset, scan is acceptable.
+ * Production would need GSI per filter dimension.
+ *
+ * @param params - Query parameters with optional filters
+ * @returns Paginated list of leads
+ */
+export const getLeads = async (
+  params: GetLeadsParams = {}
+): Promise<GetLeadsResult> => {
+  if (!TABLE_NAME) {
+    throw new Error('TABLE_NAME environment variable is not set');
+  }
+
+  const { status, temperature, assigneeId, limit = 15, lastKey } = params;
+
+  // Parse pagination cursor
+  let exclusiveStartKey: Record<string, unknown> | undefined;
+  if (lastKey) {
+    try {
+      exclusiveStartKey = JSON.parse(
+        Buffer.from(lastKey, 'base64').toString('utf-8')
+      );
+    } catch {
+      throw new Error('Invalid pagination cursor');
+    }
+  }
+
+  // Build filter expressions
+  const filterExpressions: string[] = [];
+  const expressionAttributeNames: Record<string, string> = {};
+  const expressionAttributeValues: Record<string, unknown> = {};
+
+  // Always filter to only LEAD items (not NOTE items)
+  filterExpressions.push('begins_with(SK, :skPrefix)');
+  expressionAttributeValues[':skPrefix'] = 'LEAD#';
+
+  // Add status filter
+  if (status && status.length > 0) {
+    const statusConditions = status.map((s, i) => {
+      expressionAttributeValues[`:status${i}`] = s;
+      return `#status = :status${i}`;
+    });
+    filterExpressions.push(`(${statusConditions.join(' OR ')})`);
+    expressionAttributeNames['#status'] = 'status';
+  }
+
+  // Add temperature filter
+  if (temperature && temperature.length > 0) {
+    const tempConditions = temperature.map((t, i) => {
+      expressionAttributeValues[`:temp${i}`] = t;
+      return '#temperature = :temp' + i;
+    });
+    filterExpressions.push(`(${tempConditions.join(' OR ')})`);
+    expressionAttributeNames['#temperature'] = 'temperature';
+  }
+
+  // Add assignee filter
+  if (assigneeId) {
+    filterExpressions.push('#assigneeId = :assigneeId');
+    expressionAttributeNames['#assigneeId'] = 'assigneeId';
+    expressionAttributeValues[':assigneeId'] = assigneeId;
+  }
+
+  const filterExpression =
+    filterExpressions.length > 0 ? filterExpressions.join(' AND ') : undefined;
+
+  const result = await docClient.send(
+    new ScanCommand({
+      TableName: TABLE_NAME,
+      Limit: limit,
+      ExclusiveStartKey: exclusiveStartKey,
+      FilterExpression: filterExpression,
+      ExpressionAttributeNames:
+        Object.keys(expressionAttributeNames).length > 0
+          ? expressionAttributeNames
+          : undefined,
+      ExpressionAttributeValues: expressionAttributeValues,
+    })
+  );
+
+  // Encode pagination cursor
+  let nextKey: string | undefined;
+  if (result.LastEvaluatedKey) {
+    nextKey = Buffer.from(JSON.stringify(result.LastEvaluatedKey)).toString(
+      'base64'
+    );
+  }
+
+  return {
+    leads: (result.Items ?? []) as Lead[],
+    nextKey,
+    count: result.Items?.length ?? 0,
+  };
+};
+
+/**
+ * Get a single lead by ID.
+ *
+ * @param id - Lead ULID
+ * @returns Lead entity or null if not found
+ */
+export const getLead = async (id: string): Promise<Lead | null> => {
+  if (!TABLE_NAME) {
+    throw new Error('TABLE_NAME environment variable is not set');
+  }
+
+  const result = await docClient.send(
+    new GetCommand({
+      TableName: TABLE_NAME,
+      Key: {
+        PK: `LEAD#${id}`,
+        SK: `LEAD#${id}`,
+      },
+    })
+  );
+
+  return (result.Item as Lead) ?? null;
+};
+
+/**
+ * Partial update of lead fields.
+ * Auto-sets updatedAt and updates GSI1PK if status changed.
+ *
+ * @param id - Lead ULID
+ * @param updates - Partial lead fields to update
+ * @returns Updated lead entity
+ * @throws Error if lead not found
+ */
+export const updateLead = async (
+  id: string,
+  updates: Partial<
+    Pick<Lead, 'status' | 'temperature' | 'assigneeId' | 'assigneeName'>
+  >
+): Promise<Lead> => {
+  if (!TABLE_NAME) {
+    throw new Error('TABLE_NAME environment variable is not set');
+  }
+
+  const now = new Date().toISOString();
+  const updateExpressions: string[] = ['#updatedAt = :updatedAt'];
+  const expressionAttributeNames: Record<string, string> = {
+    '#updatedAt': 'updatedAt',
+  };
+  const expressionAttributeValues: Record<string, unknown> = {
+    ':updatedAt': now,
+  };
+
+  // Add status update and GSI1PK update
+  if (updates.status !== undefined) {
+    updateExpressions.push('#status = :status');
+    updateExpressions.push('GSI1PK = :gsi1pk');
+    expressionAttributeNames['#status'] = 'status';
+    expressionAttributeValues[':status'] = updates.status;
+    expressionAttributeValues[':gsi1pk'] = `STATUS#${updates.status}`;
+  }
+
+  // Add temperature update
+  if (updates.temperature !== undefined) {
+    updateExpressions.push('#temperature = :temperature');
+    expressionAttributeNames['#temperature'] = 'temperature';
+    expressionAttributeValues[':temperature'] = updates.temperature;
+  }
+
+  // Add assignee updates
+  if (updates.assigneeId !== undefined) {
+    updateExpressions.push('#assigneeId = :assigneeId');
+    expressionAttributeNames['#assigneeId'] = 'assigneeId';
+    expressionAttributeValues[':assigneeId'] = updates.assigneeId;
+  }
+
+  if (updates.assigneeName !== undefined) {
+    updateExpressions.push('#assigneeName = :assigneeName');
+    expressionAttributeNames['#assigneeName'] = 'assigneeName';
+    expressionAttributeValues[':assigneeName'] = updates.assigneeName;
+  }
+
+  const result = await docClient.send(
+    new UpdateCommand({
+      TableName: TABLE_NAME,
+      Key: {
+        PK: `LEAD#${id}`,
+        SK: `LEAD#${id}`,
+      },
+      UpdateExpression: `SET ${updateExpressions.join(', ')}`,
+      ExpressionAttributeNames: expressionAttributeNames,
+      ExpressionAttributeValues: expressionAttributeValues,
+      ConditionExpression: 'attribute_exists(PK)',
+      ReturnValues: 'ALL_NEW',
+    })
+  );
+
+  return result.Attributes as Lead;
+};
+
+/**
+ * Get notes for a lead, sorted by creation date (newest first).
+ *
+ * @param leadId - Lead ULID
+ * @returns Array of notes for the lead
+ */
+export const getNotes = async (leadId: string): Promise<Note[]> => {
+  if (!TABLE_NAME) {
+    throw new Error('TABLE_NAME environment variable is not set');
+  }
+
+  const result = await docClient.send(
+    new QueryCommand({
+      TableName: TABLE_NAME,
+      KeyConditionExpression: 'PK = :pk AND begins_with(SK, :skPrefix)',
+      ExpressionAttributeValues: {
+        ':pk': `LEAD#${leadId}`,
+        ':skPrefix': 'NOTE#',
+      },
+      ScanIndexForward: false, // Descending order (newest first)
+    })
+  );
+
+  return (result.Items ?? []) as Note[];
+};
+
+/**
+ * Create a note for a lead.
+ *
+ * @param note - Note entity to store
+ */
+export const putNote = async (note: Note): Promise<void> => {
+  if (!TABLE_NAME) {
+    throw new Error('TABLE_NAME environment variable is not set');
+  }
+
+  await docClient.send(
+    new PutCommand({
+      TableName: TABLE_NAME,
+      Item: note,
+    })
+  );
+};
+
+/**
+ * Update note content.
+ *
+ * @param leadId - Lead ULID
+ * @param noteId - Note ULID
+ * @param content - New note content
+ * @returns Updated note entity
+ * @throws Error if note not found
+ */
+export const updateNote = async (
+  leadId: string,
+  noteId: string,
+  content: string
+): Promise<Note> => {
+  if (!TABLE_NAME) {
+    throw new Error('TABLE_NAME environment variable is not set');
+  }
+
+  // First, find the note by querying with the noteId in the SK
+  const queryResult = await docClient.send(
+    new QueryCommand({
+      TableName: TABLE_NAME,
+      KeyConditionExpression: 'PK = :pk AND begins_with(SK, :skPrefix)',
+      FilterExpression: 'id = :noteId',
+      ExpressionAttributeValues: {
+        ':pk': `LEAD#${leadId}`,
+        ':skPrefix': 'NOTE#',
+        ':noteId': noteId,
+      },
+    })
+  );
+
+  if (!queryResult.Items || queryResult.Items.length === 0) {
+    throw new Error('Note not found');
+  }
+
+  const existingNote = queryResult.Items[0] as Note;
+  const now = new Date().toISOString();
+
+  const result = await docClient.send(
+    new UpdateCommand({
+      TableName: TABLE_NAME,
+      Key: {
+        PK: existingNote.PK,
+        SK: existingNote.SK,
+      },
+      UpdateExpression: 'SET #content = :content, #updatedAt = :updatedAt',
+      ExpressionAttributeNames: {
+        '#content': 'content',
+        '#updatedAt': 'updatedAt',
+      },
+      ExpressionAttributeValues: {
+        ':content': content,
+        ':updatedAt': now,
+      },
+      ConditionExpression: 'attribute_exists(PK)',
+      ReturnValues: 'ALL_NEW',
+    })
+  );
+
+  return result.Attributes as Note;
 };
