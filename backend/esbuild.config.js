@@ -4,6 +4,8 @@ await esbuild.build({
   entryPoints: [
     'src/handlers/createLead.ts',
     'src/handlers/processLeadNotifications.ts',
+    'src/handlers/leadsAdmin.ts',
+    'src/handlers/users.ts',
   ],
   bundle: true,
   minify: true,
@@ -19,4 +21,4 @@ await esbuild.build({
   },
 });
 
-console.log('Build complete: dist/createLead.mjs, dist/processLeadNotifications.mjs');
+console.log('Build complete: dist/createLead.mjs, dist/processLeadNotifications.mjs, dist/leadsAdmin.mjs, dist/users.mjs');
