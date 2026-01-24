@@ -50,6 +50,7 @@ export const handler = async (
       GSI1SK: now,
       id,
       status: 'NEW',
+      temperature: 'WARM', // Default temperature for new leads
       firstName: validation.data.firstName,
       lastName: validation.data.lastName,
       email: validation.data.email,
