@@ -26,7 +26,9 @@ export function TemperatureDropdown({ temperature, onTemperatureChange, disabled
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
 
-  const colors = tempColors[temperature];
+  // Default to WARM if temperature is undefined or invalid
+  const safeTemperature = temperature && tempColors[temperature] ? temperature : 'WARM';
+  const colors = tempColors[safeTemperature];
 
   const handleSelect = async (newTemp: Temperature) => {
     if (newTemp === temperature) {
@@ -55,7 +57,7 @@ export function TemperatureDropdown({ temperature, onTemperatureChange, disabled
         ) : (
           <Flame className={`w-4 h-4 ${colors.icon}`} />
         )}
-        {tempLabels[temperature]}
+        {tempLabels[safeTemperature]}
         <ChevronDown className="w-4 h-4" />
       </button>
 
@@ -71,7 +73,7 @@ export function TemperatureDropdown({ temperature, onTemperatureChange, disabled
                   type="button"
                   onClick={() => handleSelect(t)}
                   className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 ${
-                    t === temperature ? 'bg-gray-50 font-medium' : ''
+                    t === safeTemperature ? 'bg-gray-50 font-medium' : ''
                   }`}
                 >
                   <Flame className={`w-4 h-4 ${tColors.icon}`} />

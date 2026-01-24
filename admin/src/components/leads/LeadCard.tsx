@@ -23,8 +23,9 @@ interface LeadCardProps {
 }
 
 export function LeadCard({ lead }: LeadCardProps) {
-  const statusStyle = statusColors[lead.status];
-  const tempColor = tempColors[lead.temperature];
+  const statusStyle = statusColors[lead.status] || statusColors.NEW;
+  const safeTemperature = lead.temperature && tempColors[lead.temperature] ? lead.temperature : 'WARM';
+  const tempColor = tempColors[safeTemperature];
 
   return (
     <Link
@@ -35,7 +36,7 @@ export function LeadCard({ lead }: LeadCardProps) {
         <h3 className="font-medium text-gray-900">
           {lead.firstName} {lead.lastName}
         </h3>
-        <Flame className={`w-5 h-5 ${tempColor}`} aria-label={`Temperature: ${lead.temperature}`} />
+        <Flame className={`w-5 h-5 ${tempColor}`} aria-label={`Temperature: ${safeTemperature}`} />
       </div>
       <div className="mt-2">
         <Badge variant={statusStyle.badge}>{lead.status}</Badge>
