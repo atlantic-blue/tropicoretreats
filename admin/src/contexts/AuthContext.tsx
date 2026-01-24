@@ -2,8 +2,8 @@ import { createContext, useContext, useState, useEffect, useCallback, type React
 import {
   CognitoUser,
   AuthenticationDetails,
-  CognitoUserSession,
-  IAuthenticationCallback,
+  type CognitoUserSession,
+  type IAuthenticationCallback,
 } from 'amazon-cognito-identity-js';
 import { userPool } from '../lib/cognito';
 
