@@ -33,7 +33,9 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
         Action = [
           "dynamodb:PutItem",
           "dynamodb:GetItem",
-          "dynamodb:Query"
+          "dynamodb:Query",
+          "dynamodb:Scan",
+          "dynamodb:UpdateItem"
         ]
         Resource = [
           aws_dynamodb_table.leads.arn,
@@ -59,7 +61,28 @@ resource "aws_iam_role_policy" "lambda_logs" {
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ]
-        Resource = "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/tropico-create-lead-${var.environment}:*"
+        Resource = [
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/tropico-create-lead-${var.environment}:*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/tropico-leads-admin-${var.environment}:*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/tropico-users-${var.environment}:*"
+        ]
+      }
+    ]
+  })
+}
+
+# Cognito permissions for Users Lambda (list users for assignee dropdown)
+resource "aws_iam_role_policy" "lambda_cognito" {
+  name = "tropico-lambda-cognito-${var.environment}"
+  role = aws_iam_role.lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["cognito-idp:ListUsers"]
+        Resource = aws_cognito_user_pool.admin.arn
       }
     ]
   })
