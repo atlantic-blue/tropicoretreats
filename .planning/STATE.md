@@ -9,9 +9,9 @@
 ## Current Position
 
 **Phase:** 5 of 5 (Admin Dashboard)
-**Plan:** 3 of 4 in current phase
+**Plan:** 4 of 5 in current phase
 **Status:** In progress
-**Last activity:** 2026-01-24 - Completed 05-03-PLAN.md (Terraform Infrastructure for Admin Endpoints)
+**Last activity:** 2026-01-24 - Completed 05-05-PLAN.md (Admin Dashboard Hosting Infrastructure)
 
 ### Progress
 
@@ -20,19 +20,19 @@ Phase 1: Core API             [XX] Complete (2/2 plans)
 Phase 2: Frontend Integration [XX] Complete (2/2 plans)
 Phase 3: Notifications        [XXXX] Complete (4/4 plans)
 Phase 4: Admin Auth           [XX] Complete (2/2 plans)
-Phase 5: Admin Dashboard      [XXX ] In progress (3/4 plans)
+Phase 5: Admin Dashboard      [XXXX ] In progress (4/5 plans)
 ```
 
-**Overall:** 13/14 plans complete (93%)
+**Overall:** 14/15 plans complete (93%)
 
 ## Performance Metrics
 
 | Metric | Value |
 |--------|-------|
-| Plans completed | 13 |
-| Tasks completed | 37 |
+| Plans completed | 14 |
+| Tasks completed | 40 |
 | Blockers hit | 0 |
-| Decisions made | 46 |
+| Decisions made | 50 |
 
 ## Accumulated Context
 
@@ -92,6 +92,10 @@ Phase 5: Admin Dashboard      [XXX ] In progress (3/4 plans)
 | Shared Lambda IAM role | Reuse existing lambda role for all API Lambda functions | 05-03 |
 | data.archive_file for Lambda zipping | Consistent with existing pattern vs npm script | 05-03 |
 | Targeted terraform apply | Handle integration/route dependency order for API Gateway | 05-03 |
+| Reuse wildcard ACM certificate | Existing *.tropicoretreat.com covers admin subdomain, no new cert needed | 05-05 |
+| CloudFront OAC over OAI | Use modern Origin Access Control instead of legacy Origin Access Identity | 05-05 |
+| Share CloudFront cache policies | Reuse existing long_term_cache and short_term_cache policies | 05-05 |
+| SPA error handling 403/404 to index.html | CloudFront returns index.html for missing paths to support client-side routing | 05-05 |
 
 ### Technical Notes
 
@@ -136,6 +140,11 @@ Phase 5: Admin Dashboard      [XXX ] In progress (3/4 plans)
 - **JWT claims extraction:** event.requestContext.authorizer.jwt.claims.sub/email
 - **API Gateway routes (all JWT-protected):** GET /leads, GET /leads/{id}, PATCH /leads/{id}, POST /leads/{id}/notes, PATCH /leads/{id}/notes/{noteId}, GET /users
 - **Lambda IAM:** DynamoDB (PutItem, GetItem, Query, Scan, UpdateItem), Cognito (ListUsers), CloudWatch Logs
+- **Admin S3 bucket:** admin.tropicoretreat.com
+- **Admin CloudFront distribution:** E2PCJ44NUGPNHQ (d2ezg3vdozz888.cloudfront.net)
+- **Admin URL:** https://admin.tropicoretreat.com
+- **Admin deploy command:** aws s3 sync ./dist s3://admin.tropicoretreat.com --delete
+- **Admin cache invalidation:** aws cloudfront create-invalidation --distribution-id E2PCJ44NUGPNHQ --paths "/*"
 
 ### Open Questions
 
@@ -149,20 +158,20 @@ None at this time.
 
 - [ ] Request SES production access (remove sandbox limits)
 - [ ] Verify team email addresses in SES for dev testing
-- [ ] Register domain for admin dashboard (admin.tropicoretreat.com)
+- [x] Register domain for admin dashboard (admin.tropicoretreat.com) - DONE via Route53
 
 ## Session Continuity
 
 ### Last Session
 
 **Date:** 2026-01-24
-**Activity:** Completed 05-03-PLAN.md - Terraform infrastructure for admin endpoints
-**Outcome:** Deployed leadsAdmin and users Lambda functions, created 6 JWT-protected API Gateway routes
+**Activity:** Completed 05-05-PLAN.md - Admin Dashboard Hosting Infrastructure
+**Outcome:** Deployed S3 bucket, CloudFront distribution, and Route53 record for admin.tropicoretreat.com
 
 ### Next Session
 
 **Resume with:** Phase 5 Plan 04 - Frontend Admin Dashboard UI
-**Context needed:** Review 05-03-SUMMARY.md for API endpoints and authentication pattern
+**Context needed:** Review 05-05-SUMMARY.md for hosting infrastructure outputs, 05-03-SUMMARY.md for API endpoints
 
 ---
 
