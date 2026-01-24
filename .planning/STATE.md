@@ -9,9 +9,9 @@
 ## Current Position
 
 **Phase:** 5 of 5 (Admin Dashboard)
-**Plan:** 4 of 5 in current phase
+**Plan:** 6 of 7 in current phase
 **Status:** In progress
-**Last activity:** 2026-01-24 - Completed 05-05-PLAN.md (Admin Dashboard Hosting Infrastructure)
+**Last activity:** 2026-01-24 - Completed 05-06-PLAN.md (Lead List Page)
 
 ### Progress
 
@@ -20,19 +20,19 @@ Phase 1: Core API             [XX] Complete (2/2 plans)
 Phase 2: Frontend Integration [XX] Complete (2/2 plans)
 Phase 3: Notifications        [XXXX] Complete (4/4 plans)
 Phase 4: Admin Auth           [XX] Complete (2/2 plans)
-Phase 5: Admin Dashboard      [XXXX ] In progress (4/5 plans)
+Phase 5: Admin Dashboard      [XXXXXX ] In progress (6/7 plans)
 ```
 
-**Overall:** 14/15 plans complete (93%)
+**Overall:** 16/17 plans complete (94%)
 
 ## Performance Metrics
 
 | Metric | Value |
 |--------|-------|
-| Plans completed | 14 |
-| Tasks completed | 40 |
+| Plans completed | 16 |
+| Tasks completed | 46 |
 | Blockers hit | 0 |
-| Decisions made | 50 |
+| Decisions made | 54 |
 
 ## Accumulated Context
 
@@ -100,6 +100,10 @@ Phase 5: Admin Dashboard      [XXXX ] In progress (4/5 plans)
 | CloudFront OAC over OAI | Use modern Origin Access Control instead of legacy Origin Access Identity | 05-05 |
 | Share CloudFront cache policies | Reuse existing long_term_cache and short_term_cache policies | 05-05 |
 | SPA error handling 403/404 to index.html | CloudFront returns index.html for missing paths to support client-side routing | 05-05 |
+| Token getter singleton for API auth | API client module can't use hooks; setTokenGetter called from component | 05-06 |
+| URL state for filters via useSearchParams | Enables shareable/bookmarkable filter views; resets page on filter change | 05-06 |
+| Debounced search (300ms) | Prevents API spam during typing; waits before triggering query | 05-06 |
+| Custom MultiSelect dropdown component | Native select doesn't support multi-select; provides better UX | 05-06 |
 
 ### Technical Notes
 
@@ -154,7 +158,14 @@ Phase 5: Admin Dashboard      [XXXX ] In progress (4/5 plans)
 - **Admin auth pattern:** AuthContext with USER_SRP_AUTH flow, newPasswordRequired handling
 - **Admin protected routes:** AppShell component redirects to /login when not authenticated
 - **Admin QueryClient config:** 5min staleTime, 30min gcTime, 1 retry, refetchOnWindowFocus
-- **Admin build output:** 352KB JS bundle, 10KB CSS (Tailwind)
+- **Admin build output:** 450KB JS bundle, 29KB CSS (with lead list page)
+- **Lead list page components:** LeadCard, LeadGrid, LeadFilters, Pagination
+- **Lead list hooks:** useLeads (TanStack Query), useFilters (URL state), useDebouncedValue
+- **Lead list API:** leadsApi.list(), usersApi.list() for assignee dropdown
+- **Lead card display:** Name, status badge, temperature flame icon, relative timestamp
+- **Lead filters:** Search, status[], temperature[], assignee, date range (react-day-picker)
+- **Lead grid:** Responsive 3-column layout (grid-cols-1 md:grid-cols-2 lg:grid-cols-3)
+- **Pagination:** 15 leads per page, page numbers with prev/next navigation
 
 ### Open Questions
 
@@ -175,13 +186,13 @@ None at this time.
 ### Last Session
 
 **Date:** 2026-01-24
-**Activity:** Completed 05-05-PLAN.md - Admin Dashboard Hosting Infrastructure
-**Outcome:** Deployed S3 bucket, CloudFront distribution, and Route53 record for admin.tropicoretreat.com
+**Activity:** Completed 05-06-PLAN.md - Lead List Page
+**Outcome:** Built lead list page with card grid, filters, search, and pagination
 
 ### Next Session
 
-**Resume with:** Phase 5 Plan 04 - Frontend Admin Dashboard UI
-**Context needed:** Review 05-05-SUMMARY.md for hosting infrastructure outputs, 05-03-SUMMARY.md for API endpoints
+**Resume with:** Phase 5 Plan 07 - Lead Detail Page
+**Context needed:** Review 05-06-SUMMARY.md for list page patterns, use leadsApi.get()/update() for detail view
 
 ---
 
