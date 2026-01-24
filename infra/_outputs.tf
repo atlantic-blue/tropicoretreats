@@ -53,3 +53,19 @@ output "cognito_client_id" {
   description = "Cognito App Client ID"
   value       = module.api.cognito_client_id
 }
+
+# Admin Dashboard Outputs
+output "admin_bucket_name" {
+  description = "S3 bucket name for admin dashboard"
+  value       = aws_s3_bucket.admin.id
+}
+
+output "admin_cloudfront_distribution_id" {
+  description = "CloudFront distribution ID for admin dashboard"
+  value       = aws_cloudfront_distribution.admin.id
+}
+
+output "admin_cloudfront_domain" {
+  description = "CloudFront domain name for admin dashboard"
+  value       = aws_cloudfront_distribution.admin.domain_name
+}
