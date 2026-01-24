@@ -9,9 +9,9 @@
 ## Current Position
 
 **Phase:** 5 of 5 (Admin Dashboard)
-**Plan:** 2 of 4 in current phase
+**Plan:** 3 of 4 in current phase
 **Status:** In progress
-**Last activity:** 2026-01-24 - Completed 05-02-PLAN.md (Lambda Handlers for Admin Dashboard)
+**Last activity:** 2026-01-24 - Completed 05-03-PLAN.md (Terraform Infrastructure for Admin Endpoints)
 
 ### Progress
 
@@ -20,19 +20,19 @@ Phase 1: Core API             [XX] Complete (2/2 plans)
 Phase 2: Frontend Integration [XX] Complete (2/2 plans)
 Phase 3: Notifications        [XXXX] Complete (4/4 plans)
 Phase 4: Admin Auth           [XX] Complete (2/2 plans)
-Phase 5: Admin Dashboard      [XX  ] In progress (2/4 plans)
+Phase 5: Admin Dashboard      [XXX ] In progress (3/4 plans)
 ```
 
-**Overall:** 12/14 plans complete (86%)
+**Overall:** 13/14 plans complete (93%)
 
 ## Performance Metrics
 
 | Metric | Value |
 |--------|-------|
-| Plans completed | 12 |
-| Tasks completed | 34 |
+| Plans completed | 13 |
+| Tasks completed | 37 |
 | Blockers hit | 0 |
-| Decisions made | 43 |
+| Decisions made | 46 |
 
 ## Accumulated Context
 
@@ -89,18 +89,21 @@ Phase 5: Admin Dashboard      [XX  ] In progress (2/4 plans)
 | APIGatewayProxyEventV2WithJWTAuthorizer type | Proper typing for handlers with JWT authorizer, includes claims access | 05-02 |
 | Multi-route Lambda handler pattern | Single handler routes requests based on HTTP method and path | 05-02 |
 | System notes for field changes | Auto-log status/temperature/assignee changes as SYSTEM type notes | 05-02 |
+| Shared Lambda IAM role | Reuse existing lambda role for all API Lambda functions | 05-03 |
+| data.archive_file for Lambda zipping | Consistent with existing pattern vs npm script | 05-03 |
+| Targeted terraform apply | Handle integration/route dependency order for API Gateway | 05-03 |
 
 ### Technical Notes
 
 - **Dev environment:** Use `-dev` suffix for all resources
-- **CORS:** Configured at API Gateway level with localhost + production origins
+- **CORS:** Configured at API Gateway level with localhost + production origins, includes PATCH method
 - **SES:** Domain identity verified with DKIM SUCCESS status
 - **SES sandbox:** Still in sandbox mode - verify team emails or request production access
 - **Cognito:** User Pool only (no Identity Pool needed for API-only access)
 - **Frontend auth:** amazon-cognito-identity-js (not Amplify SDK - works with Terraform-managed pools)
 - **WhatsApp:** Start Meta Business verification early if planning Phase 6
 - **Lambda handler pattern:** DynamoDB/SES client singletons outside handler for warm starts
-- **Build artifact:** `backend/dist/*.mjs` - createLead.mjs (64KB), processLeadNotifications.mjs (19KB)
+- **Build artifact:** `backend/dist/*.mjs` - createLead.mjs (64KB), processLeadNotifications.mjs (19KB), leadsAdmin.mjs (72KB), users.mjs (1KB)
 - **API endpoint (production):** https://u57cra1p8h.execute-api.us-east-1.amazonaws.com
 - **Frontend API config:** env.api.contactUrl from process.env.API_URL
 - **Toast retry pattern:** onRetry callback for network error recovery
@@ -117,7 +120,7 @@ Phase 5: Admin Dashboard      [XX  ] In progress (2/4 plans)
 - **Cognito User Pool ID:** us-east-1_vWmyWWEwX
 - **Cognito Client ID:** i1req5nr80ihn4skjelp0ldp1
 - **Cognito Issuer:** https://cognito-idp.us-east-1.amazonaws.com/us-east-1_vWmyWWEwX
-- **JWT authorizer:** Protects GET /leads route, returns 401 without valid token
+- **JWT authorizer:** Protects all admin routes, returns 401 without valid token
 - **Admin user:** admin@tropicoretreat.com (CONFIRMED status)
 - **Admin user sub:** 14480488-a031-7045-707c-dd115798955f
 - **Auth flow pattern:** USER_SRP_AUTH (browser), ADMIN_USER_PASSWORD_AUTH (CLI)
@@ -127,10 +130,12 @@ Phase 5: Admin Dashboard      [XX  ] In progress (2/4 plans)
 - **Lead assignee:** Optional assigneeId (Cognito sub) and assigneeName (denormalized)
 - **Note storage:** Co-located with leads using PK=LEAD#{leadId}, SK=NOTE#{timestamp}#{noteId}
 - **DynamoDB operations:** getLeads (filters/pagination), getLead, updateLead, getNotes, putNote, updateNote
-- **Lambda handlers (05-02):** leadsAdmin.mjs (72KB), users.mjs (1KB)
+- **Lambda functions (05-03):** tropico-leads-admin-production, tropico-users-production
 - **leadsAdmin routes:** GET /leads, GET /leads/{id}, PATCH /leads/{id}, POST /leads/{id}/notes, PATCH /leads/{id}/notes/{noteId}
 - **users route:** GET /users (lists confirmed Cognito users for assignee dropdown)
 - **JWT claims extraction:** event.requestContext.authorizer.jwt.claims.sub/email
+- **API Gateway routes (all JWT-protected):** GET /leads, GET /leads/{id}, PATCH /leads/{id}, POST /leads/{id}/notes, PATCH /leads/{id}/notes/{noteId}, GET /users
+- **Lambda IAM:** DynamoDB (PutItem, GetItem, Query, Scan, UpdateItem), Cognito (ListUsers), CloudWatch Logs
 
 ### Open Questions
 
@@ -151,13 +156,13 @@ None at this time.
 ### Last Session
 
 **Date:** 2026-01-24
-**Activity:** Completed 05-02-PLAN.md - Lambda handlers for admin dashboard API endpoints
-**Outcome:** Created leadsAdmin handler (5 routes) and users handler, updated esbuild config
+**Activity:** Completed 05-03-PLAN.md - Terraform infrastructure for admin endpoints
+**Outcome:** Deployed leadsAdmin and users Lambda functions, created 6 JWT-protected API Gateway routes
 
 ### Next Session
 
-**Resume with:** Phase 5 Plan 03 - API Gateway routes for admin endpoints
-**Context needed:** Review 05-02-SUMMARY.md for handler routes and patterns
+**Resume with:** Phase 5 Plan 04 - Frontend Admin Dashboard UI
+**Context needed:** Review 05-03-SUMMARY.md for API endpoints and authentication pattern
 
 ---
 
