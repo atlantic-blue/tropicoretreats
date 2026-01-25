@@ -6,11 +6,13 @@
 
 ## Summary
 
-This research covers implementing secure authentication for the admin dashboard using AWS Cognito User Pool with API Gateway HTTP API JWT authorizer. The stack leverages native JWT support in HTTP APIs (70% cheaper than REST APIs) and the AWS Amplify JavaScript SDK v6 for frontend integration.
+This research covers implementing secure authentication for the admin dashboard using AWS Cognito User Pool with API Gateway HTTP API JWT authorizer. The stack leverages native JWT support in HTTP APIs (70% cheaper than REST APIs) and amazon-cognito-identity-js for frontend integration.
 
-The approach involves: (1) Cognito User Pool for user management and authentication, (2) API Gateway JWT authorizer for protecting backend routes, (3) Amplify v6 for React frontend auth flows. Identity Pool is NOT required for this phase since the admin dashboard only needs API access (JWT tokens), not direct AWS resource access (temporary credentials).
+The approach involves: (1) Cognito User Pool for user management and authentication (Terraform-managed), (2) API Gateway JWT authorizer for protecting backend routes, (3) amazon-cognito-identity-js for React frontend auth flows. Identity Pool is NOT required for this phase since the admin dashboard only needs API access (JWT tokens), not direct AWS resource access (temporary credentials).
 
-**Primary recommendation:** Use Cognito User Pool with admin-created users only (no public sign-up), API Gateway native JWT authorizer, and Amplify v6 functional APIs for frontend authentication. Configure 30-day refresh tokens and 1-hour access tokens for session persistence.
+**Primary recommendation:** Use Cognito User Pool with admin-created users only (no public sign-up), API Gateway native JWT authorizer, and amazon-cognito-identity-js for frontend authentication. Configure 30-day refresh tokens and 1-hour access tokens for session persistence.
+
+**Note:** We use amazon-cognito-identity-js instead of Amplify SDK because infrastructure is Terraform-managed. Amplify SDK is designed for Amplify CLI-managed resources and adds unnecessary complexity when using Terraform.
 
 ## Standard Stack
 
@@ -21,8 +23,7 @@ The established libraries/tools for this domain:
 |---------|---------|---------|--------------|
 | AWS Cognito User Pool | - | User directory, authentication | Managed auth, scales to zero cost at low volume |
 | API Gateway HTTP API | v2 | JWT authorization | Native JWT support, 70% cheaper than REST |
-| aws-amplify | v6.x | Frontend auth SDK | Official AWS SDK, tree-shakeable, 59% smaller bundles |
-| @aws-amplify/ui-react | v6.x | Pre-built auth UI components | Accelerates development with Authenticator component |
+| amazon-cognito-identity-js | 6.x | Frontend auth SDK | Lightweight, handles SRP auth, works with Terraform-managed pools |
 
 ### Supporting
 | Library | Version | Purpose | When to Use |
@@ -33,12 +34,12 @@ The established libraries/tools for this domain:
 | Instead of | Could Use | Tradeoff |
 |------------|-----------|----------|
 | Cognito Hosted UI | Custom sign-in form | Custom form = more work but full control; Hosted UI = faster but limited customization |
-| Amplify SDK | Direct Cognito APIs | Direct APIs = more control; Amplify = easier token management |
+| amazon-cognito-identity-js | Amplify SDK | Amplify adds complexity for Terraform-managed resources; cognito-identity-js is lighter |
 | JWT Authorizer | Lambda Authorizer | Lambda = custom logic; JWT = native, faster, cheaper |
 
 **Installation:**
 ```bash
-npm install aws-amplify @aws-amplify/ui-react
+npm install amazon-cognito-identity-js
 ```
 
 ## Architecture Patterns
@@ -90,49 +91,76 @@ resource "aws_apigatewayv2_route" "get_leads" {
 }
 ```
 
-### Pattern 2: Amplify v6 Manual Configuration
-**What:** Configure Amplify to use existing (Terraform-provisioned) Cognito resources
-**When to use:** When Cognito is managed by Terraform, not Amplify CLI
+### Pattern 2: amazon-cognito-identity-js Configuration
+**What:** Configure Cognito auth for Terraform-managed User Pool
+**When to use:** When Cognito is managed by Terraform (not Amplify CLI)
 **Example:**
 ```typescript
-// Source: https://docs.amplify.aws/react/build-a-backend/auth/use-existing-cognito-resources/
-import { Amplify, type ResourcesConfig } from 'aws-amplify';
+// Source: https://github.com/aws-amplify/amplify-js/tree/main/packages/amazon-cognito-identity-js
+import { CognitoUserPool, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
 
-const authConfig: ResourcesConfig = {
-  Auth: {
-    Cognito: {
-      userPoolId: import.meta.env.VITE_COGNITO_USER_POOL_ID,
-      userPoolClientId: import.meta.env.VITE_COGNITO_CLIENT_ID,
-    },
-  },
+const poolData = {
+  UserPoolId: import.meta.env.VITE_COGNITO_USER_POOL_ID,
+  ClientId: import.meta.env.VITE_COGNITO_CLIENT_ID,
 };
 
-Amplify.configure(authConfig);
+const userPool = new CognitoUserPool(poolData);
 ```
 
-### Pattern 3: Protected Route with Auth Check
-**What:** Check authentication state before rendering protected components
-**When to use:** All admin dashboard routes
+### Pattern 3: Sign In with amazon-cognito-identity-js
+**What:** Authenticate user and get JWT tokens
+**When to use:** Admin login flow
 **Example:**
 ```typescript
-// Source: https://docs.amplify.aws/gen1/react/build-a-backend/auth/manage-user-session/
-import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
+import { CognitoUserPool, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
 
-async function checkAuth() {
-  try {
-    const { username, userId } = await getCurrentUser();
-    const { tokens } = await fetchAuthSession();
-    return { isAuthenticated: true, username, accessToken: tokens?.accessToken };
-  } catch {
-    return { isAuthenticated: false };
-  }
+async function signIn(username: string, password: string): Promise<string> {
+  const userPool = new CognitoUserPool(poolData);
+  const cognitoUser = new CognitoUser({ Username: username, Pool: userPool });
+  const authDetails = new AuthenticationDetails({ Username: username, Password: password });
+
+  return new Promise((resolve, reject) => {
+    cognitoUser.authenticateUser(authDetails, {
+      onSuccess: (result) => {
+        const accessToken = result.getAccessToken().getJwtToken();
+        resolve(accessToken);
+      },
+      onFailure: (err) => reject(err),
+      newPasswordRequired: (userAttributes) => {
+        // Handle first-time login password change
+        reject({ code: 'NewPasswordRequired', userAttributes });
+      },
+    });
+  });
+}
+```
+
+### Pattern 4: Get Current Session and Refresh
+**What:** Get current tokens, auto-refresh if expired
+**When to use:** Before API calls to get valid access token
+**Example:**
+```typescript
+function getCurrentSession(): Promise<string | null> {
+  const cognitoUser = userPool.getCurrentUser();
+  if (!cognitoUser) return Promise.resolve(null);
+
+  return new Promise((resolve, reject) => {
+    cognitoUser.getSession((err: Error | null, session: CognitoUserSession | null) => {
+      if (err || !session?.isValid()) {
+        resolve(null);
+      } else {
+        // Session auto-refreshes if access token expired but refresh token valid
+        resolve(session.getAccessToken().getJwtToken());
+      }
+    });
+  });
 }
 ```
 
 ### Anti-Patterns to Avoid
 - **Public sign-up for admin dashboard:** Admin users should be created by administrators only, not self-registered
 - **Client secret in frontend:** Never include client secrets in browser code; use public clients (no secret)
-- **Storing tokens in localStorage:** Use Amplify's built-in secure storage; avoid manual localStorage
+- **Manual token storage:** Use CognitoUserPool.getCurrentUser() which handles localStorage securely
 - **Excessive IAM permissions on Identity Pool:** If using Identity Pool, apply least-privilege IAM roles
 
 ## Don't Hand-Roll
@@ -141,13 +169,13 @@ Problems that look simple but have existing solutions:
 
 | Problem | Don't Build | Use Instead | Why |
 |---------|-------------|-------------|-----|
-| Token refresh | Custom refresh logic | Amplify fetchAuthSession() | Automatic refresh with forceRefresh option |
+| Token refresh | Custom refresh logic | CognitoUser.getSession() | Auto-refreshes when access token expired |
 | JWT validation | Custom JWT parsing | API Gateway JWT Authorizer | Native, faster, handles JWKS caching |
 | Password hashing | Any password storage | Cognito User Pool | Secure SRP protocol, never see passwords |
-| Session management | Cookie/localStorage logic | Amplify Auth APIs | Handles token lifecycle, secure storage |
-| Sign-in UI | Custom form from scratch | @aws-amplify/ui-react Authenticator | Production-ready, accessible, customizable |
+| Session management | Cookie/localStorage logic | CognitoUserPool.getCurrentUser() | Handles token lifecycle, secure storage |
+| SRP auth flow | Custom crypto implementation | amazon-cognito-identity-js | Implements SRP protocol correctly |
 
-**Key insight:** Authentication is security-critical. Using managed services (Cognito) and official SDKs (Amplify) reduces attack surface and handles edge cases (token expiry, rotation, revocation) correctly.
+**Key insight:** Authentication is security-critical. Using managed services (Cognito) and official SDKs (amazon-cognito-identity-js) reduces attack surface and handles edge cases (token expiry, rotation, revocation) correctly.
 
 ## Common Pitfalls
 
@@ -178,7 +206,7 @@ Problems that look simple but have existing solutions:
 ### Pitfall 5: Forgetting Token Refresh for Long Sessions
 **What goes wrong:** Users get logged out after 1 hour (default access token expiry).
 **Why it happens:** Not implementing token refresh; relying only on access token.
-**How to avoid:** Amplify handles this automatically; for manual flows, call `fetchAuthSession()` before API calls.
+**How to avoid:** Use `cognitoUser.getSession()` before API calls - it auto-refreshes when access token expired but refresh token valid.
 **Warning signs:** Users report being logged out unexpectedly; 401 errors after ~1 hour of idle time.
 
 ### Pitfall 6: Audience Mismatch
@@ -319,60 +347,65 @@ resource "aws_apigatewayv2_authorizer" "cognito" {
 }
 ```
 
-### Amplify v6: signIn
+### amazon-cognito-identity-js: signIn
 ```typescript
-// Source: https://docs.amplify.aws/gen1/react/build-a-backend/auth/auth-migration-guide/
-import { signIn } from 'aws-amplify/auth';
+// Source: https://github.com/aws-amplify/amplify-js/tree/main/packages/amazon-cognito-identity-js
+import { CognitoUserPool, CognitoUser, AuthenticationDetails, CognitoUserSession } from 'amazon-cognito-identity-js';
 
-async function handleSignIn(username: string, password: string) {
-  try {
-    const { isSignedIn, nextStep } = await signIn({ username, password });
+const poolData = {
+  UserPoolId: import.meta.env.VITE_COGNITO_USER_POOL_ID,
+  ClientId: import.meta.env.VITE_COGNITO_CLIENT_ID,
+};
+const userPool = new CognitoUserPool(poolData);
 
-    if (nextStep.signInStep === 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED') {
-      // User must set new password (first sign-in after admin creation)
-      return { needsNewPassword: true };
-    }
+async function handleSignIn(username: string, password: string): Promise<{ isSignedIn: boolean; needsNewPassword?: boolean }> {
+  const cognitoUser = new CognitoUser({ Username: username, Pool: userPool });
+  const authDetails = new AuthenticationDetails({ Username: username, Password: password });
 
-    return { isSignedIn };
-  } catch (error) {
-    console.error('Sign in error:', error);
-    throw error;
+  return new Promise((resolve, reject) => {
+    cognitoUser.authenticateUser(authDetails, {
+      onSuccess: () => resolve({ isSignedIn: true }),
+      onFailure: (err) => reject(err),
+      newPasswordRequired: () => resolve({ isSignedIn: false, needsNewPassword: true }),
+    });
+  });
+}
+```
+
+### amazon-cognito-identity-js: signOut
+```typescript
+function handleSignOut(): void {
+  const cognitoUser = userPool.getCurrentUser();
+  if (cognitoUser) {
+    cognitoUser.globalSignOut({
+      onSuccess: () => console.log('Signed out'),
+      onFailure: (err) => console.error('Sign out error:', err),
+    });
   }
 }
 ```
 
-### Amplify v6: signOut
+### amazon-cognito-identity-js: Get Access Token for API Calls
 ```typescript
-// Source: https://docs.amplify.aws/gen1/react/build-a-backend/auth/auth-migration-guide/
-import { signOut } from 'aws-amplify/auth';
-
-async function handleSignOut() {
-  await signOut({ global: true }); // Signs out from all devices
-}
-```
-
-### Amplify v6: Get Access Token for API Calls
-```typescript
-// Source: https://docs.amplify.aws/gen1/react/build-a-backend/auth/manage-user-session/
-import { fetchAuthSession } from 'aws-amplify/auth';
-
 async function getAuthHeaders(): Promise<Record<string, string>> {
-  try {
-    const { tokens } = await fetchAuthSession();
-    const accessToken = tokens?.accessToken?.toString();
-
-    if (!accessToken) {
-      throw new Error('No access token available');
-    }
-
-    return {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    };
-  } catch (error) {
-    console.error('Error getting auth headers:', error);
-    throw error;
+  const cognitoUser = userPool.getCurrentUser();
+  if (!cognitoUser) {
+    throw new Error('No authenticated user');
   }
+
+  return new Promise((resolve, reject) => {
+    cognitoUser.getSession((err: Error | null, session: CognitoUserSession | null) => {
+      if (err || !session?.isValid()) {
+        reject(new Error('No valid session'));
+        return;
+      }
+      const accessToken = session.getAccessToken().getJwtToken();
+      resolve({
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      });
+    });
+  });
 }
 
 // Usage with fetch
@@ -383,18 +416,23 @@ async function fetchProtectedData() {
 }
 ```
 
-### Amplify v6: Check Current User
+### amazon-cognito-identity-js: Check Current User
 ```typescript
-// Source: https://docs.amplify.aws/gen1/react/build-a-backend/auth/manage-user-session/
-import { getCurrentUser } from 'aws-amplify/auth';
-
-async function checkAuthState() {
-  try {
-    const { username, userId, signInDetails } = await getCurrentUser();
-    return { isAuthenticated: true, username, userId };
-  } catch {
-    return { isAuthenticated: false };
+function checkAuthState(): Promise<{ isAuthenticated: boolean; username?: string }> {
+  const cognitoUser = userPool.getCurrentUser();
+  if (!cognitoUser) {
+    return Promise.resolve({ isAuthenticated: false });
   }
+
+  return new Promise((resolve) => {
+    cognitoUser.getSession((err: Error | null, session: CognitoUserSession | null) => {
+      if (err || !session?.isValid()) {
+        resolve({ isAuthenticated: false });
+      } else {
+        resolve({ isAuthenticated: true, username: cognitoUser.getUsername() });
+      }
+    });
+  });
 }
 ```
 
@@ -403,16 +441,14 @@ async function checkAuthState() {
 | Old Approach | Current Approach | When Changed | Impact |
 |--------------|------------------|--------------|--------|
 | REST API + Lambda Authorizer | HTTP API + JWT Authorizer | 2020 | 70% cost reduction, native Cognito support |
-| Amplify v5 class-based | Amplify v6 functional APIs | 2023 | 59% smaller bundles, better tree-shaking |
-| Auth.currentSession() | fetchAuthSession() | Amplify v6 | Simplified API, automatic refresh |
-| CognitoUser object passing | getCurrentUser() stateless | Amplify v6 | No need to track user object |
-| Manual token refresh | Automatic with fetchAuthSession | Amplify v6 | Built-in refresh when tokens expire |
+| Amplify CLI managed pools | Terraform + amazon-cognito-identity-js | Current | Full IaC control, lighter bundle |
+| Manual token refresh | CognitoUser.getSession() auto-refresh | Built-in | Automatic refresh when access token expired |
+| AWS SDK v2 | amazon-cognito-identity-js | Mature | Handles SRP protocol, token storage |
 
-**Deprecated/outdated:**
-- `Auth.signIn()` (v5) - Use `signIn()` from 'aws-amplify/auth'
-- `Auth.currentSession()` - Use `fetchAuthSession()`
-- `Auth.currentAuthenticatedUser()` - Use `getCurrentUser()`
-- CognitoUser class - No longer returned or required in v6
+**For Terraform-managed Cognito:**
+- Use `amazon-cognito-identity-js` not Amplify SDK
+- Amplify SDK is designed for Amplify CLI-managed resources
+- amazon-cognito-identity-js is lighter and works with any Cognito pool
 
 ## Open Questions
 
@@ -439,9 +475,8 @@ Things that couldn't be fully resolved:
 - [AWS API Gateway HTTP API JWT Authorizer](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-jwt-authorizer.html) - JWT configuration details
 - [Terraform aws_cognito_user_pool](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cognito_user_pool) - User Pool configuration
 - [Terraform aws_cognito_user_pool_client](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cognito_user_pool_client) - Client configuration
-- [Amplify v6 Auth Migration Guide](https://docs.amplify.aws/gen1/react/build-a-backend/auth/auth-migration-guide/) - v6 API examples
-- [Amplify v6 Manage User Session](https://docs.amplify.aws/gen1/react/build-a-backend/auth/manage-user-session/) - fetchAuthSession, getCurrentUser
-- [Amplify Use Existing Cognito Resources](https://docs.amplify.aws/react/build-a-backend/auth/use-existing-cognito-resources/) - Manual configuration
+- [amazon-cognito-identity-js](https://github.com/aws-amplify/amplify-js/tree/main/packages/amazon-cognito-identity-js) - Official Cognito JS SDK
+- [amazon-cognito-identity-js README](https://www.npmjs.com/package/amazon-cognito-identity-js) - NPM package with usage examples
 
 ### Secondary (MEDIUM confidence)
 - [AWS HTTP API Gateway with Cognito and Terraform](https://andrewtarry.com/posts/aws-http-gateway-with-cognito-and-terraform/) - Terraform patterns
