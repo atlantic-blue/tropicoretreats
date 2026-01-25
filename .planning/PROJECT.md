@@ -8,40 +8,61 @@ A serverless lead management system for Tropico Retreats, a high-end corporate a
 
 When a potential customer submits the contact form, the team is immediately notified and can access, track, and follow up on the lead through a central dashboard.
 
+## Current Milestone: v1.1 Multi-Channel Leads
+
+**Goal:** Capture leads from multiple channels (email, phone, Slack notifications) and improve system quality with testing, documentation, and custom API domain.
+
+**Target features:**
+- Inbound email to lead (hello@tropicoretreat.com auto-creates leads)
+- Inbound phone calls to lead (Twilio integration)
+- Slack notifications (outbound alerts to team channel)
+- SMS notifications (SNS integration)
+- Custom API domain (api.tropicoretreat.com)
+- Testing suite (unit, integration)
+- Documentation (API docs, README)
+- SES production access (remove sandbox)
+
 ## Requirements
 
-### Validated
+### Validated (v1.0 MVP — Complete)
 
-- ✓ Marketing site with destination pages (Caribbean, Casanare, Coffee Region) — existing
-- ✓ Services and About pages — existing
-- ✓ Contact form UI with name, email, phone, message fields — existing
-- ✓ SEO with pre-rendering for search visibility — existing
-- ✓ AWS infrastructure (S3, CloudFront, Route53, ACM) — existing
-- ✓ React 19 + TypeScript + Tailwind CSS design system — existing
+- ✓ Marketing site with destination pages (Caribbean, Casanare, Coffee Region)
+- ✓ Services and About pages
+- ✓ Contact form UI with name, email, phone, message fields
+- ✓ SEO with pre-rendering for search visibility
+- ✓ AWS infrastructure (S3, CloudFront, Route53, ACM)
+- ✓ React 19 + TypeScript + Tailwind CSS design system
+- ✓ Backend API to receive and store contact form submissions (Lambda + API Gateway HTTP API)
+- ✓ DynamoDB table to persist lead data (single-table design)
+- ✓ Connect marketing site contact form to API
+- ✓ Email notification when form submitted (SES)
+- ✓ Auto-reply email to customer confirming receipt
+- ✓ Cognito authentication for team members (User Pool + JWT authorizer)
+- ✓ Admin dashboard frontend (React 19, separate from marketing site)
+- ✓ Lead listing view with search/filter
+- ✓ Lead detail view with full information
+- ✓ Lead status tracking (New → Contacted → Quoted → Won/Lost)
+- ✓ Temperature rating (Hot/Warm/Cold)
+- ✓ Notes on leads
+- ✓ Lead assignment to team members
 
-### Active (MVP)
+### Active (v1.1)
 
-- [ ] Backend API to receive and store contact form submissions (Lambda + API Gateway HTTP API)
-- [ ] DynamoDB table to persist lead data (single-table design with GSIs)
-- [ ] Connect marketing site contact form to API
-- [ ] Email notification when form submitted (SES)
-- [ ] Auto-reply email to customer confirming receipt
-- [ ] Cognito authentication for team members (6+ users, User Pool + Identity Pool)
-- [ ] Admin dashboard frontend (React 19, separate from marketing site)
-- [ ] Lead listing view with search/filter
-- [ ] Lead detail view with full information
-- [ ] Lead status tracking (New → Contacted → Quoted → Won/Lost)
-- [ ] Temperature rating (Hot/Warm/Cold)
-- [ ] Notes on leads
-- [ ] Lead assignment to team members
+- [ ] Slack notification webhook (outbound alerts only, free tier)
+- [ ] SMS notification via SNS
+- [ ] Custom API domain (api.tropicoretreat.com)
+- [ ] Inbound email to lead (SES receiving → Lambda → create lead)
+- [ ] Inbound phone to lead (Twilio → webhook → create lead)
+- [ ] Unit and integration tests
+- [ ] API documentation
+- [ ] SES production access request
 
-### Future (Post-MVP)
+### Future (Post v1.1)
 
 - [ ] WhatsApp notification (requires Meta Business verification - 2-4 weeks)
-- [ ] SMS notification (SNS)
-- [ ] Slack notification (webhook)
 - [ ] Pipeline Kanban view
 - [ ] Follow-up reminders
+- [ ] Two-way Slack messaging (requires paid tier)
 
 ### Out of Scope
 
@@ -50,6 +71,7 @@ When a potential customer submits the contact form, the team is immediately noti
 - Mobile app — web dashboard sufficient for team size
 - Analytics/reporting dashboards — can add later once leads flow in
 - Integration with external CRMs — building custom solution
+- Twilio outbound calls — only inbound for lead capture
 
 ## Context
 
@@ -96,4 +118,4 @@ The business uses AWS with a serverless approach. The marketing site is already 
 | IaC | Terraform |
 
 ---
-*Last updated: 2026-01-22 after requirements definition*
+*Last updated: 2026-01-25 — Milestone v1.1 started*

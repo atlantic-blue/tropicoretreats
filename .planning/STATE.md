@@ -4,16 +4,17 @@
 
 **Core Value:** When a potential customer submits the contact form, the team is immediately notified and can access, track, and follow up on the lead through a central dashboard.
 
-**Current Focus:** All phases complete! MVP delivered.
+**Current Focus:** Milestone v1.1 — Multi-channel lead capture and system quality improvements.
 
 ## Current Position
 
-**Phase:** 5 of 5 (Admin Dashboard)
-**Plan:** 7 of 7 in current phase
-**Status:** COMPLETE
-**Last activity:** 2026-01-24 - Completed 05-07-PLAN.md (Lead Detail Page + Deployment)
+**Milestone:** v1.1 Multi-Channel Leads
+**Phase:** Not started (defining requirements)
+**Plan:** —
+**Status:** Defining requirements
+**Last activity:** 2026-01-25 — Milestone v1.1 started
 
-### Progress
+### v1.0 MVP (Complete)
 
 ```
 Phase 1: Core API             [XX] Complete (2/2 plans)
@@ -23,7 +24,15 @@ Phase 4: Admin Auth           [XX] Complete (2/2 plans)
 Phase 5: Admin Dashboard      [XXXXXXX] Complete (7/7 plans)
 ```
 
-**Overall:** 17/17 plans complete (100%)
+**v1.0 Total:** 17/17 plans complete (100%)
+
+### v1.1 Progress
+
+```
+Phase 6: TBD                  [ ] Not started
+```
+
+**v1.1 Total:** 0/? plans complete
 
 ## Performance Metrics
 
@@ -194,23 +203,24 @@ None at this time.
 
 ### Last Session
 
-**Date:** 2026-01-24
-**Activity:** Completed 05-07-PLAN.md - Lead Detail Page + Deployment
-**Outcome:** Deployed complete admin dashboard to admin.tropicoretreat.com
+**Date:** 2026-01-25
+**Activity:** Started Milestone v1.1 - Multi-Channel Leads
+**Outcome:** Defining requirements for new features
 
-### Project Complete
+### Milestone Status
 
-**MVP Delivered!** All 5 phases complete:
-- Phase 1: Core API (Lambda, DynamoDB, API Gateway)
-- Phase 2: Frontend Integration (Contact form)
-- Phase 3: Notifications (Email alerts)
-- Phase 4: Admin Auth (Cognito)
-- Phase 5: Admin Dashboard (React SPA)
-
-**Live URLs:**
+**v1.0 MVP:** Complete ✓
 - Marketing site: https://tropicoretreat.com
 - Admin dashboard: https://admin.tropicoretreat.com
 
+**v1.1 Multi-Channel Leads:** In progress
+- Slack notifications (outbound)
+- SMS notifications (SNS)
+- Inbound email to lead
+- Inbound phone to lead (Twilio)
+- Custom API domain
+- Testing & documentation
+
 ---
 
-*Last updated: 2026-01-24*
+*Last updated: 2026-01-25*
