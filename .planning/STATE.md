@@ -4,14 +4,14 @@
 
 **Core Value:** When a potential customer submits the contact form, the team is immediately notified and can access, track, and follow up on the lead through a central dashboard.
 
-**Current Focus:** Phase 5 (Admin Dashboard) in progress.
+**Current Focus:** All phases complete! MVP delivered.
 
 ## Current Position
 
 **Phase:** 5 of 5 (Admin Dashboard)
-**Plan:** 6 of 7 in current phase
-**Status:** In progress
-**Last activity:** 2026-01-24 - Completed 05-06-PLAN.md (Lead List Page)
+**Plan:** 7 of 7 in current phase
+**Status:** COMPLETE
+**Last activity:** 2026-01-24 - Completed 05-07-PLAN.md (Lead Detail Page + Deployment)
 
 ### Progress
 
@@ -20,19 +20,19 @@ Phase 1: Core API             [XX] Complete (2/2 plans)
 Phase 2: Frontend Integration [XX] Complete (2/2 plans)
 Phase 3: Notifications        [XXXX] Complete (4/4 plans)
 Phase 4: Admin Auth           [XX] Complete (2/2 plans)
-Phase 5: Admin Dashboard      [XXXXXX ] In progress (6/7 plans)
+Phase 5: Admin Dashboard      [XXXXXXX] Complete (7/7 plans)
 ```
 
-**Overall:** 16/17 plans complete (94%)
+**Overall:** 17/17 plans complete (100%)
 
 ## Performance Metrics
 
 | Metric | Value |
 |--------|-------|
-| Plans completed | 16 |
-| Tasks completed | 46 |
+| Plans completed | 17 |
+| Tasks completed | 50 |
 | Blockers hit | 0 |
-| Decisions made | 54 |
+| Decisions made | 58 |
 
 ## Accumulated Context
 
@@ -104,6 +104,10 @@ Phase 5: Admin Dashboard      [XXXXXX ] In progress (6/7 plans)
 | URL state for filters via useSearchParams | Enables shareable/bookmarkable filter views; resets page on filter change | 05-06 |
 | Debounced search (300ms) | Prevents API spam during typing; waits before triggering query | 05-06 |
 | Custom MultiSelect dropdown component | Native select doesn't support multi-select; provides better UX | 05-06 |
+| Optimistic updates with rollback | Instant UI feedback; revert on error using onMutate context | 05-07 |
+| Forward-only status in dropdown | Only show valid next statuses; can't move backwards | 05-07 |
+| Temperature fallback to WARM | Handles older leads without temperature field | 05-07 |
+| CORS includes admin subdomain | admin.tropicoretreat.com added to API Gateway allowed origins | 05-07 |
 
 ### Technical Notes
 
@@ -166,6 +170,11 @@ Phase 5: Admin Dashboard      [XXXXXX ] In progress (6/7 plans)
 - **Lead filters:** Search, status[], temperature[], assignee, date range (react-day-picker)
 - **Lead grid:** Responsive 3-column layout (grid-cols-1 md:grid-cols-2 lg:grid-cols-3)
 - **Pagination:** 15 leads per page, page numbers with prev/next navigation
+- **Lead detail hooks:** useLeadDetail (query), useUpdateLead, useAddNote, useUpdateNote (mutations)
+- **Lead detail components:** StatusDropdown, TemperatureDropdown, AssigneeDropdown, NotesTimeline, LeadDetail
+- **Lead detail layout:** Two-column (contact info left, status/temp/assignee/notes right)
+- **Optimistic update pattern:** onMutate cancels queries, saves previous, updates cache; onError rollbacks; onSettled invalidates
+- **Deploy script:** `npm run deploy` in admin/ - builds, syncs to S3, invalidates CloudFront
 
 ### Open Questions
 
@@ -186,13 +195,21 @@ None at this time.
 ### Last Session
 
 **Date:** 2026-01-24
-**Activity:** Completed 05-06-PLAN.md - Lead List Page
-**Outcome:** Built lead list page with card grid, filters, search, and pagination
+**Activity:** Completed 05-07-PLAN.md - Lead Detail Page + Deployment
+**Outcome:** Deployed complete admin dashboard to admin.tropicoretreat.com
 
-### Next Session
+### Project Complete
 
-**Resume with:** Phase 5 Plan 07 - Lead Detail Page
-**Context needed:** Review 05-06-SUMMARY.md for list page patterns, use leadsApi.get()/update() for detail view
+**MVP Delivered!** All 5 phases complete:
+- Phase 1: Core API (Lambda, DynamoDB, API Gateway)
+- Phase 2: Frontend Integration (Contact form)
+- Phase 3: Notifications (Email alerts)
+- Phase 4: Admin Auth (Cognito)
+- Phase 5: Admin Dashboard (React SPA)
+
+**Live URLs:**
+- Marketing site: https://tropicoretreat.com
+- Admin dashboard: https://admin.tropicoretreat.com
 
 ---
 
