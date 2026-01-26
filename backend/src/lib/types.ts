@@ -111,3 +111,47 @@ export interface Note {
   /** ISO 8601 timestamp of last update */
   updatedAt: string;
 }
+
+/** Notification channel settings */
+export interface NotificationChannels {
+  email: boolean;
+  slack: boolean;
+  sms: boolean;
+}
+
+/** Default notification channels for new users */
+export const DEFAULT_CHANNELS: NotificationChannels = {
+  email: true,
+  slack: true,
+  sms: false, // Requires phone setup
+};
+
+/**
+ * User notification preferences entity.
+ *
+ * Table design:
+ * - PK: USER#{userId} (co-located with user data)
+ * - SK: PREFS#notifications
+ * - GSI1PK: PREFS#sms-enabled (for querying SMS recipients)
+ * - GSI1SK: userId
+ */
+export interface NotificationPreferences {
+  /** Primary key: USER#{userId} */
+  PK: string;
+  /** Sort key: PREFS#notifications */
+  SK: string;
+  /** GSI1 hash key: PREFS#sms-enabled (only set when SMS enabled) */
+  GSI1PK?: string;
+  /** GSI1 sort key: userId */
+  GSI1SK?: string;
+  /** Cognito user sub */
+  userId: string;
+  /** Channel enable/disable settings */
+  channels: NotificationChannels;
+  /** Phone number in E.164 format for SMS */
+  phone?: string;
+  /** ISO 8601 timestamp of creation */
+  createdAt: string;
+  /** ISO 8601 timestamp of last update */
+  updatedAt: string;
+}
