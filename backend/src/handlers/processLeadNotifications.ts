@@ -3,8 +3,10 @@ import { unmarshall } from '@aws-sdk/util-dynamodb';
 import type { AttributeValue } from '@aws-sdk/client-dynamodb';
 import type { Lead } from '../lib/types.js';
 import { sendEmail } from '../lib/ses.js';
+import { sendSlackNotification } from '../lib/slack.js';
 import { teamNotificationTemplate } from '../templates/teamNotification.js';
 import { customerAutoReplyTemplate } from '../templates/customerAutoReply.js';
+import { buildLeadNotificationBlocks } from '../templates/slackNotification.js';
 import { generateReferenceNumber } from '../utils/referenceNumber.js';
 
 /**
@@ -15,6 +17,7 @@ import { generateReferenceNumber } from '../utils/referenceNumber.js';
  * - FROM_NAME: Sender display name (Tropico Retreats)
  * - ADMIN_DASHBOARD_URL: URL to admin dashboard
  * - WHATSAPP_NUMBER: WhatsApp number for customer contact
+ * - SLACK_WEBHOOK_SECRET_NAME: Secrets Manager secret name for Slack webhook URL
  */
 const TEAM_EMAILS = process.env.TEAM_EMAILS?.split(',').map((e) => e.trim()) ?? [];
 const FROM_EMAIL_TEAM = process.env.FROM_EMAIL_TEAM ?? 'leads@tropicoretreat.com';
@@ -106,6 +109,16 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<void> => {
     } catch (error) {
       console.error(`Failed to send customer auto-reply for lead ${lead.id}:`, error);
       // Log error but don't throw - let stream processing continue
+    }
+
+    // Send Slack notification
+    try {
+      const { blocks, text } = buildLeadNotificationBlocks(lead, ADMIN_DASHBOARD_URL);
+      await sendSlackNotification(blocks, text);
+      console.log(`Slack notification sent for lead ${lead.id}`);
+    } catch (error) {
+      console.error(`Failed to send Slack notification for lead ${lead.id}:`, error instanceof Error ? error.message : error);
+      // Continue processing - Slack failure should not block other notifications
     }
   }
 
