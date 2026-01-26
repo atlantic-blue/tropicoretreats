@@ -15,8 +15,23 @@ locals {
 
   cors_origins = length(var.cors_allowed_origins) > 0 ? var.cors_allowed_origins : (
     var.environment == "production"
-    ? ["https://tropicoretreat.com", "https://www.tropicoretreat.com", "https://${var.admin_domain}"]
-    : ["http://localhost:3000", "http://localhost:5173", "http://localhost:5174", "https://tropicoretreat.com", "https://www.tropicoretreat.com", "https://${var.admin_domain}"]
+    ? [
+        "https://tropicoretreat.com",
+        "https://www.tropicoretreat.com",
+        "https://${var.admin_domain}",
+        "https://staging.tropicoretreat.com",
+        "https://staging-admin.tropicoretreat.com"
+      ]
+    : [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "https://tropicoretreat.com",
+        "https://www.tropicoretreat.com",
+        "https://${var.admin_domain}",
+        "https://staging.tropicoretreat.com",
+        "https://staging-admin.tropicoretreat.com"
+      ]
   )
 }
 
