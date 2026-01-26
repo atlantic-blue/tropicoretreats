@@ -72,5 +72,5 @@ output "admin_cloudfront_domain" {
 
 output "api_custom_domain" {
   description = "Custom domain URL for the API"
-  value       = "https://api.tropicoretreat.com/v1"
+  value       = "https://${local.api_domain}/v1"
 }
