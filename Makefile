@@ -7,13 +7,19 @@ help:
 	@echo "make production - Deploy everything to production"
 
 # Deploy everything to staging
-staging:
+staging-plan:
+	cd infra && terraform workspace select staging && terraform plan -var-file=staging.tfvars
+
+staging-apply:
 	cd infra && terraform workspace select staging && terraform apply -var-file=staging.tfvars -auto-approve
 	cd backend && npm run build
 	cd admin && npm run deploy:staging
 
 # Deploy everything to production
-production:
+production-plan:
+	cd infra && terraform workspace select default && terraform plan
+
+production-apply:
 	cd infra && terraform workspace select default && terraform apply -auto-approve
 	cd backend && npm run build
 	cd admin && npm run deploy:production
