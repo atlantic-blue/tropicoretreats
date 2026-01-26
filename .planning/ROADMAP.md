@@ -92,7 +92,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 06-01-PLAN.md — Custom domain, API mapping, rate limiting, frontend updates
+- [x] 06-01-PLAN.md — Custom domain, API mapping, rate limiting, frontend updates
 
 **Notes:**
 - Foundation for stable Twilio webhook URLs
@@ -115,10 +115,10 @@ Plans:
 3. Message displays lead temperature with visual indicator (emoji)
 4. Slack webhook URL stored securely in AWS Secrets Manager
 
-**Plans:** TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 07-01: Slack webhook integration in notification Lambda
+- [ ] 07-01-PLAN.md — Slack webhook integration in notification Lambda
 
 **Notes:**
 - Quick win - extends existing processLeadNotifications Lambda
@@ -252,8 +252,8 @@ Phases execute in numeric order: 6 -> 7 -> 8 -> 9 -> 10 -> 11
 | 3. Notifications | v1.0 | 4/4 | Complete | 2026-01-22 |
 | 4. Admin Auth | v1.0 | 2/2 | Complete | 2026-01-23 |
 | 5. Admin Dashboard | v1.0 | 7/7 | Complete | 2026-01-24 |
-| 6. Custom API Domain | v1.1 | 0/1 | Planned | - |
-| 7. Slack Notifications | v1.1 | 0/1 | Not started | - |
+| 6. Custom API Domain | v1.1 | 1/1 | Complete | 2026-01-26 |
+| 7. Slack Notifications | v1.1 | 0/1 | Planned | - |
 | 8. SMS Notifications | v1.1 | 0/2 | Not started | - |
 | 9. Email-to-Lead | v1.1 | 0/2 | Not started | - |
 | 10. Phone-to-Lead | v1.1 | 0/3 | Not started | - |
@@ -301,4 +301,4 @@ Phases execute in numeric order: 6 -> 7 -> 8 -> 9 -> 10 -> 11
 
 ---
 
-*Roadmap updated: 2026-01-26 (Phase 6 planned)*
+*Roadmap updated: 2026-01-26 (Phase 7 planned)*
