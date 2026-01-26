@@ -1,13 +1,15 @@
+# Main website CloudFront resources - only created in production
 resource "aws_cloudfront_origin_access_identity" "www" {
+  count   = var.is_staging ? 0 : 1
   comment = "access_identity_${local.bucket_name}.s3.amazonaws.com"
 }
 
-# Invalidate CloudFront cache after deployment
+# Invalidate CloudFront cache after deployment (production only)
 resource "null_resource" "cloudfront_invalidation" {
-  count = var.invalidate_cache ? 1 : 0
+  count = var.invalidate_cache && !var.is_staging ? 1 : 0
 
   triggers = {
-    distribution_id = aws_cloudfront_distribution.www.id
+    distribution_id = aws_cloudfront_distribution.www[0].id
     always_run      = timestamp()
   }
 
@@ -17,7 +19,7 @@ resource "null_resource" "cloudfront_invalidation" {
       sleep 10
       aws cloudfront create-invalidation \
         --profile ${var.aws_account} \
-        --distribution-id ${aws_cloudfront_distribution.www.id} \
+        --distribution-id ${aws_cloudfront_distribution.www[0].id} \
         --paths "/*"
     EOT
   }
@@ -26,7 +28,7 @@ resource "null_resource" "cloudfront_invalidation" {
 }
 
 resource "aws_cloudfront_cache_policy" "long_term_cache" {
-  name        = "long-term-cache-policy"
+  name        = var.is_staging ? "staging-long-term-cache-policy" : "long-term-cache-policy"
   comment     = "1-year browser cache policy for static assets"
   default_ttl = 31536000 # 1 year
   max_ttl     = 31536000 # 1 year
@@ -46,7 +48,7 @@ resource "aws_cloudfront_cache_policy" "long_term_cache" {
 }
 
 resource "aws_cloudfront_cache_policy" "short_term_cache" {
-  name        = "short-term-cache-policy"
+  name        = var.is_staging ? "staging-short-term-cache-policy" : "short-term-cache-policy"
   comment     = "1-hour cache policy for HTML"
   default_ttl = 3600  # 1 hour
   max_ttl     = 86400 # 1 day
@@ -66,7 +68,7 @@ resource "aws_cloudfront_cache_policy" "short_term_cache" {
 }
 
 resource "aws_cloudfront_response_headers_policy" "cache_headers" {
-  name    = "cache-control-headers-policy"
+  name    = var.is_staging ? "staging-cache-control-headers-policy" : "cache-control-headers-policy"
   comment = "Add Cache-Control headers for browser caching"
 
   custom_headers_config {
@@ -104,13 +106,16 @@ resource "aws_cloudfront_response_headers_policy" "cache_headers" {
 }
 
 
+# Main website CloudFront distribution - only created in production
 resource "aws_cloudfront_distribution" "www" {
+  count = var.is_staging ? 0 : 1
+
   origin {
-    domain_name = aws_s3_bucket.www.bucket_regional_domain_name
+    domain_name = aws_s3_bucket.www[0].bucket_regional_domain_name
     origin_id   = "s3-${local.bucket_name}"
 
     s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.www.cloudfront_access_identity_path
+      origin_access_identity = aws_cloudfront_origin_access_identity.www[0].cloudfront_access_identity_path
     }
   }
 
