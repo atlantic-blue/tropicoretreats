@@ -198,3 +198,43 @@ resource "aws_iam_role_policy" "notifications_secrets" {
     ]
   })
 }
+
+# SNS SMS permissions for Notification Lambda
+resource "aws_iam_role_policy" "notifications_sns" {
+  name = "sns-sms"
+  role = aws_iam_role.notifications_lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["sns:Publish"]
+        Resource = "*" # Required for SMS - cannot scope to specific phone numbers
+      }
+    ]
+  })
+}
+
+# DynamoDB read permissions for Notification Lambda (preferences lookup)
+resource "aws_iam_role_policy" "notifications_dynamodb_read" {
+  name = "dynamodb-read"
+  role = aws_iam_role.notifications_lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:Query"
+        ]
+        Resource = [
+          aws_dynamodb_table.leads.arn,
+          "${aws_dynamodb_table.leads.arn}/index/GSI1"
+        ]
+      }
+    ]
+  })
+}

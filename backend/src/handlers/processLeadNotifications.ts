@@ -1,13 +1,25 @@
 import type { DynamoDBStreamEvent } from 'aws-lambda';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import type { AttributeValue } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import type { Lead } from '../lib/types.js';
 import { sendEmail } from '../lib/ses.js';
 import { sendSlackNotification } from '../lib/slack.js';
+import { sendSMS } from '../lib/sms.js';
+import { getSmsEnabledUsers } from '../lib/preferences.js';
 import { teamNotificationTemplate } from '../templates/teamNotification.js';
 import { customerAutoReplyTemplate } from '../templates/customerAutoReply.js';
 import { buildLeadNotificationBlocks } from '../templates/slackNotification.js';
+import { buildSmsNotification } from '../templates/smsNotification.js';
 import { generateReferenceNumber } from '../utils/referenceNumber.js';
+
+/**
+ * DynamoDB client for preferences lookup.
+ * Initialized outside handler for reuse across warm invocations.
+ */
+const ddbClient = new DynamoDBClient({});
+const docClient = DynamoDBDocumentClient.from(ddbClient);
 
 /**
  * Environment variables required:
@@ -18,6 +30,7 @@ import { generateReferenceNumber } from '../utils/referenceNumber.js';
  * - ADMIN_DASHBOARD_URL: URL to admin dashboard
  * - WHATSAPP_NUMBER: WhatsApp number for customer contact
  * - SLACK_WEBHOOK_SECRET_NAME: Secrets Manager secret name for Slack webhook URL
+ * - TABLE_NAME: DynamoDB table name for preferences lookup
  */
 const TEAM_EMAILS = process.env.TEAM_EMAILS?.split(',').map((e) => e.trim()) ?? [];
 const FROM_EMAIL_TEAM = process.env.FROM_EMAIL_TEAM ?? 'leads@tropicoretreat.com';
@@ -119,6 +132,34 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<void> => {
     } catch (error) {
       console.error(`Failed to send Slack notification for lead ${lead.id}:`, error instanceof Error ? error.message : error);
       // Continue processing - Slack failure should not block other notifications
+    }
+
+    // Send SMS notifications to opted-in users
+    try {
+      const smsRecipients = await getSmsEnabledUsers(docClient);
+      console.log(`Found ${smsRecipients.length} SMS-enabled users`);
+
+      for (const recipient of smsRecipients) {
+        if (recipient.channels.sms && recipient.phone) {
+          try {
+            const smsMessage = buildSmsNotification(lead, ADMIN_DASHBOARD_URL);
+            await sendSMS(recipient.phone, smsMessage);
+            console.log(`SMS sent to user ${recipient.userId}`);
+          } catch (smsError) {
+            console.error(
+              `SMS failed for user ${recipient.userId}:`,
+              smsError instanceof Error ? smsError.message : smsError
+            );
+            // Continue to next recipient
+          }
+        }
+      }
+    } catch (error) {
+      console.error(
+        'SMS notification error:',
+        error instanceof Error ? error.message : error
+      );
+      // Continue processing - SMS failure should not block other notifications
     }
   }
 
