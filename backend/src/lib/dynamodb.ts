@@ -61,6 +61,12 @@ export interface GetLeadsParams {
   temperature?: string[];
   /** Filter by assigned team member */
   assigneeId?: string;
+  /** Search in firstName, lastName, email (case-insensitive) */
+  search?: string;
+  /** Filter by creation date (from, inclusive) - YYYY-MM-DD */
+  dateFrom?: string;
+  /** Filter by creation date (to, inclusive) - YYYY-MM-DD */
+  dateTo?: string;
   /** Page size (default 15) */
   limit?: number;
   /** Pagination cursor (base64 encoded LastEvaluatedKey) */
@@ -75,8 +81,8 @@ export interface GetLeadsResult {
   leads: Lead[];
   /** Pagination cursor for next page (undefined if no more results) */
   nextKey?: string;
-  /** Count of leads returned in this page */
-  count: number;
+  /** Total count of leads matching filters (for pagination UI) */
+  totalCount: number;
 }
 
 /**
@@ -96,7 +102,8 @@ export const getLeads = async (
     throw new Error('TABLE_NAME environment variable is not set');
   }
 
-  const { status, temperature, assigneeId, limit = 15, lastKey } = params;
+  const { status, temperature, assigneeId, search, dateFrom, dateTo, limit = 15, lastKey } = params;
+  const searchLower = search?.toLowerCase();
 
   // Parse pagination cursor
   let exclusiveStartKey: Record<string, unknown> | undefined;
@@ -146,13 +153,54 @@ export const getLeads = async (
     expressionAttributeValues[':assigneeId'] = assigneeId;
   }
 
+  // Add date range filter
+  if (dateFrom || dateTo) {
+    expressionAttributeNames['#createdAt'] = 'createdAt';
+    if (dateFrom && dateTo) {
+      // Between filter (inclusive)
+      filterExpressions.push('#createdAt BETWEEN :dateFrom AND :dateTo');
+      expressionAttributeValues[':dateFrom'] = `${dateFrom}T00:00:00.000Z`;
+      expressionAttributeValues[':dateTo'] = `${dateTo}T23:59:59.999Z`;
+    } else if (dateFrom) {
+      // From date only
+      filterExpressions.push('#createdAt >= :dateFrom');
+      expressionAttributeValues[':dateFrom'] = `${dateFrom}T00:00:00.000Z`;
+    } else if (dateTo) {
+      // To date only
+      filterExpressions.push('#createdAt <= :dateTo');
+      expressionAttributeValues[':dateTo'] = `${dateTo}T23:59:59.999Z`;
+    }
+  }
+
   const filterExpression =
     filterExpressions.length > 0 ? filterExpressions.join(' AND ') : undefined;
 
+  // First, get total count with same filters (but no pagination)
+  const countResult = await docClient.send(
+    new ScanCommand({
+      TableName: TABLE_NAME,
+      Select: 'COUNT',
+      FilterExpression: filterExpression,
+      ExpressionAttributeNames:
+        Object.keys(expressionAttributeNames).length > 0
+          ? expressionAttributeNames
+          : undefined,
+      ExpressionAttributeValues: expressionAttributeValues,
+    })
+  );
+
+  // Fetch more items than needed to account for:
+  // 1. Items filtered out by SK prefix (NOTE items mixed with LEAD items)
+  // 2. Client-side search filtering (DynamoDB doesn't support case-insensitive contains)
+  // For MVP with small dataset (~100 leads), fetching 500 items per scan is acceptable.
+  // Production would use a GSI with ENTITY_TYPE partition key.
+  const fetchLimit = 500;
+
+  // Then get paginated results
   const result = await docClient.send(
     new ScanCommand({
       TableName: TABLE_NAME,
-      Limit: limit,
+      Limit: fetchLimit,
       ExclusiveStartKey: exclusiveStartKey,
       FilterExpression: filterExpression,
       ExpressionAttributeNames:
@@ -163,18 +211,91 @@ export const getLeads = async (
     })
   );
 
+  // Apply client-side search filter (case-insensitive)
+  let leads = (result.Items ?? []) as Lead[];
+  if (searchLower) {
+    leads = leads.filter(lead => {
+      const searchableText = [
+        lead.firstName,
+        lead.lastName,
+        lead.email,
+        lead.company,
+        lead.message,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return searchableText.includes(searchLower);
+    });
+  }
+
+  // Apply limit after search filtering
+  const paginatedLeads = leads.slice(0, limit);
+
   // Encode pagination cursor
   let nextKey: string | undefined;
-  if (result.LastEvaluatedKey) {
-    nextKey = Buffer.from(JSON.stringify(result.LastEvaluatedKey)).toString(
-      'base64'
-    );
+  // If we have more results from DynamoDB or more filtered results than the limit
+  if (result.LastEvaluatedKey || leads.length > limit) {
+    // Use the last item's key as cursor if we filtered results
+    if (leads.length > limit && paginatedLeads.length > 0) {
+      const lastLead = paginatedLeads[paginatedLeads.length - 1];
+      nextKey = Buffer.from(JSON.stringify({
+        PK: lastLead.PK,
+        SK: lastLead.SK,
+      })).toString('base64');
+    } else if (result.LastEvaluatedKey) {
+      nextKey = Buffer.from(JSON.stringify(result.LastEvaluatedKey)).toString(
+        'base64'
+      );
+    }
+  }
+
+  // Adjust total count for search (need separate count query with search)
+  let totalCount = countResult.Count ?? 0;
+  if (searchLower) {
+    // For search, we need to count matching items
+    // This is expensive but necessary for accurate pagination
+    // For large datasets, consider using OpenSearch
+    let allItems: Lead[] = [];
+    let scanKey: Record<string, unknown> | undefined;
+    do {
+      const countScan = await docClient.send(
+        new ScanCommand({
+          TableName: TABLE_NAME,
+          FilterExpression: filterExpression,
+          ExpressionAttributeNames:
+            Object.keys(expressionAttributeNames).length > 0
+              ? expressionAttributeNames
+              : undefined,
+          ExpressionAttributeValues: expressionAttributeValues,
+          ExclusiveStartKey: scanKey,
+        })
+      );
+      const items = (countScan.Items ?? []) as Lead[];
+      allItems = allItems.concat(
+        items.filter(lead => {
+          const searchableText = [
+            lead.firstName,
+            lead.lastName,
+            lead.email,
+            lead.company,
+            lead.message,
+          ]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
+          return searchableText.includes(searchLower);
+        })
+      );
+      scanKey = countScan.LastEvaluatedKey;
+    } while (scanKey);
+    totalCount = allItems.length;
   }
 
   return {
-    leads: (result.Items ?? []) as Lead[],
+    leads: paginatedLeads,
     nextKey,
-    count: result.Items?.length ?? 0,
+    totalCount,
   };
 };
 

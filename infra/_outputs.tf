@@ -69,3 +69,8 @@ output "admin_cloudfront_domain" {
   description = "CloudFront domain name for admin dashboard"
   value       = aws_cloudfront_distribution.admin.domain_name
 }
+
+output "api_custom_domain" {
+  description = "Custom domain URL for the API"
+  value       = "https://api.tropicoretreat.com/v1"
+}

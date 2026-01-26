@@ -90,7 +90,7 @@ function MultiSelect({ label, options, selected, onChange }: MultiSelectProps) {
 }
 
 export function LeadFilters() {
-  const { filters, setFilter, clearFilters, hasActiveFilters } = useFilters();
+  const { filters, setFilter, setFilters, clearFilters, hasActiveFilters } = useFilters();
   const { data: users } = useUsers();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const datePickerRef = useRef<HTMLDivElement>(null);
@@ -113,16 +113,12 @@ export function LeadFilters() {
     : undefined;
 
   const handleDateRangeSelect = (range: DateRange | undefined) => {
-    if (range?.from) {
-      setFilter('from', format(range.from, 'yyyy-MM-dd'));
-    } else {
-      setFilter('from', '');
-    }
-    if (range?.to) {
-      setFilter('to', format(range.to, 'yyyy-MM-dd'));
-    } else {
-      setFilter('to', '');
-    }
+    // Use setFilters to update both from and to in a single operation
+    // This prevents race conditions where the second setFilter overwrites the first
+    setFilters({
+      from: range?.from ? format(range.from, 'yyyy-MM-dd') : '',
+      to: range?.to ? format(range.to, 'yyyy-MM-dd') : '',
+    });
   };
 
   const formatDateRange = () => {

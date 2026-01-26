@@ -83,29 +83,45 @@ async function handleGetLeads(
   const queryParams = event.queryStringParameters ?? {};
 
   // Parse query parameters
+  // Note: API Gateway v2 joins duplicate params with comma (status=A&status=B => "A,B")
   const status = queryParams.status?.split(',').filter(Boolean);
   const temperature = queryParams.temperature?.split(',').filter(Boolean);
-  const assigneeId = queryParams.assigneeId;
+  const assigneeId = queryParams.assignee || queryParams.assigneeId; // Support both names
+  const search = queryParams.search?.trim();
   const limit = queryParams.limit ? parseInt(queryParams.limit, 10) : undefined;
-  const lastKey = queryParams.lastKey;
+  const cursor = queryParams.cursor || queryParams.lastKey; // Support both names
+  const dateFrom = queryParams.from;
+  const dateTo = queryParams.to;
 
   // Validate limit if provided
   if (limit !== undefined && (isNaN(limit) || limit < 1 || limit > 100)) {
     return badRequest('Invalid limit parameter. Must be between 1 and 100.');
   }
 
+  // Validate date format if provided (YYYY-MM-DD)
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (dateFrom && !dateRegex.test(dateFrom)) {
+    return badRequest('Invalid from date format. Use YYYY-MM-DD.');
+  }
+  if (dateTo && !dateRegex.test(dateTo)) {
+    return badRequest('Invalid to date format. Use YYYY-MM-DD.');
+  }
+
   const result = await getLeads({
     status,
     temperature,
     assigneeId,
+    search,
     limit,
-    lastKey,
+    lastKey: cursor,
+    dateFrom,
+    dateTo,
   });
 
   return ok({
     leads: result.leads,
-    nextPage: result.nextKey,
-    count: result.count,
+    nextCursor: result.nextKey,
+    totalCount: result.totalCount,
   });
 }
 

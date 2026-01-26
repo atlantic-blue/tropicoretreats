@@ -23,3 +23,9 @@ variable "invalidate_cache" {
   type        = bool
   default     = false
 }
+
+variable "team_emails" {
+  description = "Comma-separated list of team email addresses for lead notifications"
+  type        = string
+  default     = ""
+}

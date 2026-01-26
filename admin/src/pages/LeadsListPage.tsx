@@ -38,8 +38,22 @@ function ErrorMessage({ error }: { error: Error }) {
 
 export function LeadsListPage() {
   const { getAccessToken } = useAuth();
-  const { filters, setPage } = useFilters();
-  const { data, isLoading, isError, error, isFetching, isPlaceholderData } = useLeads(filters);
+  const {
+    filters,
+    setPage,
+    goToNextPage,
+    goToPrevPage,
+    getCurrentCursor,
+    setNextCursor,
+    hasPrevPage,
+  } = useFilters();
+
+  const cursor = getCurrentCursor();
+  const { data, isLoading, isError, error, isFetching, isPlaceholderData } = useLeads({
+    filters,
+    cursor,
+    onNextCursor: setNextCursor,
+  });
 
   // Initialize the token getter for API calls
   useEffect(() => {
@@ -57,6 +71,9 @@ export function LeadsListPage() {
   const totalCount = data?.totalCount ?? 0;
   const leads = data?.leads ?? [];
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+
+  // Determine if we can go to next page based on API response
+  const canGoNext = data?.nextCursor !== undefined;
 
   return (
     <div className="space-y-6">
@@ -86,6 +103,10 @@ export function LeadsListPage() {
         totalCount={totalCount}
         pageSize={PAGE_SIZE}
         onPageChange={setPage}
+        onNextPage={goToNextPage}
+        onPrevPage={goToPrevPage}
+        hasNextPage={canGoNext}
+        hasPrevPage={hasPrevPage}
         isLoading={isFetching && isPlaceholderData}
       />
     </div>
