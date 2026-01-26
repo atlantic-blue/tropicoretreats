@@ -83,9 +83,11 @@ async function handleGetLeads(
   const queryParams = event.queryStringParameters ?? {};
 
   // Parse query parameters
+  // Note: API Gateway v2 joins duplicate params with comma (status=A&status=B => "A,B")
   const status = queryParams.status?.split(',').filter(Boolean);
   const temperature = queryParams.temperature?.split(',').filter(Boolean);
-  const assigneeId = queryParams.assigneeId;
+  const assigneeId = queryParams.assignee || queryParams.assigneeId; // Support both names
+  const search = queryParams.search?.trim();
   const limit = queryParams.limit ? parseInt(queryParams.limit, 10) : undefined;
   const cursor = queryParams.cursor || queryParams.lastKey; // Support both names
   const dateFrom = queryParams.from;
@@ -109,6 +111,7 @@ async function handleGetLeads(
     status,
     temperature,
     assigneeId,
+    search,
     limit,
     lastKey: cursor,
     dateFrom,
