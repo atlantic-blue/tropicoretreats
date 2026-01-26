@@ -20,7 +20,7 @@ resource "aws_acm_certificate" "www_certificate" {
 
 resource "aws_route53_record" "www_cert_dns" {
   allow_overwrite = true
-  zone_id         = aws_route53_zone.www.id
+  zone_id         = local.route53_zone_id
   name            = tolist(aws_acm_certificate.www_certificate.domain_validation_options)[0].resource_record_name
   ttl             = 60
 
