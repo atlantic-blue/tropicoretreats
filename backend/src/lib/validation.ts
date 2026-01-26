@@ -69,7 +69,7 @@ export type NoteUpdateInput = z.infer<typeof NoteUpdateSchema>;
  */
 export const LeadUpdateSchema = z
   .object({
-    status: z.enum(['NEW', 'CONTACTED', 'QUOTED', 'WON', 'LOST']).optional(),
+    status: z.enum(['NEW', 'CONTACTED', 'QUOTED', 'WON', 'LOST', 'ARCHIVED']).optional(),
     temperature: z.enum(['HOT', 'WARM', 'COLD']).optional(),
     assigneeId: z.string().optional(),
     assigneeName: z.string().optional(),
@@ -83,6 +83,7 @@ export type LeadUpdateInput = z.infer<typeof LeadUpdateSchema>;
 /**
  * Status progression order for validation.
  * Leads should progress forward: NEW -> CONTACTED -> QUOTED -> WON/LOST
+ * ARCHIVED is a special status that can be reached from any status.
  */
 const STATUS_ORDER: Record<string, number> = {
   NEW: 0,
@@ -90,20 +91,33 @@ const STATUS_ORDER: Record<string, number> = {
   QUOTED: 2,
   WON: 3,
   LOST: 3,
+  ARCHIVED: 99, // Special value to allow archiving from any status
 };
 
 /**
- * Validates that status progression is forward-only.
- * Leads cannot move backwards in the pipeline.
+ * Validates that status progression is valid.
+ * - Leads can progress forward in the pipeline (NEW -> CONTACTED -> QUOTED -> WON/LOST)
+ * - Any status can transition to ARCHIVED (archiving)
+ * - ARCHIVED can transition to any status (restoring)
  *
  * @param currentStatus - Current status of the lead
  * @param newStatus - Proposed new status
- * @returns true if progression is valid (forward or same level)
+ * @returns true if progression is valid
  */
 export function validateStatusProgression(
   currentStatus: string,
   newStatus: string
 ): boolean {
+  // Allow archiving from any status
+  if (newStatus === 'ARCHIVED') {
+    return currentStatus !== 'ARCHIVED'; // Can't archive already archived
+  }
+
+  // Allow restoring from ARCHIVED to any status
+  if (currentStatus === 'ARCHIVED') {
+    return STATUS_ORDER[newStatus] !== undefined;
+  }
+
   const currentOrder = STATUS_ORDER[currentStatus];
   const newOrder = STATUS_ORDER[newStatus];
 

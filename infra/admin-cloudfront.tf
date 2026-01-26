@@ -8,10 +8,10 @@ resource "aws_cloudfront_distribution" "admin" {
 
   enabled             = true
   is_ipv6_enabled     = true
-  comment             = "CDN for admin.tropicoretreat.com"
+  comment             = "CDN for ${local.admin_domain}"
   default_root_object = "index.html"
 
-  aliases = ["admin.tropicoretreat.com"]
+  aliases = [local.admin_domain]
 
   # Default cache behavior for HTML files (short cache)
   default_cache_behavior {

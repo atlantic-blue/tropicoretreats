@@ -1,3 +1,5 @@
+# Main website S3 resources - created in both production and staging
+
 data "aws_iam_policy_document" "www" {
   statement {
     actions = [
@@ -36,7 +38,7 @@ resource "aws_s3_bucket_public_access_block" "www" {
 }
 
 resource "aws_s3_bucket" "www" {
-  bucket = local.bucket_name
+  bucket = local.www_bucket_name
 
   tags = merge(
     local.tags,

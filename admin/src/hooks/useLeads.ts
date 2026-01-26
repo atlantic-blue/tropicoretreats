@@ -10,12 +10,35 @@ interface UseLeadsOptions {
   onNextCursor?: (cursor: string | undefined) => void;
 }
 
+// All active statuses (non-archived)
+const ACTIVE_STATUSES = ['NEW', 'CONTACTED', 'QUOTED', 'WON', 'LOST'];
+
 export function useLeads({ filters, cursor, onNextCursor }: UseLeadsOptions) {
   const debouncedSearch = useDebouncedValue(filters.search, 300);
 
+  // When showArchived is false, exclude ARCHIVED from results
+  // If specific statuses are selected, filter those; otherwise use all active statuses
+  let statusFilter: string[] | undefined;
+  if (filters.showArchived) {
+    // Show all including archived - use whatever is selected or undefined for all
+    statusFilter = filters.status.length ? filters.status : undefined;
+  } else {
+    // Hide archived - filter to only active statuses
+    if (filters.status.length) {
+      // User selected specific statuses, exclude ARCHIVED from selection
+      statusFilter = filters.status.filter(s => s !== 'ARCHIVED');
+      if (statusFilter.length === 0) {
+        statusFilter = ACTIVE_STATUSES;
+      }
+    } else {
+      // No status filter, show all active
+      statusFilter = ACTIVE_STATUSES;
+    }
+  }
+
   const params: FilterParams = {
     search: debouncedSearch || undefined,
-    status: filters.status.length ? filters.status : undefined,
+    status: statusFilter,
     temperature: filters.temperature.length ? filters.temperature : undefined,
     assignee: filters.assignee || undefined,
     from: filters.dateFrom || undefined,

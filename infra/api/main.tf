@@ -15,8 +15,8 @@ locals {
 
   cors_origins = length(var.cors_allowed_origins) > 0 ? var.cors_allowed_origins : (
     var.environment == "production"
-    ? ["https://tropicoretreat.com", "https://www.tropicoretreat.com", "https://admin.tropicoretreat.com"]
-    : ["http://localhost:3000", "http://localhost:5173", "http://localhost:5174", "https://tropicoretreat.com", "https://www.tropicoretreat.com", "https://admin.tropicoretreat.com"]
+    ? ["https://tropicoretreat.com", "https://www.tropicoretreat.com", "https://${var.admin_domain}"]
+    : ["http://localhost:3000", "http://localhost:5173", "http://localhost:5174", "https://tropicoretreat.com", "https://www.tropicoretreat.com", "https://${var.admin_domain}"]
   )
 }
 
@@ -75,7 +75,7 @@ resource "aws_apigatewayv2_stage" "default" {
 
 # Custom domain for API Gateway using existing wildcard certificate
 resource "aws_apigatewayv2_domain_name" "api" {
-  domain_name = "api.${local.domain_name}"
+  domain_name = var.api_domain
 
   domain_name_configuration {
     certificate_arn = var.wildcard_certificate_arn

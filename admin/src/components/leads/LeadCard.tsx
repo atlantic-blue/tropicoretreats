@@ -4,12 +4,13 @@ import { formatDistanceToNow } from 'date-fns';
 import { Badge } from '../ui/Badge';
 import type { Lead, LeadStatus, Temperature } from '../../types/lead';
 
-const statusColors: Record<LeadStatus, { badge: 'blue' | 'yellow' | 'purple' | 'green' | 'gray'; border: string }> = {
+const statusColors: Record<LeadStatus, { badge: 'blue' | 'yellow' | 'purple' | 'green' | 'gray' | 'slate'; border: string }> = {
   NEW: { badge: 'blue', border: 'border-l-blue-500' },
   CONTACTED: { badge: 'yellow', border: 'border-l-yellow-500' },
   QUOTED: { badge: 'purple', border: 'border-l-purple-500' },
   WON: { badge: 'green', border: 'border-l-green-500' },
   LOST: { badge: 'gray', border: 'border-l-gray-500' },
+  ARCHIVED: { badge: 'slate', border: 'border-l-slate-400' },
 };
 
 const tempColors: Record<Temperature, string> = {
@@ -26,11 +27,12 @@ export function LeadCard({ lead }: LeadCardProps) {
   const statusStyle = statusColors[lead.status] || statusColors.NEW;
   const safeTemperature = lead.temperature && tempColors[lead.temperature] ? lead.temperature : 'WARM';
   const tempColor = tempColors[safeTemperature];
+  const isArchived = lead.status === 'ARCHIVED';
 
   return (
     <Link
       to={`/leads/${lead.id}`}
-      className={`block p-4 bg-white rounded-lg shadow-sm border-l-4 hover:shadow-md transition-shadow ${statusStyle.border}`}
+      className={`block p-4 bg-white rounded-lg shadow-sm border-l-4 hover:shadow-md transition-shadow ${statusStyle.border} ${isArchived ? 'opacity-60' : ''}`}
     >
       <div className="flex justify-between items-start">
         <h3 className="font-medium text-gray-900">

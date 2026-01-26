@@ -1,7 +1,7 @@
 # Route53 record pointing admin subdomain to CloudFront
 resource "aws_route53_record" "admin" {
-  zone_id = aws_route53_zone.www.zone_id
-  name    = "admin.tropicoretreat.com"
+  zone_id = local.route53_zone_id
+  name    = local.admin_domain
   type    = "A"
 
   alias {

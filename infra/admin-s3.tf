@@ -1,6 +1,6 @@
 # S3 bucket for admin dashboard
 resource "aws_s3_bucket" "admin" {
-  bucket = "admin.tropicoretreat.com"
+  bucket = local.admin_bucket_name
 
   tags = merge(
     local.tags,
@@ -27,8 +27,8 @@ resource "aws_s3_bucket_public_access_block" "admin" {
 
 # CloudFront Origin Access Control for admin dashboard
 resource "aws_cloudfront_origin_access_control" "admin" {
-  name                              = "admin-oac"
-  description                       = "OAC for admin dashboard"
+  name                              = var.is_staging ? "staging-admin-oac" : "admin-oac"
+  description                       = "OAC for ${local.admin_domain}"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"

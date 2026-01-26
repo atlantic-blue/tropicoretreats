@@ -18,4 +18,6 @@ module "api" {
   aws_region               = var.aws_region
   wildcard_certificate_arn = aws_acm_certificate.www_certificate.arn
   team_emails              = var.team_emails
+  api_domain               = local.api_domain
+  admin_domain             = local.admin_domain
 }

@@ -105,6 +105,7 @@ export function LeadDetail({ lead }: LeadDetailProps) {
             <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
             <StatusDropdown
               status={lead.status}
+              previousStatus={lead.previousStatus}
               onStatusChange={handleStatusChange}
               disabled={updateLead.isPending}
             />

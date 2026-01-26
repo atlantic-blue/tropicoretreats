@@ -55,3 +55,15 @@ variable "wildcard_certificate_arn" {
   description = "ARN of the wildcard ACM certificate for *.tropicoretreat.com"
   type        = string
 }
+
+variable "api_domain" {
+  description = "Custom domain for API Gateway (e.g., api.tropicoretreat.com or staging-api.tropicoretreat.com)"
+  type        = string
+  default     = "api.tropicoretreat.com"
+}
+
+variable "admin_domain" {
+  description = "Admin dashboard domain (e.g., admin.tropicoretreat.com or staging-admin.tropicoretreat.com)"
+  type        = string
+  default     = "admin.tropicoretreat.com"
+}

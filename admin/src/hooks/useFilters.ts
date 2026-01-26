@@ -9,6 +9,7 @@ export interface Filters {
   dateFrom: string;
   dateTo: string;
   page: number;
+  showArchived: boolean;
 }
 
 export interface CursorState {
@@ -35,6 +36,7 @@ export function useFilters() {
     dateFrom: searchParams.get('from') || '',
     dateTo: searchParams.get('to') || '',
     page: cursorState.currentPage,
+    showArchived: searchParams.get('showArchived') === 'true',
   };
 
   // Get cursor for current page
@@ -119,7 +121,8 @@ export function useFilters() {
     filters.temperature.length ||
     filters.assignee ||
     filters.dateFrom ||
-    filters.dateTo
+    filters.dateTo ||
+    filters.showArchived
   );
 
   // Check if we can navigate to next page

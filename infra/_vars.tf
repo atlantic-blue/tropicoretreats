@@ -29,3 +29,15 @@ variable "team_emails" {
   type        = string
   default     = ""
 }
+
+variable "is_staging" {
+  description = "Whether this is a staging environment (affects domain naming)"
+  type        = bool
+  default     = false
+}
+
+variable "route53_zone_id" {
+  description = "Route53 hosted zone ID for the domain (required for staging to use production zone)"
+  type        = string
+  default     = ""
+}

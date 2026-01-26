@@ -1,4 +1,4 @@
-export type LeadStatus = 'NEW' | 'CONTACTED' | 'QUOTED' | 'WON' | 'LOST';
+export type LeadStatus = 'NEW' | 'CONTACTED' | 'QUOTED' | 'WON' | 'LOST' | 'ARCHIVED';
 export type Temperature = 'HOT' | 'WARM' | 'COLD';
 export type NoteType = 'MANUAL' | 'SYSTEM';
 
@@ -17,6 +17,8 @@ export interface Lead {
   message: string;
   assigneeId?: string;
   assigneeName?: string;
+  /** Previous status before archiving (used for restore) */
+  previousStatus?: string;
   createdAt: string;
   updatedAt: string;
 }
