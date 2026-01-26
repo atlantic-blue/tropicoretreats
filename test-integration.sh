@@ -7,10 +7,12 @@ ENV=${1:-production}
 
 if [ "$ENV" = "staging" ]; then
   API_URL="https://staging-api.tropicoretreat.com/v1"
-  ADMIN_URL="https://dl5p1fy8ewaqz.cloudfront.net"
+  ADMIN_URL="https://staging-admin.tropicoretreat.com"
+  WWW_URL="https://staging.tropicoretreat.com"
 else
   API_URL="https://api.tropicoretreat.com/v1"
   ADMIN_URL="https://admin.tropicoretreat.com"
+  WWW_URL="https://tropicoretreat.com"
 fi
 
 echo "Testing $ENV environment..."
@@ -18,8 +20,18 @@ echo ""
 
 FAILED=0
 
-# Test Frontend
-echo -n "Frontend: "
+# Test Main Website
+echo -n "Main Website: "
+CODE=$(curl -s -o /dev/null -w "%{http_code}" "$WWW_URL" 2>/dev/null)
+if [ "$CODE" = "200" ]; then
+  echo "PASS ($CODE)"
+else
+  echo "FAIL ($CODE)"
+  FAILED=1
+fi
+
+# Test Admin Frontend
+echo -n "Admin Frontend: "
 CODE=$(curl -s -o /dev/null -w "%{http_code}" "$ADMIN_URL" 2>/dev/null)
 if [ "$CODE" = "200" ]; then
   echo "PASS ($CODE)"

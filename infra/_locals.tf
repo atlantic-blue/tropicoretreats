@@ -12,5 +12,7 @@ locals {
   # Environment-specific domain names
   admin_domain      = var.is_staging ? "staging-admin.tropicoretreat.com" : "admin.tropicoretreat.com"
   api_domain        = var.is_staging ? "staging-api.tropicoretreat.com" : "api.tropicoretreat.com"
+  www_domain        = var.is_staging ? "staging.tropicoretreat.com" : "tropicoretreat.com"
   admin_bucket_name = var.is_staging ? "staging-admin.tropicoretreat.com" : "admin.tropicoretreat.com"
+  www_bucket_name   = var.is_staging ? "staging.tropicoretreat.com" : "tropicoretreat.com"
 }

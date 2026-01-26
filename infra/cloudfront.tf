@@ -1,15 +1,14 @@
-# Main website CloudFront resources - only created in production
+# Main website CloudFront resources - created in both production and staging
 resource "aws_cloudfront_origin_access_identity" "www" {
-  count   = var.is_staging ? 0 : 1
-  comment = "access_identity_${local.bucket_name}.s3.amazonaws.com"
+  comment = "access_identity_${local.www_bucket_name}.s3.amazonaws.com"
 }
 
-# Invalidate CloudFront cache after deployment (production only)
+# Invalidate CloudFront cache after deployment
 resource "null_resource" "cloudfront_invalidation" {
-  count = var.invalidate_cache && !var.is_staging ? 1 : 0
+  count = var.invalidate_cache ? 1 : 0
 
   triggers = {
-    distribution_id = aws_cloudfront_distribution.www[0].id
+    distribution_id = aws_cloudfront_distribution.www.id
     always_run      = timestamp()
   }
 
@@ -19,7 +18,7 @@ resource "null_resource" "cloudfront_invalidation" {
       sleep 10
       aws cloudfront create-invalidation \
         --profile ${var.aws_account} \
-        --distribution-id ${aws_cloudfront_distribution.www[0].id} \
+        --distribution-id ${aws_cloudfront_distribution.www.id} \
         --paths "/*"
     EOT
   }
@@ -106,29 +105,27 @@ resource "aws_cloudfront_response_headers_policy" "cache_headers" {
 }
 
 
-# Main website CloudFront distribution - only created in production
+# Main website CloudFront distribution - created in both production and staging
 resource "aws_cloudfront_distribution" "www" {
-  count = var.is_staging ? 0 : 1
-
   origin {
-    domain_name = aws_s3_bucket.www[0].bucket_regional_domain_name
-    origin_id   = "s3-${local.bucket_name}"
+    domain_name = aws_s3_bucket.www.bucket_regional_domain_name
+    origin_id   = "s3-${local.www_bucket_name}"
 
     s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.www[0].cloudfront_access_identity_path
+      origin_access_identity = aws_cloudfront_origin_access_identity.www.cloudfront_access_identity_path
     }
   }
 
   enabled             = true
   is_ipv6_enabled     = true
-  comment             = "CDN for ${local.domain_name}"
+  comment             = "CDN for ${local.www_domain}"
   default_root_object = "index.html"
 
   # Default behavior for HTML files (short cache)
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "s3-${local.bucket_name}"
+    target_origin_id = "s3-${local.www_bucket_name}"
 
     viewer_protocol_policy     = "redirect-to-https"
     compress                   = true
@@ -141,7 +138,7 @@ resource "aws_cloudfront_distribution" "www" {
     path_pattern     = "*.js"
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "s3-${local.bucket_name}"
+    target_origin_id = "s3-${local.www_bucket_name}"
 
     viewer_protocol_policy     = "redirect-to-https"
     compress                   = true
@@ -154,7 +151,7 @@ resource "aws_cloudfront_distribution" "www" {
     path_pattern     = "*.css"
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "s3-${local.bucket_name}"
+    target_origin_id = "s3-${local.www_bucket_name}"
 
     viewer_protocol_policy     = "redirect-to-https"
     compress                   = true
@@ -167,7 +164,7 @@ resource "aws_cloudfront_distribution" "www" {
     path_pattern     = "*.webp"
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "s3-${local.bucket_name}"
+    target_origin_id = "s3-${local.www_bucket_name}"
 
     viewer_protocol_policy     = "redirect-to-https"
     compress                   = true
@@ -179,7 +176,7 @@ resource "aws_cloudfront_distribution" "www" {
     path_pattern     = "*.jpg"
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "s3-${local.bucket_name}"
+    target_origin_id = "s3-${local.www_bucket_name}"
 
     viewer_protocol_policy     = "redirect-to-https"
     compress                   = true
@@ -191,7 +188,7 @@ resource "aws_cloudfront_distribution" "www" {
     path_pattern     = "*.png"
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "s3-${local.bucket_name}"
+    target_origin_id = "s3-${local.www_bucket_name}"
 
     viewer_protocol_policy     = "redirect-to-https"
     compress                   = true
@@ -204,7 +201,7 @@ resource "aws_cloudfront_distribution" "www" {
     path_pattern     = "*.woff2"
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "s3-${local.bucket_name}"
+    target_origin_id = "s3-${local.www_bucket_name}"
 
     viewer_protocol_policy     = "redirect-to-https"
     compress                   = true
@@ -240,11 +237,10 @@ resource "aws_cloudfront_distribution" "www" {
   }
 
   aliases = [
-    local.domain_name,
+    local.www_domain,
   ]
 
   viewer_certificate {
-    # cloudfront_default_certificate = true
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.1_2016"
     acm_certificate_arn      = aws_acm_certificate.www_certificate.arn
