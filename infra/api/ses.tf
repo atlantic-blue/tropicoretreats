@@ -2,9 +2,10 @@
 # Enables sending from leads@tropicoretreat.com and hello@tropicoretreat.com
 # Only created in production - staging shares the production SES identity
 
-# Look up existing Route53 zone
+# Look up existing Route53 zone (public zone only)
 data "aws_route53_zone" "www" {
-  name = local.domain_name
+  name         = local.domain_name
+  private_zone = false
 }
 
 # SES v2 email identity for the domain (production only)
