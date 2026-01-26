@@ -7,8 +7,9 @@
     "*.scss"
   ],
   "scripts": {
-    "dev": "TS_NODE_PROJECT='tsconfig.webpack.json' webpack serve --env NODE_ENV='development'",
-    "build": "TS_NODE_PROJECT='tsconfig.webpack.json' webpack --env NODE_ENV='production'",
+    "dev": "cp .env.staging .env && TS_NODE_PROJECT='tsconfig.webpack.json' webpack serve --env NODE_ENV='development'",
+    "build": "cp .env.production .env && TS_NODE_PROJECT='tsconfig.webpack.json' webpack --env NODE_ENV='production'",
+    "build:staging": "cp .env.staging .env && TS_NODE_PROJECT='tsconfig.webpack.json' webpack --env NODE_ENV='staging'",
     "postbuild": "node scripts/prerender.js",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",

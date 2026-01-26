@@ -15,7 +15,7 @@ const createWebpackPlugins = (
 ): WebpackPluginInstance[] => {
     const plugins: WebpackPluginInstance[] = [
         new EnvironmentPlugin(env),
-        new Dotenv(),
+        new Dotenv() as any,
 
         /**
          * Provide HTML template
@@ -56,7 +56,7 @@ const createWebpackPlugins = (
         plugins.push(
             new BundleAnalyzerPlugin({
                 openAnalyzer: true,
-            })
+            }) as any
         )
     }
 
