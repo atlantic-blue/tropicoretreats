@@ -189,9 +189,12 @@ export const getLeads = async (
     })
   );
 
-  // For search, we need to do client-side filtering (DynamoDB doesn't support case-insensitive contains)
-  // Fetch more items if searching to account for filtered results
-  const fetchLimit = searchLower ? limit * 3 : limit;
+  // Fetch more items than needed to account for:
+  // 1. Items filtered out by SK prefix (NOTE items mixed with LEAD items)
+  // 2. Client-side search filtering (DynamoDB doesn't support case-insensitive contains)
+  // For MVP with small dataset (~100 leads), fetching 500 items per scan is acceptable.
+  // Production would use a GSI with ENTITY_TYPE partition key.
+  const fetchLimit = 500;
 
   // Then get paginated results
   const result = await docClient.send(

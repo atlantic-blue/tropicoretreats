@@ -66,6 +66,22 @@ export function useFilters() {
     setCursorState({ cursors: [undefined], currentPage: 1 });
   };
 
+  // Set multiple filters at once to avoid race conditions (e.g., date range from/to)
+  const setFilters = (updates: Record<string, string | string[]>) => {
+    const newParams = new URLSearchParams(searchParams);
+    for (const [key, value] of Object.entries(updates)) {
+      newParams.delete(key);
+      if (Array.isArray(value)) {
+        value.forEach(v => newParams.append(key, v));
+      } else if (value) {
+        newParams.set(key, value);
+      }
+    }
+    setSearchParams(newParams);
+    // Reset pagination when filter changes
+    setCursorState({ cursors: [undefined], currentPage: 1 });
+  };
+
   const setPage = useCallback((page: number) => {
     setCursorState(prev => {
       // Only allow navigating to pages we have cursors for
@@ -113,6 +129,7 @@ export function useFilters() {
   return {
     filters,
     setFilter,
+    setFilters,
     setPage,
     goToNextPage,
     goToPrevPage,
