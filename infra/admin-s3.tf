@@ -1,6 +1,6 @@
 # S3 bucket for admin dashboard
 resource "aws_s3_bucket" "admin" {
-  bucket = "admin.tropicoretreat.com"
+  bucket = local.admin_bucket_name
 
   tags = merge(
     local.tags,

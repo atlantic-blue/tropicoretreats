@@ -29,3 +29,9 @@ variable "team_emails" {
   type        = string
   default     = ""
 }
+
+variable "is_staging" {
+  description = "Whether this is a staging environment (affects domain naming)"
+  type        = bool
+  default     = false
+}

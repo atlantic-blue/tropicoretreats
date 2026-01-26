@@ -199,8 +199,18 @@ async function handleUpdateLead(
     }
   }
 
+  // Handle archiving: store previous status for restore capability
+  const updateData: typeof updates & { previousStatus?: string | null } = { ...updates };
+  if (updates.status === 'ARCHIVED' && currentLead.status !== 'ARCHIVED') {
+    updateData.previousStatus = currentLead.status;
+  }
+  // Handle restoring: clear previousStatus when restoring from archive
+  if (currentLead.status === 'ARCHIVED' && updates.status && updates.status !== 'ARCHIVED') {
+    updateData.previousStatus = null; // Will trigger REMOVE in DynamoDB
+  }
+
   // Update the lead
-  const updatedLead = await updateLead(id, updates);
+  const updatedLead = await updateLead(id, updateData);
 
   // Extract author info from JWT claims for system notes
   const authorId = event.requestContext.authorizer?.jwt?.claims?.sub as string;

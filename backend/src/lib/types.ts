@@ -29,7 +29,9 @@ export interface Lead {
   /** ULID - sortable unique identifier */
   id: string;
   /** Lead status in sales pipeline */
-  status: 'NEW' | 'CONTACTED' | 'QUOTED' | 'WON' | 'LOST';
+  status: 'NEW' | 'CONTACTED' | 'QUOTED' | 'WON' | 'LOST' | 'ARCHIVED';
+  /** Previous status before archiving (used for restore) */
+  previousStatus?: string;
   /** Lead temperature indicating sales priority (default WARM for new leads) */
   temperature: Temperature;
   /** Contact first name */
@@ -67,6 +69,7 @@ export const LeadStatus = {
   QUOTED: 'QUOTED',
   WON: 'WON',
   LOST: 'LOST',
+  ARCHIVED: 'ARCHIVED',
 } as const;
 
 export type LeadStatusType = (typeof LeadStatus)[keyof typeof LeadStatus];

@@ -31,7 +31,7 @@ resource "aws_cognito_user_pool" "admin" {
     allow_admin_create_user_only = true
     invite_message_template {
       email_subject = "Your Tropico Retreats Admin Account"
-      email_message = "Your username is {username} and temporary password is {####}. Please sign in at https://admin.tropicoretreat.com"
+      email_message = "Your username is {username} and temporary password is {####}. Please sign in at https://${var.admin_domain}"
       sms_message   = "Your username is {username} and temporary password is {####}"
     }
   }
@@ -90,13 +90,13 @@ resource "aws_cognito_user_pool_client" "admin" {
   callback_urls = [
     "http://localhost:3000",
     "http://localhost:5173",
-    "https://admin.tropicoretreat.com"
+    "https://${var.admin_domain}"
   ]
 
   logout_urls = [
     "http://localhost:3000",
     "http://localhost:5173",
-    "https://admin.tropicoretreat.com"
+    "https://${var.admin_domain}"
   ]
 
   # Supported identity providers

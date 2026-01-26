@@ -6,9 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:staging": "tsc -b && vite build --mode staging",
+    "build:production": "tsc -b && vite build --mode production",
     "lint": "eslint .",
     "preview": "vite preview",
-    "deploy": "npm run build && aws s3 sync dist/ s3://admin.tropicoretreat.com/ --delete && aws cloudfront create-invalidation --distribution-id E2PCJ44NUGPNHQ --paths \"/*\""
+    "deploy": "npm run build && aws s3 sync dist/ s3://admin.tropicoretreat.com/ --delete && aws cloudfront create-invalidation --distribution-id E2PCJ44NUGPNHQ --paths \"/*\"",
+    "deploy:staging": "npm run build:staging && aws s3 sync dist/ s3://staging-admin.tropicoretreat.com/ --delete",
+    "deploy:production": "npm run build:production && aws s3 sync dist/ s3://admin.tropicoretreat.com/ --delete && aws cloudfront create-invalidation --distribution-id E2PCJ44NUGPNHQ --paths \"/*\""
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.20",

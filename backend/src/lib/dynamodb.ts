@@ -335,7 +335,7 @@ export const getLead = async (id: string): Promise<Lead | null> => {
 export const updateLead = async (
   id: string,
   updates: Partial<
-    Pick<Lead, 'status' | 'temperature' | 'assigneeId' | 'assigneeName'>
+    Pick<Lead, 'status' | 'temperature' | 'assigneeId' | 'assigneeName' | 'previousStatus'>
   >
 ): Promise<Lead> => {
   if (!TABLE_NAME) {
@@ -343,7 +343,8 @@ export const updateLead = async (
   }
 
   const now = new Date().toISOString();
-  const updateExpressions: string[] = ['#updatedAt = :updatedAt'];
+  const setExpressions: string[] = ['#updatedAt = :updatedAt'];
+  const removeExpressions: string[] = [];
   const expressionAttributeNames: Record<string, string> = {
     '#updatedAt': 'updatedAt',
   };
@@ -353,8 +354,8 @@ export const updateLead = async (
 
   // Add status update and GSI1PK update
   if (updates.status !== undefined) {
-    updateExpressions.push('#status = :status');
-    updateExpressions.push('GSI1PK = :gsi1pk');
+    setExpressions.push('#status = :status');
+    setExpressions.push('GSI1PK = :gsi1pk');
     expressionAttributeNames['#status'] = 'status';
     expressionAttributeValues[':status'] = updates.status;
     expressionAttributeValues[':gsi1pk'] = `STATUS#${updates.status}`;
@@ -362,22 +363,41 @@ export const updateLead = async (
 
   // Add temperature update
   if (updates.temperature !== undefined) {
-    updateExpressions.push('#temperature = :temperature');
+    setExpressions.push('#temperature = :temperature');
     expressionAttributeNames['#temperature'] = 'temperature';
     expressionAttributeValues[':temperature'] = updates.temperature;
   }
 
   // Add assignee updates
   if (updates.assigneeId !== undefined) {
-    updateExpressions.push('#assigneeId = :assigneeId');
+    setExpressions.push('#assigneeId = :assigneeId');
     expressionAttributeNames['#assigneeId'] = 'assigneeId';
     expressionAttributeValues[':assigneeId'] = updates.assigneeId;
   }
 
   if (updates.assigneeName !== undefined) {
-    updateExpressions.push('#assigneeName = :assigneeName');
+    setExpressions.push('#assigneeName = :assigneeName');
     expressionAttributeNames['#assigneeName'] = 'assigneeName';
     expressionAttributeValues[':assigneeName'] = updates.assigneeName;
+  }
+
+  // Add previousStatus update (set to value or remove if null/undefined)
+  if ('previousStatus' in updates) {
+    if (updates.previousStatus) {
+      setExpressions.push('#previousStatus = :previousStatus');
+      expressionAttributeNames['#previousStatus'] = 'previousStatus';
+      expressionAttributeValues[':previousStatus'] = updates.previousStatus;
+    } else {
+      // Remove previousStatus attribute when restoring
+      removeExpressions.push('#previousStatus');
+      expressionAttributeNames['#previousStatus'] = 'previousStatus';
+    }
+  }
+
+  // Build UpdateExpression with SET and optional REMOVE clauses
+  let updateExpression = `SET ${setExpressions.join(', ')}`;
+  if (removeExpressions.length > 0) {
+    updateExpression += ` REMOVE ${removeExpressions.join(', ')}`;
   }
 
   const result = await docClient.send(
@@ -387,7 +407,7 @@ export const updateLead = async (
         PK: `LEAD#${id}`,
         SK: `LEAD#${id}`,
       },
-      UpdateExpression: `SET ${updateExpressions.join(', ')}`,
+      UpdateExpression: updateExpression,
       ExpressionAttributeNames: expressionAttributeNames,
       ExpressionAttributeValues: expressionAttributeValues,
       ConditionExpression: 'attribute_exists(PK)',

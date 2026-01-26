@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, X, Calendar, ChevronDown } from 'lucide-react';
+import { Search, X, Calendar, ChevronDown, Archive } from 'lucide-react';
 import { DayPicker, type DateRange } from 'react-day-picker';
 import { format, parseISO } from 'date-fns';
 import { useFilters } from '../../hooks/useFilters';
@@ -207,6 +207,18 @@ export function LeadFilters() {
             </div>
           )}
         </div>
+
+        {/* Show archived toggle */}
+        <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 cursor-pointer hover:text-gray-900">
+          <input
+            type="checkbox"
+            checked={filters.showArchived}
+            onChange={e => setFilter('showArchived', e.target.checked ? 'true' : '')}
+            className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+          />
+          <Archive className="w-4 h-4" />
+          <span>Show archived</span>
+        </label>
 
         {/* Clear filters */}
         {hasActiveFilters && (
