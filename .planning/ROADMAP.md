@@ -142,16 +142,17 @@ Plans:
 3. Users can configure which channels they receive (email, Slack, SMS) via admin dashboard
 4. SNS sandbox removed for production SMS delivery
 
-**Plans:** TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 08-01: SNS SMS integration and sandbox exit request
-- [ ] 08-02: Notification preferences in admin dashboard
+- [ ] 08-01-PLAN.md — SNS SMS integration, preferences module, IAM permissions
+- [ ] 08-02-PLAN.md — Admin dashboard Settings page with notification preferences UI
 
 **Notes:**
-- Request SNS production access at phase start (1-2 week approval)
+- Request SNS production access at phase start (24-hour approval)
 - 160-char SMS limit requires concise formatting
 - NOTIF-05 (preferences) spans all notification channels
+- Uses libphonenumber-js for E.164 phone validation
 
 ---
 
@@ -254,7 +255,7 @@ Phases execute in numeric order: 6 -> 7 -> 8 -> 9 -> 10 -> 11
 | 5. Admin Dashboard | v1.0 | 7/7 | Complete | 2026-01-24 |
 | 6. Custom API Domain | v1.1 | 1/1 | Complete | 2026-01-26 |
 | 7. Slack Notifications | v1.1 | 1/1 | Complete | 2026-01-26 |
-| 8. SMS Notifications | v1.1 | 0/2 | Not started | - |
+| 8. SMS Notifications | v1.1 | 0/2 | Planned | - |
 | 9. Email-to-Lead | v1.1 | 0/2 | Not started | - |
 | 10. Phone-to-Lead | v1.1 | 0/3 | Not started | - |
 | 11. Testing & Documentation | v1.1 | 0/2 | Not started | - |
@@ -301,4 +302,4 @@ Phases execute in numeric order: 6 -> 7 -> 8 -> 9 -> 10 -> 11
 
 ---
 
-*Roadmap updated: 2026-01-26 (Phase 7 complete)*
+*Roadmap updated: 2026-01-26 (Phase 8 planned)*
