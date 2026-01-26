@@ -6,6 +6,10 @@ interface PaginationProps {
   totalCount: number;
   pageSize: number;
   onPageChange: (page: number) => void;
+  onNextPage?: () => void;
+  onPrevPage?: () => void;
+  hasNextPage?: boolean;
+  hasPrevPage?: boolean;
   isLoading?: boolean;
 }
 
@@ -15,12 +19,17 @@ export function Pagination({
   totalCount,
   pageSize,
   onPageChange,
+  onNextPage,
+  onPrevPage,
+  hasNextPage = true,
+  hasPrevPage = true,
   isLoading,
 }: PaginationProps) {
   const startItem = (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, totalCount);
 
   // Generate page numbers to display
+  // Note: With cursor-based pagination, we can only navigate to pages we've visited
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
     const maxVisible = 5;
@@ -46,21 +55,41 @@ export function Pagination({
     return pages;
   };
 
+  const handlePrevious = () => {
+    if (onPrevPage) {
+      onPrevPage();
+    } else {
+      onPageChange(currentPage - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (onNextPage) {
+      onNextPage();
+    } else {
+      onPageChange(currentPage + 1);
+    }
+  };
+
+  // Check if navigation is possible
+  const canGoPrev = hasPrevPage && currentPage > 1;
+  const canGoNext = hasNextPage && currentPage < totalPages;
+
   if (totalPages <= 1) return null;
 
   return (
     <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
       <div className="flex flex-1 justify-between sm:hidden">
         <button
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1 || isLoading}
+          onClick={handlePrevious}
+          disabled={!canGoPrev || isLoading}
           className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Previous
         </button>
         <button
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages || isLoading}
+          onClick={handleNext}
+          disabled={!canGoNext || isLoading}
           className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Next
@@ -77,8 +106,8 @@ export function Pagination({
         <div>
           <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
             <button
-              onClick={() => onPageChange(currentPage - 1)}
-              disabled={currentPage === 1 || isLoading}
+              onClick={handlePrevious}
+              disabled={!canGoPrev || isLoading}
               className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="sr-only">Previous</span>
@@ -88,12 +117,21 @@ export function Pagination({
               typeof page === 'number' ? (
                 <button
                   key={index}
-                  onClick={() => onPageChange(page)}
-                  disabled={isLoading}
+                  onClick={() => {
+                    // Only allow clicking on current page or adjacent pages we can navigate to
+                    if (page === currentPage) return;
+                    if (page === currentPage - 1 && canGoPrev) handlePrevious();
+                    else if (page === currentPage + 1 && canGoNext) handleNext();
+                    // For cursor-based pagination, we can't jump to arbitrary pages
+                    // Just show them as disabled
+                  }}
+                  disabled={isLoading || (page !== currentPage && page !== currentPage - 1 && page !== currentPage + 1)}
                   className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
                     page === currentPage
                       ? 'z-10 bg-teal-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600'
-                      : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                      : page === currentPage - 1 || page === currentPage + 1
+                        ? 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                        : 'text-gray-400 ring-1 ring-inset ring-gray-300 cursor-not-allowed'
                   } disabled:cursor-not-allowed`}
                 >
                   {page}
@@ -108,8 +146,8 @@ export function Pagination({
               )
             )}
             <button
-              onClick={() => onPageChange(currentPage + 1)}
-              disabled={currentPage === totalPages || isLoading}
+              onClick={handleNext}
+              disabled={!canGoNext || isLoading}
               className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="sr-only">Next</span>

@@ -1,9 +1,16 @@
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { leadsApi, usersApi, type FilterParams } from '../api/leads';
 import { useDebouncedValue } from './useDebouncedValue';
 import type { Filters } from './useFilters';
 
-export function useLeads(filters: Filters) {
+interface UseLeadsOptions {
+  filters: Filters;
+  cursor?: string;
+  onNextCursor?: (cursor: string | undefined) => void;
+}
+
+export function useLeads({ filters, cursor, onNextCursor }: UseLeadsOptions) {
   const debouncedSearch = useDebouncedValue(filters.search, 300);
 
   const params: FilterParams = {
@@ -13,14 +20,24 @@ export function useLeads(filters: Filters) {
     assignee: filters.assignee || undefined,
     from: filters.dateFrom || undefined,
     to: filters.dateTo || undefined,
+    cursor,
     limit: 15,
   };
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['leads', params],
     queryFn: () => leadsApi.list(params),
     placeholderData: keepPreviousData,
   });
+
+  // Store the cursor for next page when data loads
+  useEffect(() => {
+    if (query.data?.nextCursor !== undefined && onNextCursor) {
+      onNextCursor(query.data.nextCursor);
+    }
+  }, [query.data?.nextCursor, onNextCursor]);
+
+  return query;
 }
 
 export function useUsers() {

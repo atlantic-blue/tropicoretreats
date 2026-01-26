@@ -1,3 +1,4 @@
+import { useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router';
 
 export interface Filters {
@@ -10,8 +11,21 @@ export interface Filters {
   page: number;
 }
 
+export interface CursorState {
+  /** Cursors indexed by page number (page 2's cursor is at index 1) */
+  cursors: (string | undefined)[];
+  /** Current page number (1-indexed) */
+  currentPage: number;
+}
+
 export function useFilters() {
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Track cursors for each page (page 1 has no cursor, page 2 uses cursor from page 1's response, etc.)
+  const [cursorState, setCursorState] = useState<CursorState>({
+    cursors: [undefined], // Page 1 has no cursor
+    currentPage: 1,
+  });
 
   const filters: Filters = {
     search: searchParams.get('search') || '',
@@ -20,8 +34,24 @@ export function useFilters() {
     assignee: searchParams.get('assignee') || '',
     dateFrom: searchParams.get('from') || '',
     dateTo: searchParams.get('to') || '',
-    page: parseInt(searchParams.get('page') || '1', 10),
+    page: cursorState.currentPage,
   };
+
+  // Get cursor for current page
+  const getCurrentCursor = useCallback((): string | undefined => {
+    const pageIndex = cursorState.currentPage - 1;
+    return cursorState.cursors[pageIndex];
+  }, [cursorState]);
+
+  // Store cursor for next page (called when API returns nextCursor)
+  const setNextCursor = useCallback((nextCursor: string | undefined) => {
+    setCursorState(prev => {
+      const newCursors = [...prev.cursors];
+      // Store cursor for the next page at current page index
+      newCursors[prev.currentPage] = nextCursor;
+      return { ...prev, cursors: newCursors };
+    });
+  }, []);
 
   const setFilter = (key: string, value: string | string[]) => {
     const newParams = new URLSearchParams(searchParams);
@@ -31,16 +61,41 @@ export function useFilters() {
     } else if (value) {
       newParams.set(key, value);
     }
-    // Reset to page 1 when filter changes (except page itself)
-    if (key !== 'page') {
-      newParams.set('page', '1');
-    }
     setSearchParams(newParams);
+    // Reset pagination when filter changes
+    setCursorState({ cursors: [undefined], currentPage: 1 });
   };
 
-  const setPage = (page: number) => setFilter('page', String(page));
+  const setPage = useCallback((page: number) => {
+    setCursorState(prev => {
+      // Only allow navigating to pages we have cursors for
+      if (page < 1) return prev;
+      if (page > prev.cursors.length) return prev; // Can't jump ahead
+      return { ...prev, currentPage: page };
+    });
+  }, []);
 
-  const clearFilters = () => setSearchParams({});
+  const goToNextPage = useCallback(() => {
+    setCursorState(prev => {
+      // Can only go to next page if we have a cursor for it
+      if (prev.cursors[prev.currentPage] === undefined && prev.currentPage > 1) {
+        return prev; // No more pages
+      }
+      return { ...prev, currentPage: prev.currentPage + 1 };
+    });
+  }, []);
+
+  const goToPrevPage = useCallback(() => {
+    setCursorState(prev => ({
+      ...prev,
+      currentPage: Math.max(1, prev.currentPage - 1),
+    }));
+  }, []);
+
+  const clearFilters = () => {
+    setSearchParams({});
+    setCursorState({ cursors: [undefined], currentPage: 1 });
+  };
 
   const hasActiveFilters = Boolean(
     filters.search ||
@@ -51,5 +106,21 @@ export function useFilters() {
     filters.dateTo
   );
 
-  return { filters, setFilter, setPage, clearFilters, hasActiveFilters };
+  // Check if we can navigate to next page
+  const hasNextPage = cursorState.cursors[cursorState.currentPage] !== undefined;
+  const hasPrevPage = cursorState.currentPage > 1;
+
+  return {
+    filters,
+    setFilter,
+    setPage,
+    goToNextPage,
+    goToPrevPage,
+    clearFilters,
+    hasActiveFilters,
+    getCurrentCursor,
+    setNextCursor,
+    hasNextPage,
+    hasPrevPage,
+  };
 }
