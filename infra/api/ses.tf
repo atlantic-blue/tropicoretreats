@@ -2,8 +2,9 @@
 # Enables sending from leads@tropicoretreat.com and hello@tropicoretreat.com
 # Only created in production - staging shares the production SES identity
 
-# Look up existing Route53 zone (public zone only)
+# Look up existing Route53 zone (production only - used for SES DKIM records)
 data "aws_route53_zone" "www" {
+  count        = var.environment == "staging" ? 0 : 1
   name         = local.domain_name
   private_zone = false
 }
@@ -20,7 +21,7 @@ resource "aws_sesv2_email_identity" "main" {
 # Production only - staging shares production SES
 resource "aws_route53_record" "ses_dkim" {
   count   = var.environment == "staging" ? 0 : 3
-  zone_id = data.aws_route53_zone.www.zone_id
+  zone_id = data.aws_route53_zone.www[0].zone_id
   name    = "${aws_sesv2_email_identity.main[0].dkim_signing_attributes[0].tokens[count.index]}._domainkey.${local.domain_name}"
   type    = "CNAME"
   ttl     = 600
