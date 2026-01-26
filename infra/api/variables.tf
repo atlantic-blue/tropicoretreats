@@ -50,3 +50,8 @@ variable "from_name" {
   type        = string
   default     = "Tropico Retreats"
 }
+
+variable "wildcard_certificate_arn" {
+  description = "ARN of the wildcard ACM certificate for *.tropicoretreat.com"
+  type        = string
+}

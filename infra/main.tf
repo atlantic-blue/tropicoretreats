@@ -13,7 +13,8 @@ terraform {
 module "api" {
   source = "./api"
 
-  environment  = var.environment
-  product_name = var.product_name
-  aws_region   = var.aws_region
+  environment              = var.environment
+  product_name             = var.product_name
+  aws_region               = var.aws_region
+  wildcard_certificate_arn = aws_acm_certificate.www_certificate.arn
 }

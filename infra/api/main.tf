@@ -59,7 +59,39 @@ resource "aws_apigatewayv2_stage" "default" {
     })
   }
 
+  # Rate limiting: 10 requests/second with burst of 10
+  # IMPORTANT: Never remove these settings - Terraform bug sets limits to 0 (blocks all traffic)
+  default_route_settings {
+    throttling_burst_limit = 10
+    throttling_rate_limit  = 10
+  }
+
   tags = local.tags
+}
+
+# ====================================================================
+# Custom Domain Configuration
+# ====================================================================
+
+# Custom domain for API Gateway using existing wildcard certificate
+resource "aws_apigatewayv2_domain_name" "api" {
+  domain_name = "api.${local.domain_name}"
+
+  domain_name_configuration {
+    certificate_arn = var.wildcard_certificate_arn
+    endpoint_type   = "REGIONAL"
+    security_policy = "TLS_1_2"
+  }
+
+  tags = local.tags
+}
+
+# API mapping with /v1 base path for versioning
+resource "aws_apigatewayv2_api_mapping" "v1" {
+  api_id          = aws_apigatewayv2_api.leads.id
+  domain_name     = aws_apigatewayv2_domain_name.api.id
+  stage           = aws_apigatewayv2_stage.default.id
+  api_mapping_key = "v1"
 }
 
 resource "aws_apigatewayv2_integration" "create_lead" {
