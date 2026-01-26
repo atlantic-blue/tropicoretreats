@@ -89,15 +89,15 @@ Plans:
 2. HTTPS certificate is valid and auto-renews via ACM
 3. Existing API functionality unchanged (contact form, admin routes)
 
-**Plans:** TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 06-01: ACM certificate and API Gateway domain configuration
+- [ ] 06-01-PLAN.md — Custom domain, API mapping, rate limiting, frontend updates
 
 **Notes:**
 - Foundation for stable Twilio webhook URLs
-- Standard Terraform pattern, no research needed
-- Certificate must be in us-east-1 (same region as API)
+- Reuses existing wildcard ACM certificate
+- Certificate already in us-east-1 (same region as API)
 
 ---
 
@@ -252,7 +252,7 @@ Phases execute in numeric order: 6 -> 7 -> 8 -> 9 -> 10 -> 11
 | 3. Notifications | v1.0 | 4/4 | Complete | 2026-01-22 |
 | 4. Admin Auth | v1.0 | 2/2 | Complete | 2026-01-23 |
 | 5. Admin Dashboard | v1.0 | 7/7 | Complete | 2026-01-24 |
-| 6. Custom API Domain | v1.1 | 0/1 | Not started | - |
+| 6. Custom API Domain | v1.1 | 0/1 | Planned | - |
 | 7. Slack Notifications | v1.1 | 0/1 | Not started | - |
 | 8. SMS Notifications | v1.1 | 0/2 | Not started | - |
 | 9. Email-to-Lead | v1.1 | 0/2 | Not started | - |
@@ -301,4 +301,4 @@ Phases execute in numeric order: 6 -> 7 -> 8 -> 9 -> 10 -> 11
 
 ---
 
-*Roadmap updated: 2026-01-25 (v1.1 phases added)*
+*Roadmap updated: 2026-01-26 (Phase 6 planned)*
