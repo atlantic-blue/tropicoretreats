@@ -7,9 +7,8 @@ resource "aws_route53_zone" "www" {
 
 # Look up existing zone for staging
 data "aws_route53_zone" "existing" {
-  count        = var.is_staging ? 1 : 0
-  name         = local.domain_name
-  private_zone = false
+  count   = var.is_staging ? 1 : 0
+  zone_id = var.route53_zone_id
 }
 
 locals {
