@@ -61,6 +61,10 @@ export interface GetLeadsParams {
   temperature?: string[];
   /** Filter by assigned team member */
   assigneeId?: string;
+  /** Filter by creation date (from, inclusive) - YYYY-MM-DD */
+  dateFrom?: string;
+  /** Filter by creation date (to, inclusive) - YYYY-MM-DD */
+  dateTo?: string;
   /** Page size (default 15) */
   limit?: number;
   /** Pagination cursor (base64 encoded LastEvaluatedKey) */
@@ -75,8 +79,8 @@ export interface GetLeadsResult {
   leads: Lead[];
   /** Pagination cursor for next page (undefined if no more results) */
   nextKey?: string;
-  /** Count of leads returned in this page */
-  count: number;
+  /** Total count of leads matching filters (for pagination UI) */
+  totalCount: number;
 }
 
 /**
@@ -96,7 +100,7 @@ export const getLeads = async (
     throw new Error('TABLE_NAME environment variable is not set');
   }
 
-  const { status, temperature, assigneeId, limit = 15, lastKey } = params;
+  const { status, temperature, assigneeId, dateFrom, dateTo, limit = 15, lastKey } = params;
 
   // Parse pagination cursor
   let exclusiveStartKey: Record<string, unknown> | undefined;
@@ -146,9 +150,43 @@ export const getLeads = async (
     expressionAttributeValues[':assigneeId'] = assigneeId;
   }
 
+  // Add date range filter
+  if (dateFrom || dateTo) {
+    expressionAttributeNames['#createdAt'] = 'createdAt';
+    if (dateFrom && dateTo) {
+      // Between filter (inclusive)
+      filterExpressions.push('#createdAt BETWEEN :dateFrom AND :dateTo');
+      expressionAttributeValues[':dateFrom'] = `${dateFrom}T00:00:00.000Z`;
+      expressionAttributeValues[':dateTo'] = `${dateTo}T23:59:59.999Z`;
+    } else if (dateFrom) {
+      // From date only
+      filterExpressions.push('#createdAt >= :dateFrom');
+      expressionAttributeValues[':dateFrom'] = `${dateFrom}T00:00:00.000Z`;
+    } else if (dateTo) {
+      // To date only
+      filterExpressions.push('#createdAt <= :dateTo');
+      expressionAttributeValues[':dateTo'] = `${dateTo}T23:59:59.999Z`;
+    }
+  }
+
   const filterExpression =
     filterExpressions.length > 0 ? filterExpressions.join(' AND ') : undefined;
 
+  // First, get total count with same filters (but no pagination)
+  const countResult = await docClient.send(
+    new ScanCommand({
+      TableName: TABLE_NAME,
+      Select: 'COUNT',
+      FilterExpression: filterExpression,
+      ExpressionAttributeNames:
+        Object.keys(expressionAttributeNames).length > 0
+          ? expressionAttributeNames
+          : undefined,
+      ExpressionAttributeValues: expressionAttributeValues,
+    })
+  );
+
+  // Then get paginated results
   const result = await docClient.send(
     new ScanCommand({
       TableName: TABLE_NAME,
@@ -174,7 +212,7 @@ export const getLeads = async (
   return {
     leads: (result.Items ?? []) as Lead[],
     nextKey,
-    count: result.Items?.length ?? 0,
+    totalCount: countResult.Count ?? 0,
   };
 };
 
