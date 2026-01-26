@@ -181,3 +181,20 @@ resource "aws_iam_role_policy" "notifications_dlq" {
     ]
   })
 }
+
+# Secrets Manager permissions for Notification Lambda (Slack webhook URL)
+resource "aws_iam_role_policy" "notifications_secrets" {
+  name = "secrets-manager"
+  role = aws_iam_role.notifications_lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["secretsmanager:GetSecretValue"]
+        Resource = aws_secretsmanager_secret.slack_webhook.arn
+      }
+    ]
+  })
+}

@@ -56,11 +56,13 @@ resource "aws_lambda_function" "notifications" {
 
   environment {
     variables = {
-      ENVIRONMENT         = var.environment
-      TEAM_EMAILS         = var.team_emails
-      FROM_EMAIL_TEAM     = var.from_email_team
-      FROM_EMAIL_CUSTOMER = var.from_email_customer
-      FROM_NAME           = var.from_name
+      ENVIRONMENT               = var.environment
+      TEAM_EMAILS               = var.team_emails
+      FROM_EMAIL_TEAM           = var.from_email_team
+      FROM_EMAIL_CUSTOMER       = var.from_email_customer
+      FROM_NAME                 = var.from_name
+      ADMIN_DASHBOARD_URL       = "https://${var.admin_domain}"
+      SLACK_WEBHOOK_SECRET_NAME = aws_secretsmanager_secret.slack_webhook.name
     }
   }
 
