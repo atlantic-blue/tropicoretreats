@@ -94,6 +94,59 @@ export function mockS3PutObject(): void {
 }
 
 /**
+ * Configures mockDynamoDBSend for the full PATCH /emails/{leadId}/read flow.
+ *
+ * The mark-read handler makes these DynamoDB calls in order:
+ *   1. GetCommand    (getLead) — verifies lead exists; returns the lead Item
+ *   2. QueryCommand  (findUnreadInboundEmails) — returns Items with direction='inbound' and readAt=null
+ *   3. UpdateCommand × N (markEmailRead) — one per unread email: SET readAt = :now, updatedAt = :now
+ *   4. UpdateCommand (resetLeadUnreadCount) — SET unreadEmailCount = :zero, updatedAt = :now on the lead
+ *
+ * When unreadEmails is empty the per-email UpdateCommand calls are skipped, but the
+ * final lead UpdateCommand (resetLeadUnreadCount) is still issued.
+ *
+ * @param options.leadItem    - Lead record to return from GetCommand (omit for not-found)
+ * @param options.unreadEmails - Array of unread email items returned by QueryCommand
+ */
+export function setupDynamoDBForMarkRead(options: {
+  leadItem?: Record<string, unknown>;
+  unreadEmails?: Record<string, unknown>[];
+} = {}): void {
+  const { leadItem, unreadEmails = [] } = options;
+
+  // Call 1: GetCommand (getLead)
+  mockDynamoDBSend.mockResolvedValueOnce({
+    Item: leadItem,
+    $metadata: { httpStatusCode: 200 },
+  });
+
+  if (leadItem === undefined) {
+    // Lead not found — handler returns 404 immediately; no further DynamoDB calls.
+    return;
+  }
+
+  // Call 2: QueryCommand (findUnreadInboundEmails)
+  mockDynamoDBSend.mockResolvedValueOnce({
+    Items: unreadEmails,
+    Count: unreadEmails.length,
+    ScannedCount: unreadEmails.length,
+    $metadata: { httpStatusCode: 200 },
+  });
+
+  // Calls 3..N: UpdateCommand per unread email (SET readAt + updatedAt)
+  for (let index = 0; index < unreadEmails.length; index++) {
+    mockDynamoDBSend.mockResolvedValueOnce({
+      $metadata: { httpStatusCode: 200 },
+    });
+  }
+
+  // Final call: UpdateCommand (resetLeadUnreadCount — SET unreadEmailCount = 0)
+  mockDynamoDBSend.mockResolvedValueOnce({
+    $metadata: { httpStatusCode: 200 },
+  });
+}
+
+/**
  * Configures mockDynamoDBSend for the full inbound email processing flow.
  *
  * The inbound handler makes these DynamoDB calls in order:
