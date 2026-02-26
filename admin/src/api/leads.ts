@@ -1,5 +1,5 @@
 import { fetchWithAuth } from './client';
-import type { Lead, LeadWithNotes, LeadsResponse, Note, User } from '../types/lead';
+import type { Lead, LeadWithNotes, LeadsResponse, Note, User, EmailsResponse, SendEmailPayload, MarkReadResponse } from '../types/lead';
 
 export interface FilterParams {
   status?: string[];
@@ -46,4 +46,24 @@ export const leadsApi = {
 export const usersApi = {
   list: (): Promise<{ users: User[] }> =>
     fetchWithAuth<{ users: User[] }>('/users'),
+};
+
+export const emailsApi = {
+  list: (leadId: string, cursor?: string): Promise<EmailsResponse> => {
+    const params = new URLSearchParams();
+    if (cursor) params.set('cursor', cursor);
+    const query = params.toString();
+    return fetchWithAuth<EmailsResponse>(`/emails/${leadId}${query ? `?${query}` : ''}`);
+  },
+
+  send: (payload: SendEmailPayload): Promise<{ messageId: string }> =>
+    fetchWithAuth<{ messageId: string }>('/emails/send', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  markRead: (leadId: string): Promise<MarkReadResponse> =>
+    fetchWithAuth<MarkReadResponse>(`/emails/${leadId}/read`, {
+      method: 'PATCH',
+    }),
 };

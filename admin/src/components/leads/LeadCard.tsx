@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { Flame } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Badge } from '../ui/Badge';
+import { UnreadBadge } from '../emails/UnreadBadge';
 import type { Lead, LeadStatus, Temperature } from '../../types/lead';
 
 const statusColors: Record<LeadStatus, { badge: 'blue' | 'yellow' | 'purple' | 'green' | 'gray' | 'slate'; border: string }> = {
@@ -40,8 +41,9 @@ export function LeadCard({ lead }: LeadCardProps) {
         </h3>
         <Flame className={`w-5 h-5 ${tempColor}`} aria-label={`Temperature: ${safeTemperature}`} />
       </div>
-      <div className="mt-2">
+      <div className="mt-2 flex items-center gap-2">
         <Badge variant={statusStyle.badge}>{lead.status}</Badge>
+        <UnreadBadge count={lead.unreadEmailCount} />
       </div>
       <p className="text-gray-500 text-sm mt-2" title={new Date(lead.createdAt).toLocaleString()}>
         {formatDistanceToNow(new Date(lead.createdAt), { addSuffix: true })}

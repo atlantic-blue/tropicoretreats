@@ -4,6 +4,7 @@ import { StatusDropdown } from './StatusDropdown';
 import { TemperatureDropdown } from './TemperatureDropdown';
 import { AssigneeDropdown } from './AssigneeDropdown';
 import { NotesTimeline } from './NotesTimeline';
+import { EmailThread } from '../emails/EmailThread';
 import { useUpdateLead } from '../../hooks/useLeadMutations';
 import type { LeadWithNotes, LeadStatus, Temperature } from '../../types/lead';
 
@@ -95,6 +96,9 @@ export function LeadDetail({ lead }: LeadDetailProps) {
           </h3>
           <p className="text-gray-700 whitespace-pre-wrap">{lead.message}</p>
         </div>
+
+        {/* Email Thread */}
+        <EmailThread leadId={lead.id} leadEmail={lead.email} />
       </div>
 
       {/* Right Column - Status, Temperature, Assignee, Notes */}

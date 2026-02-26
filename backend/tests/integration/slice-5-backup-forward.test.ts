@@ -100,10 +100,11 @@ vi.mock('@aws-sdk/lib-dynamodb', () => {
   const DynamoDBDocumentClient = {
     from: vi.fn().mockReturnValue({ send: mockDynamoDBSend }),
   };
+  const GetCommand = vi.fn().mockImplementation((input: unknown) => ({ input }));
   const PutCommand = vi.fn().mockImplementation((input: unknown) => ({ input }));
   const UpdateCommand = vi.fn().mockImplementation((input: unknown) => ({ input }));
   const ScanCommand = vi.fn().mockImplementation((input: unknown) => ({ input }));
-  return { DynamoDBDocumentClient, PutCommand, UpdateCommand, ScanCommand };
+  return { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, ScanCommand };
 });
 
 vi.mock('mailparser', () => {
@@ -696,8 +697,8 @@ describe('emailReceive handler — Slice 5: backup forwarding', () => {
       const event = createMockS3Event({ bucketName: EMAIL_BUCKET, objectKey: INBOUND_S3_KEY });
       await handler(event);
 
-      // DynamoDB: Scan + PutLead + PutEmail + UpdateMetadata = 4
-      expect(mockDynamoDBSend).toHaveBeenCalledTimes(4);
+      // DynamoDB: Scan(lead) + Scan(outbound) + PutLead + PutEmail + UpdateMetadata = 5
+      expect(mockDynamoDBSend).toHaveBeenCalledTimes(5);
       // SES: backup forward = 1
       expect(mockSESSend).toHaveBeenCalledTimes(1);
     });

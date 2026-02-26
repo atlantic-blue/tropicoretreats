@@ -3,6 +3,7 @@ import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
   DynamoDBDocumentClient,
+  GetCommand,
   ScanCommand,
   PutCommand,
   UpdateCommand,
@@ -89,6 +90,7 @@ async function findLeadByEmail(email: string): Promise<Lead | null> {
 
   const normalizedEmail = email.toLowerCase();
 
+  // Strategy 1: Match by lead's own email field
   const scanCommand = tryConstruct(
     ScanCommand as new (...args: unknown[]) => ScanCommand,
     {
@@ -109,7 +111,56 @@ async function findLeadByEmail(email: string): Promise<Lead | null> {
   ) as { Items?: Lead[] };
 
   const items = result.Items ?? [];
-  return items.length > 0 ? items[0] : null;
+  if (items.length > 0) {
+    return items[0];
+  }
+
+  // Strategy 2: Match by outbound email toAddress — find leads we previously
+  // emailed at this address so replies thread correctly
+  const outboundScanCommand = tryConstruct(
+    ScanCommand as new (...args: unknown[]) => ScanCommand,
+    {
+      TableName: TABLE_NAME,
+      FilterExpression:
+        'begins_with(SK, :skPrefix) AND #direction = :outbound AND #toAddress = :emailLower',
+      ExpressionAttributeNames: {
+        '#direction': 'direction',
+        '#toAddress': 'toAddress',
+      },
+      ExpressionAttributeValues: {
+        ':skPrefix': 'EMAIL#',
+        ':outbound': 'outbound',
+        ':emailLower': normalizedEmail,
+      },
+    }
+  );
+
+  const outboundResult = await docClient.send(
+    outboundScanCommand as Parameters<typeof docClient.send>[0]
+  ) as { Items?: Array<{ leadId: string }> };
+
+  const outboundItems = outboundResult.Items ?? [];
+  if (outboundItems.length > 0) {
+    // We found an outbound email sent to this address — return the associated lead
+    const leadId = outboundItems[0].leadId;
+    const getLeadCommand = tryConstruct(
+      GetCommand as new (...args: unknown[]) => GetCommand,
+      {
+        TableName: TABLE_NAME,
+        Key: { PK: `LEAD#${leadId}`, SK: `LEAD#${leadId}` },
+      }
+    );
+
+    const leadResult = await docClient.send(
+      getLeadCommand as Parameters<typeof docClient.send>[0]
+    ) as { Item?: Lead };
+
+    if (leadResult.Item) {
+      return leadResult.Item;
+    }
+  }
+
+  return null;
 }
 
 // ---------------------------------------------------------------------------

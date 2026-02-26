@@ -84,10 +84,11 @@ vi.mock('@aws-sdk/lib-dynamodb', () => {
   const DynamoDBDocumentClient = {
     from: vi.fn().mockReturnValue({ send: mockDynamoDBSend }),
   };
+  const GetCommand = vi.fn().mockImplementation((input) => ({ input }));
   const PutCommand = vi.fn().mockImplementation((input) => ({ input }));
   const UpdateCommand = vi.fn().mockImplementation((input) => ({ input }));
   const ScanCommand = vi.fn().mockImplementation((input) => ({ input }));
-  return { DynamoDBDocumentClient, PutCommand, UpdateCommand, ScanCommand };
+  return { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, ScanCommand };
 });
 
 vi.mock('mailparser', () => {
@@ -320,6 +321,9 @@ describe('emailReceive S3 Lambda handler', () => {
   // -------------------------------------------------------------------------
 
   describe('auto-create lead — sender not found', () => {
+    // Call order when auto-creating: Scan(lead) → Scan(outbound) → PutLead → PutEmail → Update
+    // Index:                           [0]          [1]              [2]        [3]        [4]
+
     it('should create a new lead when no existing lead matches the sender email', async () => {
       const { simpleParser } = await import('mailparser');
       (simpleParser as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
@@ -336,8 +340,8 @@ describe('emailReceive S3 Lambda handler', () => {
       const event = createMockS3Event();
       await expect(handler(event)).resolves.toBeUndefined();
 
-      // Second DynamoDB call must be PutCommand for the new lead
-      const putLeadCall = mockDynamoDBSend.mock.calls[1][0] as {
+      // Third DynamoDB call (after lead scan + outbound scan) is PutCommand for the new lead
+      const putLeadCall = mockDynamoDBSend.mock.calls[2][0] as {
         input: Record<string, unknown>;
       };
       const newLead = putLeadCall.input.Item as Record<string, unknown>;
@@ -360,7 +364,7 @@ describe('emailReceive S3 Lambda handler', () => {
       const event = createMockS3Event();
       await handler(event);
 
-      const putLeadCall = mockDynamoDBSend.mock.calls[1][0] as {
+      const putLeadCall = mockDynamoDBSend.mock.calls[2][0] as {
         input: Record<string, unknown>;
       };
       const newLead = putLeadCall.input.Item as Record<string, unknown>;
@@ -384,7 +388,7 @@ describe('emailReceive S3 Lambda handler', () => {
       const event = createMockS3Event();
       await handler(event);
 
-      const putLeadCall = mockDynamoDBSend.mock.calls[1][0] as {
+      const putLeadCall = mockDynamoDBSend.mock.calls[2][0] as {
         input: Record<string, unknown>;
       };
       const newLead = putLeadCall.input.Item as Record<string, unknown>;
@@ -407,7 +411,7 @@ describe('emailReceive S3 Lambda handler', () => {
       const event = createMockS3Event();
       await handler(event);
 
-      const putLeadCall = mockDynamoDBSend.mock.calls[1][0] as {
+      const putLeadCall = mockDynamoDBSend.mock.calls[2][0] as {
         input: Record<string, unknown>;
       };
       const newLead = putLeadCall.input.Item as Record<string, unknown>;
@@ -430,7 +434,7 @@ describe('emailReceive S3 Lambda handler', () => {
       const event = createMockS3Event();
       await handler(event);
 
-      const putLeadCall = mockDynamoDBSend.mock.calls[1][0] as {
+      const putLeadCall = mockDynamoDBSend.mock.calls[2][0] as {
         input: Record<string, unknown>;
       };
       const newLead = putLeadCall.input.Item as Record<string, unknown>;
@@ -455,7 +459,7 @@ describe('emailReceive S3 Lambda handler', () => {
       const event = createMockS3Event();
       await handler(event);
 
-      const putLeadCall = mockDynamoDBSend.mock.calls[1][0] as {
+      const putLeadCall = mockDynamoDBSend.mock.calls[2][0] as {
         input: Record<string, unknown>;
       };
       const newLead = putLeadCall.input.Item as Record<string, unknown>;
@@ -479,16 +483,77 @@ describe('emailReceive S3 Lambda handler', () => {
       const event = createMockS3Event();
       await handler(event);
 
-      // Call order: Scan → PutLead → PutEmail → Update
-      const putLeadCall = mockDynamoDBSend.mock.calls[1][0] as { input: Record<string, unknown> };
+      // Call order: Scan(lead) → Scan(outbound) → PutLead → PutEmail → Update
+      const putLeadCall = mockDynamoDBSend.mock.calls[2][0] as { input: Record<string, unknown> };
       const newLead = putLeadCall.input.Item as Record<string, unknown>;
       const newLeadId = newLead.id as string;
 
-      const putEmailCall = mockDynamoDBSend.mock.calls[2][0] as { input: Record<string, unknown> };
+      const putEmailCall = mockDynamoDBSend.mock.calls[3][0] as { input: Record<string, unknown> };
       const emailItem = putEmailCall.input.Item as Record<string, unknown>;
 
       expect(emailItem.PK).toBe(`LEAD#${newLeadId}`);
       expect(emailItem.leadId).toBe(newLeadId);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Reply threading — match by outbound toAddress
+  // -------------------------------------------------------------------------
+
+  describe('reply threading — match by outbound toAddress', () => {
+    it('should match inbound email to existing lead when an outbound was previously sent to the sender', async () => {
+      const { simpleParser } = await import('mailparser');
+      (simpleParser as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ...DEFAULT_PARSED_EMAIL,
+        from: {
+          value: [{ address: 'customer@gmail.com', name: 'Customer' }],
+          text: 'Customer <customer@gmail.com>',
+        },
+      });
+
+      const existingLead = createMockLead({ id: VALID_LEAD_ID, email: 'different@example.com' });
+      setupDynamoDBForInbound({
+        outboundMatchLeadItem: existingLead as unknown as Record<string, unknown>,
+      });
+      mockS3GetObject(createRawMimeEmail({ from: 'Customer <customer@gmail.com>' }));
+
+      const event = createMockS3Event();
+      await expect(handler(event)).resolves.toBeUndefined();
+
+      // Email should be linked to the existing lead (found via outbound match), not auto-created
+      // Calls: Scan(lead)=empty → Scan(outbound)=match → Get(lead) → PutEmail → UpdateMetadata
+      const putEmailCall = mockDynamoDBSend.mock.calls[3][0] as { input: Record<string, unknown> };
+      const emailItem = putEmailCall.input.Item as Record<string, unknown>;
+      expect(emailItem.PK).toBe(`LEAD#${VALID_LEAD_ID}`);
+      expect(emailItem.leadId).toBe(VALID_LEAD_ID);
+    });
+
+    it('should not auto-create a lead when an outbound email match is found', async () => {
+      const { simpleParser } = await import('mailparser');
+      (simpleParser as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ...DEFAULT_PARSED_EMAIL,
+        from: {
+          value: [{ address: 'customer@gmail.com', name: 'Customer' }],
+          text: 'Customer <customer@gmail.com>',
+        },
+      });
+
+      const existingLead = createMockLead({ id: VALID_LEAD_ID, email: 'different@example.com' });
+      setupDynamoDBForInbound({
+        outboundMatchLeadItem: existingLead as unknown as Record<string, unknown>,
+      });
+      mockS3GetObject(createRawMimeEmail({ from: 'Customer <customer@gmail.com>' }));
+
+      const event = createMockS3Event();
+      await handler(event);
+
+      // Calls: Scan(lead) → Scan(outbound) → Get(lead) → PutEmail → UpdateMetadata = 5
+      expect(mockDynamoDBSend).toHaveBeenCalledTimes(5);
+
+      // No PutCommand for a new lead — only PutEmail
+      const putEmailCall = mockDynamoDBSend.mock.calls[3][0] as { input: Record<string, unknown> };
+      const emailItem = putEmailCall.input.Item as Record<string, unknown>;
+      expect(emailItem.direction).toBe('inbound');
     });
   });
 

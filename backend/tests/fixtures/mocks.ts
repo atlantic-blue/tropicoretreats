@@ -150,27 +150,25 @@ export function setupDynamoDBForMarkRead(options: {
  * Configures mockDynamoDBSend for the full inbound email processing flow.
  *
  * The inbound handler makes these DynamoDB calls in order:
- *   1. ScanCommand (findLeadByEmail) — returns lead Items array or empty
- *   2. PutCommand (putEmail) — writes the email record
- *   3. UpdateCommand (updateLeadEmailMetadata) — updates lastEmailAt + unreadCount
- *
- * When autoCreateLead is true, a PutCommand for the new lead is inserted between
- * calls 1 and 2:
- *   1. ScanCommand (findLeadByEmail) — returns empty Items
- *   2. PutCommand (putLead) — writes the auto-created lead
- *   3. PutCommand (putEmail) — writes the email record
- *   4. UpdateCommand (updateLeadEmailMetadata) — updates metadata
+ *   1. ScanCommand (findLeadByEmail — lead email match) — returns lead Items array or empty
+ *   2. (if lead not found) ScanCommand (findLeadByEmail — outbound toAddress match) — returns outbound email Items or empty
+ *   3. (if outbound match found) GetCommand (fetch lead by leadId from outbound email)
+ *   2b. (if no match at all) PutCommand (putLead) — writes the auto-created lead
+ *   N-1. PutCommand (putEmail) — writes the email record
+ *   N.   UpdateCommand (updateLeadEmailMetadata) — updates lastEmailAt + unreadCount
  *
  * @param options.leadItem - Existing lead to return from the Scan (omit to simulate not found)
- * @param options.autoCreateLead - Whether the handler will auto-create a lead
+ * @param options.autoCreateLead - Whether the handler will auto-create a lead (no match found at all)
+ * @param options.outboundMatchLeadItem - Lead found via outbound email toAddress match (reply threading)
  */
 export function setupDynamoDBForInbound(options: {
   leadItem?: Record<string, unknown>;
   autoCreateLead?: boolean;
+  outboundMatchLeadItem?: Record<string, unknown>;
 } = {}): void {
-  const { leadItem, autoCreateLead = false } = options;
+  const { leadItem, autoCreateLead = false, outboundMatchLeadItem } = options;
 
-  // Call 1: ScanCommand (findLeadByEmail)
+  // Call 1: ScanCommand (findLeadByEmail — match by lead's email field)
   if (leadItem !== undefined) {
     mockDynamoDBSend.mockResolvedValueOnce({
       Items: [leadItem],
@@ -179,17 +177,41 @@ export function setupDynamoDBForInbound(options: {
       $metadata: { httpStatusCode: 200 },
     });
   } else {
-    // Lead not found — empty Items array
+    // Lead not found by email — empty Items array
     mockDynamoDBSend.mockResolvedValueOnce({
       Items: [],
       Count: 0,
       ScannedCount: 0,
       $metadata: { httpStatusCode: 200 },
     });
+
+    // Call 2: ScanCommand (findLeadByEmail — match by outbound toAddress)
+    if (outboundMatchLeadItem !== undefined) {
+      // Found an outbound email sent to this address
+      mockDynamoDBSend.mockResolvedValueOnce({
+        Items: [{ leadId: (outboundMatchLeadItem as Record<string, unknown>).id }],
+        Count: 1,
+        ScannedCount: 1,
+        $metadata: { httpStatusCode: 200 },
+      });
+      // Call 3: GetCommand (fetch the lead record by leadId)
+      mockDynamoDBSend.mockResolvedValueOnce({
+        Item: outboundMatchLeadItem,
+        $metadata: { httpStatusCode: 200 },
+      });
+    } else {
+      // No outbound match either — empty Items
+      mockDynamoDBSend.mockResolvedValueOnce({
+        Items: [],
+        Count: 0,
+        ScannedCount: 0,
+        $metadata: { httpStatusCode: 200 },
+      });
+    }
   }
 
   if (autoCreateLead) {
-    // Call 2: PutCommand (putLead — auto-create)
+    // PutCommand (putLead — auto-create)
     mockDynamoDBSend.mockResolvedValueOnce({
       $metadata: { httpStatusCode: 200 },
     });
