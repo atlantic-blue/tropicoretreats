@@ -30,6 +30,7 @@ export default defineConfig({
     env: {
       TABLE_NAME: 'test-tropico-leads',
       FROM_EMAIL_CRM: 'Tropico Retreats <team@tropicoretreat.com>',
+      EMAIL_BUCKET: 'tropicoretreat-email-store-test',
       AWS_REGION: 'us-east-1',
     },
 

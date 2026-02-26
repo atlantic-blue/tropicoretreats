@@ -1,4 +1,4 @@
-import type { APIGatewayProxyEventV2WithJWTAuthorizer } from 'aws-lambda';
+import type { APIGatewayProxyEventV2WithJWTAuthorizer, S3Event } from 'aws-lambda';
 import type { Email, Lead } from '../../src/lib/types.js';
 
 /**
@@ -144,6 +144,160 @@ export function createMockLead(overrides: Partial<Lead> = {}): Lead {
     updatedAt: now,
     ...overrides,
   };
+}
+
+/**
+ * Builds a mock S3Event as SES would deliver it after storing an inbound email.
+ *
+ * The handler reads the bucket name and object key from the first Record.
+ *
+ * @param overrides - Override bucket name, object key, or other fields
+ */
+export function createMockS3Event(
+  overrides: {
+    bucketName?: string;
+    objectKey?: string;
+    eventName?: string;
+    objectSize?: number;
+  } = {}
+): S3Event {
+  const {
+    bucketName = 'tropicoretreat-email-store-test',
+    objectKey = 'incoming/test-message-id',
+    eventName = 'ObjectCreated:Put',
+    objectSize = 1234,
+  } = overrides;
+
+  return {
+    Records: [
+      {
+        eventVersion: '2.1',
+        eventSource: 'aws:s3',
+        awsRegion: 'us-east-1',
+        eventTime: '2026-01-15T10:00:00.000Z',
+        eventName,
+        userIdentity: { principalId: 'AWS:EXAMPLE' },
+        requestParameters: { sourceIPAddress: '127.0.0.1' },
+        responseElements: {
+          'x-amz-request-id': 'test-request-id',
+          'x-amz-id-2': 'test-id-2',
+        },
+        s3: {
+          s3SchemaVersion: '1.0',
+          configurationId: 'test-config',
+          bucket: {
+            name: bucketName,
+            ownerIdentity: { principalId: 'EXAMPLE' },
+            arn: `arn:aws:s3:::${bucketName}`,
+          },
+          object: {
+            key: objectKey,
+            size: objectSize,
+            eTag: 'test-etag',
+            sequencer: 'test-sequencer',
+          },
+        },
+      },
+    ],
+  };
+}
+
+/**
+ * Builds a raw MIME email string suitable for use as the Buffer content
+ * returned by S3 GetObject when the handler reads an inbound email.
+ *
+ * The returned string can be converted to a Buffer via Buffer.from(result).
+ *
+ * @param overrides - Override individual MIME header/body values
+ */
+export function createRawMimeEmail(
+  overrides: {
+    from?: string;
+    to?: string;
+    subject?: string;
+    bodyText?: string;
+    bodyHtml?: string;
+    date?: string;
+    messageId?: string;
+    attachmentFilename?: string;
+    attachmentContent?: string;
+    includeAttachment?: boolean;
+  } = {}
+): string {
+  const {
+    from = 'Guest User <guest@example.com>',
+    to = 'team@tropicoretreat.com',
+    subject = 'Interested in a retreat',
+    bodyText = 'Hello, I am interested in booking a corporate retreat for my team.',
+    bodyHtml,
+    date = 'Wed, 15 Jan 2026 10:00:00 +0000',
+    messageId = '<original-message-id@mail.example.com>',
+    attachmentFilename = 'document.pdf',
+    attachmentContent = 'fake-pdf-content',
+    includeAttachment = false,
+  } = overrides;
+
+  const boundary = 'boundary_test_12345';
+  const htmlPart = bodyHtml ?? `<p>${bodyText}</p>`;
+
+  if (includeAttachment) {
+    const attachmentBase64 = Buffer.from(attachmentContent).toString('base64');
+    return [
+      `From: ${from}`,
+      `To: ${to}`,
+      `Subject: ${subject}`,
+      `Date: ${date}`,
+      `Message-ID: ${messageId}`,
+      `MIME-Version: 1.0`,
+      `Content-Type: multipart/mixed; boundary="${boundary}"`,
+      '',
+      `--${boundary}`,
+      `Content-Type: multipart/alternative; boundary="alt_${boundary}"`,
+      '',
+      `--alt_${boundary}`,
+      `Content-Type: text/plain; charset=utf-8`,
+      '',
+      bodyText,
+      '',
+      `--alt_${boundary}`,
+      `Content-Type: text/html; charset=utf-8`,
+      '',
+      htmlPart,
+      '',
+      `--alt_${boundary}--`,
+      '',
+      `--${boundary}`,
+      `Content-Type: application/pdf`,
+      `Content-Disposition: attachment; filename="${attachmentFilename}"`,
+      `Content-Transfer-Encoding: base64`,
+      '',
+      attachmentBase64,
+      '',
+      `--${boundary}--`,
+    ].join('\r\n');
+  }
+
+  return [
+    `From: ${from}`,
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    `Date: ${date}`,
+    `Message-ID: ${messageId}`,
+    `MIME-Version: 1.0`,
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    '',
+    `--${boundary}`,
+    `Content-Type: text/plain; charset=utf-8`,
+    '',
+    bodyText,
+    '',
+    `--${boundary}`,
+    `Content-Type: text/html; charset=utf-8`,
+    '',
+    htmlPart,
+    '',
+    `--${boundary}--`,
+  ].join('\r\n');
 }
 
 /**
