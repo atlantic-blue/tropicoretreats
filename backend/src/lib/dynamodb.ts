@@ -7,7 +7,7 @@ import {
   GetCommand,
   ScanCommand,
 } from '@aws-sdk/lib-dynamodb';
-import type { Lead, Note } from './types.js';
+import type { Lead, Note, Email } from './types.js';
 
 /**
  * DynamoDB client singleton - initialized outside handler for reuse across
@@ -523,4 +523,69 @@ export const updateNote = async (
   );
 
   return result.Attributes as Note;
+};
+
+/**
+ * Persists an email record to DynamoDB co-located with its lead.
+ *
+ * @param emailItem - The email entity to store
+ * @throws Error if TABLE_NAME environment variable is not set
+ * @throws DynamoDB service errors
+ */
+export const putEmail = async (emailItem: Email): Promise<void> => {
+  if (!TABLE_NAME) {
+    throw new Error('TABLE_NAME environment variable is not set');
+  }
+
+  await docClient.send(
+    new PutCommand({
+      TableName: TABLE_NAME,
+      Item: emailItem,
+    })
+  );
+};
+
+/**
+ * Parameters for updating lead email metadata after sending.
+ */
+export interface UpdateLeadEmailMetadataParams {
+  /** Lead ULID */
+  leadId: string;
+  /** ISO 8601 timestamp of the email that was sent */
+  lastEmailAt: string;
+}
+
+/**
+ * Updates the lead record with the timestamp of the most recently sent email.
+ *
+ * @param params - leadId and lastEmailAt timestamp
+ * @throws Error if TABLE_NAME environment variable is not set
+ * @throws DynamoDB service errors
+ */
+export const updateLeadEmailMetadata = async (
+  params: UpdateLeadEmailMetadataParams
+): Promise<void> => {
+  if (!TABLE_NAME) {
+    throw new Error('TABLE_NAME environment variable is not set');
+  }
+
+  const { leadId, lastEmailAt } = params;
+
+  await docClient.send(
+    new UpdateCommand({
+      TableName: TABLE_NAME,
+      Key: {
+        PK: `LEAD#${leadId}`,
+        SK: `LEAD#${leadId}`,
+      },
+      UpdateExpression: 'SET lastEmailAt = :lastEmailAt, #updatedAt = :updatedAt',
+      ExpressionAttributeNames: {
+        '#updatedAt': 'updatedAt',
+      },
+      ExpressionAttributeValues: {
+        ':lastEmailAt': lastEmailAt,
+        ':updatedAt': lastEmailAt,
+      },
+    })
+  );
 };

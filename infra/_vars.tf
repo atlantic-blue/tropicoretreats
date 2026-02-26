@@ -41,3 +41,15 @@ variable "route53_zone_id" {
   type        = string
   default     = ""
 }
+
+variable "from_email_crm" {
+  description = "From email address for CRM emails (team@tropicoretreat.com)"
+  type        = string
+  default     = "team@tropicoretreat.com"
+}
+
+variable "backup_forward_email" {
+  description = "Email address to receive backup forwards of inbound emails (leave empty to disable)"
+  type        = string
+  default     = "atlanticbluesolutionslimited@gmail.com"
+}

@@ -1,13 +1,13 @@
 variable "environment" {
   description = "Deployment environment (dev, production)"
   type        = string
-  default = "production"
+  default     = "production"
 }
 
 variable "product_name" {
   description = "Product name for resource tagging"
   type        = string
-  default = "tropico-retreats"
+  default     = "tropico-retreats"
 }
 
 variable "aws_account" {
@@ -17,7 +17,7 @@ variable "aws_account" {
 variable "aws_region" {
   description = "AWS region for deployment"
   type        = string
-  default = "us-east-1"
+  default     = "us-east-1"
 }
 
 variable "cors_allowed_origins" {
@@ -66,4 +66,25 @@ variable "admin_domain" {
   description = "Admin dashboard domain (e.g., admin.tropicoretreat.com or staging-admin.tropicoretreat.com)"
   type        = string
   default     = "admin.tropicoretreat.com"
+}
+
+# ====================================================================
+# Email CRM Configuration
+# ====================================================================
+
+variable "from_email_crm" {
+  description = "From email address for CRM emails (team@tropicoretreat.com)"
+  type        = string
+  default     = "team@tropicoretreat.com"
+}
+
+variable "backup_forward_email" {
+  description = "Email address to receive backup forwards of inbound emails (leave empty to disable)"
+  type        = string
+  default     = ""
+}
+
+variable "route53_zone_id" {
+  description = "Route53 hosted zone ID (passed from root module)"
+  type        = string
 }

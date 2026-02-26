@@ -1,0 +1,378 @@
+{
+  "slices": [
+    {
+      "id": 1,
+      "name": "Email Infrastructure + Send",
+      "description": "Foundation infrastructure (S3, DNS, SES receipt rules, IAM) plus the complete outbound email path: emailAdmin Lambda send route, DynamoDB email storage, SES sending, frontend compose UI. Enables operators to send an email to a lead from the dashboard.",
+      "userActions": [1],
+      "dependencies": [],
+      "components": [
+        {
+          "type": "infra",
+          "path": "infra/api/email.tf",
+          "description": "New file: S3 email store bucket with lifecycle rules, SES receipt rule set and receipt rule, email admin Lambda function with log group, Lambda permission for API Gateway, API Gateway integration and routes (POST /emails/send, GET /emails/{leadId}, PATCH /emails/{leadId}/read), SQS DLQ for email processing"
+        },
+        {
+          "type": "infra",
+          "path": "infra/api/ses.tf",
+          "description": "Extend: add SPF TXT record, DMARC TXT record, MX record for inbound receiving"
+        },
+        {
+          "type": "infra",
+          "path": "infra/api/iam.tf",
+          "description": "Extend: add IAM role and policies for email admin Lambda (SES send, DynamoDB access, CloudWatch logs)"
+        },
+        {
+          "type": "infra",
+          "path": "infra/api/variables.tf",
+          "description": "Extend: add from_email_crm and backup_forward_email variables"
+        },
+        {
+          "type": "backend",
+          "path": "backend/src/lib/types.ts",
+          "description": "Extend: add Email interface, EmailAttachment interface, EmailDirection type. Add lastEmailAt and unreadEmailCount optional fields to Lead interface"
+        },
+        {
+          "type": "backend",
+          "path": "backend/src/lib/validation.ts",
+          "description": "Extend: add SendEmailRequestSchema Zod schema"
+        },
+        {
+          "type": "backend",
+          "path": "backend/src/lib/dynamodb.ts",
+          "description": "Extend: add putEmail(), updateLeadEmailMetadata() functions"
+        },
+        {
+          "type": "backend",
+          "path": "backend/src/handlers/emailAdmin.ts",
+          "description": "New file: multi-route handler with handleSendEmail route. Validates request, verifies lead exists, sends via SES, writes email record, updates lead metadata"
+        },
+        {
+          "type": "backend",
+          "path": "backend/esbuild.config.js",
+          "description": "Extend: add emailAdmin entry point"
+        },
+        {
+          "type": "frontend",
+          "path": "admin/src/types/email.ts",
+          "description": "New file: Email, EmailAttachment, EmailDirection, EmailsResponse, SendEmailRequest, SendEmailResponse, MarkEmailsReadResponse types"
+        },
+        {
+          "type": "frontend",
+          "path": "admin/src/types/lead.ts",
+          "description": "Extend: add lastEmailAt and unreadEmailCount optional fields to Lead interface"
+        },
+        {
+          "type": "frontend",
+          "path": "admin/src/api/emails.ts",
+          "description": "New file: emailsApi object with send(), list(), markRead() using fetchWithAuth"
+        },
+        {
+          "type": "frontend",
+          "path": "admin/src/hooks/useEmails.ts",
+          "description": "New file: useSendEmail() mutation hook with optimistic updates"
+        },
+        {
+          "type": "frontend",
+          "path": "admin/src/components/emails/EmailCompose.tsx",
+          "description": "New file: compose form with subject input, textarea body, send button. Pre-populates to address and Re: subject"
+        },
+        {
+          "type": "frontend",
+          "path": "admin/src/components/leads/LeadDetail.tsx",
+          "description": "Extend: add EmailCompose component below contact card for quick send"
+        },
+        {
+          "type": "test",
+          "path": "tests/integration/send-email.test.ts",
+          "description": "Integration test: send email via POST /emails/send, verify 201 response, verify email record in DynamoDB, verify lead metadata updated"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Email Thread View",
+      "description": "Read path for email conversations: emailAdmin Lambda list route, DynamoDB query for emails by lead, frontend thread and bubble components. Enables operators to view the full email conversation for a lead.",
+      "userActions": [3],
+      "dependencies": [1],
+      "components": [
+        {
+          "type": "backend",
+          "path": "backend/src/lib/dynamodb.ts",
+          "description": "Extend: add getEmails() function with pagination (Query PK=LEAD#{leadId}, begins_with SK EMAIL#, ScanIndexForward=true)"
+        },
+        {
+          "type": "backend",
+          "path": "backend/src/handlers/emailAdmin.ts",
+          "description": "Extend: add handleGetEmails route (GET /emails/{leadId})"
+        },
+        {
+          "type": "frontend",
+          "path": "admin/src/hooks/useEmails.ts",
+          "description": "Extend: add useEmailThread() query hook"
+        },
+        {
+          "type": "frontend",
+          "path": "admin/src/components/emails/EmailBubble.tsx",
+          "description": "New file: single email display with direction-based alignment (inbound left/gray, outbound right/blue), sender, timestamp, subject, body, attachment list"
+        },
+        {
+          "type": "frontend",
+          "path": "admin/src/components/emails/EmailThread.tsx",
+          "description": "New file: chronological thread view rendering EmailBubble list with loading, empty, and error states"
+        },
+        {
+          "type": "frontend",
+          "path": "admin/src/components/leads/LeadDetail.tsx",
+          "description": "Extend: add EmailThread component integrated into lead detail view"
+        },
+        {
+          "type": "test",
+          "path": "tests/integration/list-emails.test.ts",
+          "description": "Integration test: seed emails in DynamoDB, GET /emails/{leadId}, verify chronological order, pagination, and total count"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Inbound Email Processing",
+      "description": "Event-driven inbound pipeline: emailReceive Lambda triggered by S3, MIME parsing with mailparser, lead matching by email address, auto-create lead for unknown senders, attachment extraction to S3. Enables receiving emails and auto-creating leads.",
+      "userActions": [2, 4],
+      "dependencies": [1],
+      "components": [
+        {
+          "type": "infra",
+          "path": "infra/api/email.tf",
+          "description": "Extend: add email receive Lambda function, S3 event notification on incoming/ prefix, Lambda permission for S3 invoke"
+        },
+        {
+          "type": "infra",
+          "path": "infra/api/iam.tf",
+          "description": "Extend: add IAM role and policies for email receive Lambda (S3 read/write, DynamoDB full access, SES send for forwarding, CloudWatch logs, SQS DLQ)"
+        },
+        {
+          "type": "backend",
+          "path": "backend/src/lib/emailParser.ts",
+          "description": "New file: MIME parsing wrapper using mailparser. Extracts from, to, subject, body, attachments. Sanitizes HTML, normalizes email addresses, truncates bodies"
+        },
+        {
+          "type": "backend",
+          "path": "backend/src/lib/dynamodb.ts",
+          "description": "Extend: add findLeadByEmail() function (Scan with email filter, normalized lowercase)"
+        },
+        {
+          "type": "backend",
+          "path": "backend/src/handlers/emailReceive.ts",
+          "description": "New file: S3 event handler. Reads raw email from S3, parses MIME, finds or creates lead, stores attachments, writes email record, updates lead metadata"
+        },
+        {
+          "type": "backend",
+          "path": "backend/esbuild.config.js",
+          "description": "Extend: add emailReceive entry point"
+        },
+        {
+          "type": "backend",
+          "path": "backend/package.json",
+          "description": "Extend: add mailparser dependency and @types/mailparser dev dependency"
+        },
+        {
+          "type": "test",
+          "path": "tests/integration/receive-email.test.ts",
+          "description": "Integration test: simulate S3 event with raw MIME email, verify email record created in DynamoDB, lead matched, metadata updated"
+        },
+        {
+          "type": "test",
+          "path": "tests/integration/auto-create-lead.test.ts",
+          "description": "Integration test: simulate inbound from unknown sender, verify new lead created with status NEW and temperature WARM, email record linked"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Mark Read + Unread Indicators",
+      "description": "Read state management: emailAdmin Lambda mark-read route, DynamoDB batch update of readAt, lead unreadEmailCount reset. Frontend unread badges on lead cards, lastEmailAt sorting, email preview. Enables operators to see and manage unread status.",
+      "userActions": [5],
+      "dependencies": [2, 3],
+      "components": [
+        {
+          "type": "backend",
+          "path": "backend/src/lib/dynamodb.ts",
+          "description": "Extend: add markEmailsAsRead() function (query unread inbound emails, batch update readAt, reset lead unreadEmailCount)"
+        },
+        {
+          "type": "backend",
+          "path": "backend/src/handlers/emailAdmin.ts",
+          "description": "Extend: add handleMarkRead route (PATCH /emails/{leadId}/read)"
+        },
+        {
+          "type": "frontend",
+          "path": "admin/src/hooks/useEmails.ts",
+          "description": "Extend: add useMarkEmailsRead() mutation hook with optimistic update"
+        },
+        {
+          "type": "frontend",
+          "path": "admin/src/components/emails/EmailThread.tsx",
+          "description": "Extend: call useMarkEmailsRead on mount to auto-mark-read when thread is viewed"
+        },
+        {
+          "type": "frontend",
+          "path": "admin/src/components/leads/LeadCard.tsx",
+          "description": "Extend: add unread email count badge, last email preview text (~100 chars), support sorting by lastEmailAt"
+        },
+        {
+          "type": "frontend",
+          "path": "admin/src/components/leads/LeadGrid.tsx",
+          "description": "Extend: add sort option for lastEmailAt (most recent email activity)"
+        },
+        {
+          "type": "test",
+          "path": "tests/integration/mark-read.test.ts",
+          "description": "Integration test: seed unread emails, PATCH /emails/{leadId}/read, verify readAt set on all inbound, unreadEmailCount reset to 0"
+        },
+        {
+          "type": "test",
+          "path": "tests/integration/unread-indicators.test.ts",
+          "description": "Integration test: verify lead record includes unreadEmailCount after inbound email, verify count resets after mark-read"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Backup Forwarding + Hardening",
+      "description": "Non-critical enhancements: backup forwarding of inbound emails to personal address, DLQ alarm, comprehensive error handling for edge cases (parse failures, partial data, retry safety). Completes the feature for production readiness.",
+      "userActions": [],
+      "dependencies": [3],
+      "components": [
+        {
+          "type": "backend",
+          "path": "backend/src/handlers/emailReceive.ts",
+          "description": "Extend: add backup forwarding via SES after successful email processing. Non-blocking (log errors, do not throw)"
+        },
+        {
+          "type": "backend",
+          "path": "backend/src/lib/emailParser.ts",
+          "description": "Extend: harden MIME parsing with graceful degradation for corrupted emails, partial data recovery"
+        },
+        {
+          "type": "infra",
+          "path": "infra/api/email.tf",
+          "description": "Extend: add CloudWatch alarm for DLQ messages, ensure DLQ wired to email receive Lambda event source mapping"
+        },
+        {
+          "type": "test",
+          "path": "tests/integration/backup-forwarding.test.ts",
+          "description": "Integration test: simulate inbound email, verify SES SendEmail called for backup forward with correct subject prefix and dashboard link"
+        },
+        {
+          "type": "test",
+          "path": "tests/integration/error-handling.test.ts",
+          "description": "Integration test: verify behavior on corrupted MIME input, missing From header, oversized body, S3 read failure"
+        }
+      ]
+    }
+  ],
+  "parallelGroups": [
+    {
+      "slices": [1],
+      "reason": "Foundation: infrastructure, types, schemas, send path. Must complete first as all other slices depend on the email table schema, Lambda skeleton, and S3 bucket."
+    },
+    {
+      "slices": [2, 3],
+      "reason": "Independent read and write paths that can be built in parallel after slice 1. Slice 2 adds the thread view (read emails from DynamoDB). Slice 3 adds inbound processing (write emails from S3 events). No code overlap between them."
+    },
+    {
+      "slices": [4],
+      "reason": "Depends on both slices 2 and 3. Mark-read requires the thread view (slice 2) to trigger auto-mark-read on open. Unread indicators require inbound emails (slice 3) to increment unreadEmailCount."
+    },
+    {
+      "slices": [5],
+      "reason": "Final hardening after core features are complete. Backup forwarding depends on inbound processing (slice 3). Error handling tests exercise all paths built in earlier slices."
+    }
+  ],
+  "boundaries": {
+    "1": {
+      "name": "Admin Dashboard -> Email Admin API",
+      "contract": "HTTP: POST /emails/send, GET /emails/{leadId}, PATCH /emails/{leadId}/read",
+      "slices": [1, 2, 4]
+    },
+    "2": {
+      "name": "Email Admin API -> SES",
+      "contract": "SES SendEmailCommand with MessageId return",
+      "slices": [1]
+    },
+    "3": {
+      "name": "Email Admin API -> DynamoDB",
+      "contract": "putEmail, getEmails, markEmailsAsRead, updateLeadEmailMetadata",
+      "slices": [1, 2, 4]
+    },
+    "4": {
+      "name": "SES Receiving -> S3",
+      "contract": "SES receipt rule stores raw email to S3 incoming/ prefix",
+      "slices": [1]
+    },
+    "5": {
+      "name": "S3 -> Email Receive Lambda",
+      "contract": "S3 ObjectCreated event triggers Lambda with bucket/key",
+      "slices": [3]
+    },
+    "6": {
+      "name": "Email Receive Lambda -> DynamoDB",
+      "contract": "findLeadByEmail, putLead (auto-create), putEmail, updateLeadEmailMetadata",
+      "slices": [3]
+    },
+    "7": {
+      "name": "Email Receive Lambda -> S3",
+      "contract": "S3 PutObject for attachment storage under attachments/ prefix",
+      "slices": [3]
+    },
+    "8": {
+      "name": "Email Receive Lambda -> SES",
+      "contract": "SES SendEmail for backup forwarding with [Tropico CRM] subject prefix",
+      "slices": [5]
+    },
+    "9": {
+      "name": "Admin Dashboard -> React Components",
+      "contract": "EmailThread, EmailCompose, EmailBubble component props",
+      "slices": [1, 2, 4]
+    },
+    "10": {
+      "name": "TanStack Query Hooks",
+      "contract": "useEmailThread, useSendEmail, useMarkEmailsRead",
+      "slices": [1, 2, 4]
+    },
+    "11": {
+      "name": "Terraform -> AWS Resources",
+      "contract": "S3 bucket, SES rules, DNS records, Lambdas, IAM, API GW routes, DLQ",
+      "slices": [1, 3, 5]
+    }
+  },
+  "fileManifest": {
+    "new": [
+      "infra/api/email.tf",
+      "backend/src/handlers/emailAdmin.ts",
+      "backend/src/handlers/emailReceive.ts",
+      "backend/src/lib/emailParser.ts",
+      "admin/src/types/email.ts",
+      "admin/src/api/emails.ts",
+      "admin/src/hooks/useEmails.ts",
+      "admin/src/components/emails/EmailThread.tsx",
+      "admin/src/components/emails/EmailCompose.tsx",
+      "admin/src/components/emails/EmailBubble.tsx"
+    ],
+    "modified": [
+      "infra/api/ses.tf",
+      "infra/api/iam.tf",
+      "infra/api/variables.tf",
+      "infra/api/main.tf",
+      "backend/src/lib/types.ts",
+      "backend/src/lib/validation.ts",
+      "backend/src/lib/dynamodb.ts",
+      "backend/esbuild.config.js",
+      "backend/package.json",
+      "admin/src/types/lead.ts",
+      "admin/src/components/leads/LeadDetail.tsx",
+      "admin/src/components/leads/LeadCard.tsx",
+      "admin/src/components/leads/LeadGrid.tsx"
+    ]
+  }
+}

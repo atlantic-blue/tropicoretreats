@@ -81,6 +81,19 @@ export const LeadUpdateSchema = z
 export type LeadUpdateInput = z.infer<typeof LeadUpdateSchema>;
 
 /**
+ * Zod schema for sending an email to a lead (POST /emails/send).
+ */
+export const SendEmailRequestSchema = z.object({
+  leadId: z.string().min(1, 'Lead ID is required').max(100),
+  to: z.string().email('Invalid recipient email address'),
+  subject: z.string().min(1, 'Subject is required').max(500),
+  bodyText: z.string().min(1, 'Body text is required').max(100_000),
+  bodyHtml: z.string().max(500_000).optional(),
+});
+
+export type SendEmailRequestInput = z.infer<typeof SendEmailRequestSchema>;
+
+/**
  * Status progression order for validation.
  * Leads should progress forward: NEW -> CONTACTED -> QUOTED -> WON/LOST
  * ARCHIVED is a special status that can be reached from any status.

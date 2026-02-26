@@ -64,8 +64,34 @@ resource "aws_iam_role_policy" "lambda_logs" {
         Resource = [
           "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/tropico-create-lead-${var.environment}:*",
           "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/tropico-leads-admin-${var.environment}:*",
-          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/tropico-users-${var.environment}:*"
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/tropico-users-${var.environment}:*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/tropico-email-admin-${var.environment}:*"
         ]
+      }
+    ]
+  })
+}
+
+# SES send permissions for Email Admin Lambda (shares the main lambda role)
+resource "aws_iam_role_policy" "lambda_ses" {
+  name = "ses-send"
+  role = aws_iam_role.lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ses:SendEmail",
+          "ses:SendRawEmail"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "ses:FromAddress" = [var.from_email_crm]
+          }
+        }
       }
     ]
   })
@@ -234,6 +260,137 @@ resource "aws_iam_role_policy" "notifications_dynamodb_read" {
           aws_dynamodb_table.leads.arn,
           "${aws_dynamodb_table.leads.arn}/index/GSI1"
         ]
+      }
+    ]
+  })
+}
+
+# ====================================================================
+# Email Receive Lambda IAM Role + Policies
+# Needs: S3 (read raw email + write attachments), DynamoDB, SES (backup forward), SQS DLQ, CloudWatch
+# ====================================================================
+
+resource "aws_iam_role" "email_receive_lambda" {
+  name = "tropico-email-receive-lambda-${var.environment}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = local.tags
+}
+
+# CloudWatch Logs
+resource "aws_iam_role_policy" "email_receive_logs" {
+  name = "cloudwatch-logs"
+  role = aws_iam_role.email_receive_lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/tropico-email-receive-${var.environment}:*"
+      }
+    ]
+  })
+}
+
+# S3: Read raw emails + write attachments
+resource "aws_iam_role_policy" "email_receive_s3" {
+  name = "s3-email-access"
+  role = aws_iam_role.email_receive_lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject"
+        ]
+        Resource = "${aws_s3_bucket.email.arn}/*"
+      }
+    ]
+  })
+}
+
+# DynamoDB: Scan for leads, put emails, update lead metadata
+resource "aws_iam_role_policy" "email_receive_dynamodb" {
+  name = "dynamodb-access"
+  role = aws_iam_role.email_receive_lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:Scan",
+          "dynamodb:UpdateItem"
+        ]
+        Resource = [
+          aws_dynamodb_table.leads.arn,
+          "${aws_dynamodb_table.leads.arn}/index/GSI1"
+        ]
+      }
+    ]
+  })
+}
+
+# SES: Send backup forward emails
+resource "aws_iam_role_policy" "email_receive_ses" {
+  name = "ses-send"
+  role = aws_iam_role.email_receive_lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ses:SendEmail",
+          "ses:SendRawEmail"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "ses:FromAddress" = [var.from_email_crm]
+          }
+        }
+      }
+    ]
+  })
+}
+
+# SQS DLQ: Send failed invocations
+resource "aws_iam_role_policy" "email_receive_dlq" {
+  name = "sqs-dlq"
+  role = aws_iam_role.email_receive_lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["sqs:SendMessage"]
+        Resource = aws_sqs_queue.email_dlq.arn
       }
     ]
   })
