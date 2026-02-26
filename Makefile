@@ -22,27 +22,29 @@ help:
 
 # Staging
 staging-plan:
+	cd backend && npm run build
 	cd infra && terraform workspace select staging && terraform plan -var-file=staging.tfvars
 
 staging-apply:
+	cd backend && npm run build
 	cd infra && terraform workspace select staging && terraform apply -var-file=staging.tfvars -auto-approve
 
 staging-deploy:
 	make staging-apply
-	cd backend && npm run build
 	cd frontend && npm run build:staging && aws s3 sync dist/ s3://staging.tropicoretreat.com --delete
 	cd admin && npm run deploy:staging
 
 # Production
 production-plan:
+	cd backend && npm run build
 	cd infra && terraform workspace select default && terraform plan
 
 production-apply:
+	cd backend && npm run build
 	cd infra && terraform workspace select default && terraform apply -auto-approve
 
 production-deploy:
 	make production-apply
-	cd backend && npm run build
 	cd frontend && npm run build && aws s3 sync dist/ s3://tropicoretreat.com --delete
 	cd admin && npm run deploy:production
 

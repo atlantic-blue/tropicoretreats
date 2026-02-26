@@ -588,9 +588,19 @@ describe('emailReceive handler — Slice 5: backup forwarding', () => {
   describe('SES call ordering', () => {
     it('should call SES AFTER the DynamoDB email record write (PutCommand)', async () => {
       const callOrder: string[] = [];
+      let dynamoCallIndex = 0;
 
-      mockDynamoDBSend.mockImplementation(async (command: unknown) => {
+      mockDynamoDBSend.mockImplementation(async () => {
         callOrder.push('dynamodb');
+        dynamoCallIndex++;
+        if (dynamoCallIndex === 1) {
+          return {
+            Items: [createMockLead({ id: VALID_LEAD_ID, email: 'guest@example.com' })],
+            Count: 1,
+            ScannedCount: 1,
+            $metadata: { httpStatusCode: 200 },
+          };
+        }
         return { $metadata: { httpStatusCode: 200 } };
       });
 
@@ -601,16 +611,6 @@ describe('emailReceive handler — Slice 5: backup forwarding', () => {
           $metadata: { httpStatusCode: 200 },
         };
       });
-
-      // Provide the Scan response (call 1 = lead found)
-      mockDynamoDBSend.mockResolvedValueOnce({
-        Items: [createMockLead({ id: VALID_LEAD_ID, email: 'guest@example.com' })],
-        Count: 1,
-        ScannedCount: 1,
-        $metadata: { httpStatusCode: 200 },
-      });
-      // Subsequent DynamoDB calls succeed silently
-      mockDynamoDBSend.mockResolvedValue({ $metadata: { httpStatusCode: 200 } });
 
       mockS3GetObject(createRawMimeEmail());
 
@@ -629,9 +629,19 @@ describe('emailReceive handler — Slice 5: backup forwarding', () => {
 
     it('should call SES AFTER the DynamoDB metadata update (UpdateCommand)', async () => {
       const callOrder: string[] = [];
+      let dynamoCallIndex = 0;
 
       mockDynamoDBSend.mockImplementation(async () => {
         callOrder.push('dynamodb');
+        dynamoCallIndex++;
+        if (dynamoCallIndex === 1) {
+          return {
+            Items: [createMockLead({ id: VALID_LEAD_ID, email: 'guest@example.com' })],
+            Count: 1,
+            ScannedCount: 1,
+            $metadata: { httpStatusCode: 200 },
+          };
+        }
         return { $metadata: { httpStatusCode: 200 } };
       });
 
@@ -642,15 +652,6 @@ describe('emailReceive handler — Slice 5: backup forwarding', () => {
           $metadata: { httpStatusCode: 200 },
         };
       });
-
-      // Provide Scan result first
-      mockDynamoDBSend.mockResolvedValueOnce({
-        Items: [createMockLead({ id: VALID_LEAD_ID, email: 'guest@example.com' })],
-        Count: 1,
-        ScannedCount: 1,
-        $metadata: { httpStatusCode: 200 },
-      });
-      mockDynamoDBSend.mockResolvedValue({ $metadata: { httpStatusCode: 200 } });
 
       mockS3GetObject(createRawMimeEmail());
 

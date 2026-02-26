@@ -16,22 +16,22 @@ locals {
   cors_origins = length(var.cors_allowed_origins) > 0 ? var.cors_allowed_origins : (
     var.environment == "production"
     ? [
-        "https://tropicoretreat.com",
-        "https://www.tropicoretreat.com",
-        "https://${var.admin_domain}",
-        "https://staging.tropicoretreat.com",
-        "https://staging-admin.tropicoretreat.com"
-      ]
+      "https://tropicoretreat.com",
+      "https://www.tropicoretreat.com",
+      "https://${var.admin_domain}",
+      "https://staging.tropicoretreat.com",
+      "https://staging-admin.tropicoretreat.com"
+    ]
     : [
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "https://tropicoretreat.com",
-        "https://www.tropicoretreat.com",
-        "https://${var.admin_domain}",
-        "https://staging.tropicoretreat.com",
-        "https://staging-admin.tropicoretreat.com"
-      ]
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "https://tropicoretreat.com",
+      "https://www.tropicoretreat.com",
+      "https://${var.admin_domain}",
+      "https://staging.tropicoretreat.com",
+      "https://staging-admin.tropicoretreat.com"
+    ]
   )
 }
 
@@ -209,6 +209,44 @@ resource "aws_apigatewayv2_route" "get_users" {
   api_id             = aws_apigatewayv2_api.leads.id
   route_key          = "GET /users"
   target             = "integrations/${aws_apigatewayv2_integration.users.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+# ====================================================================
+# Email Admin Integration (POST /emails/send, GET /emails/{leadId}, PATCH /emails/{leadId}/read)
+# ====================================================================
+resource "aws_apigatewayv2_integration" "email_admin" {
+  api_id                 = aws_apigatewayv2_api.leads.id
+  integration_type       = "AWS_PROXY"
+  integration_method     = "POST"
+  integration_uri        = aws_lambda_function.email_admin.invoke_arn
+  payload_format_version = "2.0"
+}
+
+# Protected route for POST /emails/send (requires valid JWT)
+resource "aws_apigatewayv2_route" "send_email" {
+  api_id             = aws_apigatewayv2_api.leads.id
+  route_key          = "POST /emails/send"
+  target             = "integrations/${aws_apigatewayv2_integration.email_admin.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+# Protected route for GET /emails/{leadId} (requires valid JWT)
+resource "aws_apigatewayv2_route" "get_emails" {
+  api_id             = aws_apigatewayv2_api.leads.id
+  route_key          = "GET /emails/{leadId}"
+  target             = "integrations/${aws_apigatewayv2_integration.email_admin.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+# Protected route for PATCH /emails/{leadId}/read (requires valid JWT)
+resource "aws_apigatewayv2_route" "mark_emails_read" {
+  api_id             = aws_apigatewayv2_api.leads.id
+  route_key          = "PATCH /emails/{leadId}/read"
+  target             = "integrations/${aws_apigatewayv2_integration.email_admin.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
 }

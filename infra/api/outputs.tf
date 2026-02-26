@@ -43,3 +43,22 @@ output "api_domain_zone_id" {
   description = "Hosted zone ID for Route53 alias"
   value       = aws_apigatewayv2_domain_name.api.domain_name_configuration[0].hosted_zone_id
 }
+
+# ====================================================================
+# Email CRM Outputs
+# ====================================================================
+
+output "email_bucket_name" {
+  description = "S3 bucket name for SES email storage"
+  value       = aws_s3_bucket.email.bucket
+}
+
+output "email_admin_function_name" {
+  description = "Email Admin Lambda function name"
+  value       = aws_lambda_function.email_admin.function_name
+}
+
+output "email_receive_function_name" {
+  description = "Email Receive Lambda function name"
+  value       = aws_lambda_function.email_receive.function_name
+}

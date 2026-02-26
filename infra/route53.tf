@@ -47,14 +47,36 @@ resource "aws_route53_record" "www_record" {
 /*
 https://search.google.com/search-console/welcome?utm_source=about-page
 */
-# Google verification - only in production
-resource "aws_route53_record" "www_record_txt_google_verify" {
+# TXT records for root domain (Google verification + SPF) - production only
+# All TXT records at the same name must be in one resource to avoid conflicts
+resource "aws_route53_record" "www_record_txt" {
   count   = var.is_staging ? 0 : 1
   zone_id = local.route53_zone_id
   name    = local.domain_name
   type    = "TXT"
   ttl     = 300
   records = [
-    "google-site-verification=${var.www_google_site_verification_token}"
+    "google-site-verification=${var.www_google_site_verification_token}",
+    "v=spf1 include:amazonses.com ~all"
   ]
+}
+
+# MX record for inbound email — routes to SES (production only)
+resource "aws_route53_record" "mx" {
+  count   = var.is_staging ? 0 : 1
+  zone_id = local.route53_zone_id
+  name    = local.domain_name
+  type    = "MX"
+  ttl     = 300
+  records = ["10 inbound-smtp.us-east-1.amazonaws.com"]
+}
+
+# DMARC record for email authentication (production only)
+resource "aws_route53_record" "dmarc" {
+  count   = var.is_staging ? 0 : 1
+  zone_id = local.route53_zone_id
+  name    = "_dmarc.${local.domain_name}"
+  type    = "TXT"
+  ttl     = 300
+  records = ["v=DMARC1; p=quarantine; rua=mailto:dmarc@${local.domain_name}"]
 }
