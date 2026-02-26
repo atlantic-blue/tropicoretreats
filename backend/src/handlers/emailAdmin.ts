@@ -76,6 +76,7 @@ const FROM_ADDRESS = REPLY_TO;
  *
  * Routes:
  * - POST /emails/send — Send an outbound email to a lead
+ * - PATCH /emails/{leadId}/read — Mark all unread inbound emails for a lead as read
  * - GET /emails/{leadId} — Retrieve paginated email thread for a lead
  */
 export const handler = async (
@@ -88,7 +89,11 @@ export const handler = async (
     return handleSendEmail(event);
   }
 
-  if (method === 'GET' && path !== '/emails/send' && path.startsWith('/emails/')) {
+  if (method === 'PATCH' && path.startsWith('/emails/') && path.endsWith('/read')) {
+    return handleMarkRead(event);
+  }
+
+  if (method === 'GET' && path !== '/emails/send' && path.startsWith('/emails/') && !path.endsWith('/read')) {
     return handleGetEmails(event);
   }
 
@@ -457,4 +462,154 @@ async function handleGetEmails(
   };
 
   return ok(responseBody);
+}
+
+// ---------------------------------------------------------------------------
+// PATCH /emails/{leadId}/read — Mark all unread inbound emails as read
+// ---------------------------------------------------------------------------
+
+/**
+ * PATCH /emails/{leadId}/read — Mark all unread inbound emails for a lead as read.
+ *
+ * Flow:
+ *   1. Check TABLE_NAME is set (500 if missing)
+ *   2. Extract leadId from path (strip /emails/ prefix and /read suffix)
+ *   3. GetCommand to verify lead exists (404 if not found, 500 on error)
+ *   4. QueryCommand to find unread inbound emails (500 on error)
+ *   5. UpdateCommand for each unread email: SET readAt = :now, updatedAt = :now
+ *   6. UpdateCommand on lead: SET unreadEmailCount = 0, updatedAt = :now
+ *   7. Return 200 with { markedCount, leadId }
+ */
+async function handleMarkRead(
+  event: APIGatewayProxyEventV2WithJWTAuthorizer
+): Promise<APIGatewayProxyResultV2> {
+  if (!TABLE_NAME) {
+    console.error('TABLE_NAME environment variable is not set');
+    return serverError();
+  }
+
+  // Extract leadId from path: /emails/{leadId}/read
+  const rawPath = event.requestContext.http.path;
+  const leadId = rawPath.replace(/^\/emails\//, '').replace(/\/read$/, '');
+
+  const now = new Date().toISOString();
+
+  // Step 1: Verify lead exists (GetCommand — DynamoDB call #1)
+  const getLeadCommand = tryConstruct(
+    GetCommand as new (...args: unknown[]) => GetCommand,
+    {
+      TableName: TABLE_NAME,
+      Key: {
+        PK: `LEAD#${leadId}`,
+        SK: `LEAD#${leadId}`,
+      },
+    }
+  );
+
+  let getLeadResult: { Item?: Record<string, unknown> };
+  try {
+    getLeadResult = (await docClient.send(
+      getLeadCommand as Parameters<typeof docClient.send>[0]
+    )) as { Item?: Record<string, unknown> };
+  } catch (error) {
+    console.error('DynamoDB getLead failed:', error);
+    return serverError();
+  }
+
+  if (!getLeadResult.Item) {
+    return notFound('Lead not found');
+  }
+
+  // Step 2: Query unread inbound emails (QueryCommand — DynamoDB call #2)
+  const queryUnreadCommand = tryConstruct(
+    QueryCommand as new (...args: unknown[]) => QueryCommand,
+    {
+      TableName: TABLE_NAME,
+      KeyConditionExpression: '#PK = :pk AND begins_with(#SK, :skPrefix)',
+      FilterExpression: '#direction = :inbound AND (attribute_not_exists(#readAt) OR #readAt = :null)',
+      ExpressionAttributeNames: {
+        '#PK': 'PK',
+        '#SK': 'SK',
+        '#direction': 'direction',
+        '#readAt': 'readAt',
+      },
+      ExpressionAttributeValues: {
+        ':pk': `LEAD#${leadId}`,
+        ':skPrefix': 'EMAIL#',
+        ':inbound': 'inbound',
+        ':null': null,
+      },
+    }
+  );
+
+  let queryResult: { Items?: Record<string, unknown>[] };
+  try {
+    queryResult = (await docClient.send(
+      queryUnreadCommand as Parameters<typeof docClient.send>[0]
+    )) as { Items?: Record<string, unknown>[] };
+  } catch (error) {
+    console.error('DynamoDB queryUnreadEmails failed:', error);
+    return serverError();
+  }
+
+  const unreadEmails = queryResult.Items ?? [];
+
+  // Step 3: Mark each unread email as read (UpdateCommand × N)
+  for (const email of unreadEmails) {
+    const emailUpdateCommand = tryConstruct(
+      UpdateCommand as new (...args: unknown[]) => UpdateCommand,
+      {
+        TableName: TABLE_NAME,
+        Key: {
+          PK: email.PK as string,
+          SK: email.SK as string,
+        },
+        UpdateExpression: 'SET #readAt = :readAt, #updatedAt = :updatedAt',
+        ExpressionAttributeNames: {
+          '#readAt': 'readAt',
+          '#updatedAt': 'updatedAt',
+        },
+        ExpressionAttributeValues: {
+          ':readAt': now,
+          ':updatedAt': now,
+        },
+      }
+    );
+
+    try {
+      await docClient.send(emailUpdateCommand as Parameters<typeof docClient.send>[0]);
+    } catch (error) {
+      console.error('DynamoDB markEmailRead failed:', error);
+      return serverError();
+    }
+  }
+
+  // Step 4: Reset lead unreadEmailCount to 0 (UpdateCommand — final DynamoDB call)
+  const resetLeadCountCommand = tryConstruct(
+    UpdateCommand as new (...args: unknown[]) => UpdateCommand,
+    {
+      TableName: TABLE_NAME,
+      Key: {
+        PK: `LEAD#${leadId}`,
+        SK: `LEAD#${leadId}`,
+      },
+      UpdateExpression: 'SET unreadEmailCount = :zero, #updatedAt = :updatedAt',
+      ExpressionAttributeNames: {
+        '#updatedAt': 'updatedAt',
+      },
+      ExpressionAttributeValues: {
+        ':zero': 0,
+        ':updatedAt': now,
+      },
+    }
+  );
+
+  try {
+    await docClient.send(resetLeadCountCommand as Parameters<typeof docClient.send>[0]);
+  } catch (error) {
+    console.error('DynamoDB resetLeadUnreadCount failed:', error);
+    return serverError();
+  }
+
+  return ok({ markedCount: unreadEmails.length, leadId });
 }
