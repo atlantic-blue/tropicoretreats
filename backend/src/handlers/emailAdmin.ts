@@ -7,12 +7,13 @@ import {
   DynamoDBDocumentClient,
   GetCommand,
   PutCommand,
+  QueryCommand,
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { SendEmailRequestSchema } from '../lib/validation.js';
 import type { Email, Lead } from '../lib/types.js';
-import { created, badRequest, notFound, serverError } from '../utils/response.js';
+import { created, badRequest, notFound, ok, serverError } from '../utils/response.js';
 
 // ---------------------------------------------------------------------------
 // AWS client setup
@@ -75,6 +76,7 @@ const FROM_ADDRESS = REPLY_TO;
  *
  * Routes:
  * - POST /emails/send — Send an outbound email to a lead
+ * - GET /emails/{leadId} — Retrieve paginated email thread for a lead
  */
 export const handler = async (
   event: APIGatewayProxyEventV2WithJWTAuthorizer
@@ -84,6 +86,10 @@ export const handler = async (
 
   if (method === 'POST' && path === '/emails/send') {
     return handleSendEmail(event);
+  }
+
+  if (method === 'GET' && path !== '/emails/send' && path.startsWith('/emails/')) {
+    return handleGetEmails(event);
   }
 
   return {
@@ -259,4 +265,196 @@ async function handleSendEmail(
   void (getResult.Item as Lead);
 
   return created(emailRecord);
+}
+
+// ---------------------------------------------------------------------------
+// GET /emails/{leadId} — Retrieve paginated email thread for a lead
+// ---------------------------------------------------------------------------
+
+const DEFAULT_LIMIT = 50;
+const MIN_LIMIT = 1;
+const MAX_LIMIT = 100;
+
+/**
+ * Validates and parses the `limit` query parameter.
+ *
+ * @param rawLimit - Raw string value from query string, or undefined
+ * @returns Parsed integer limit, or an error message string
+ */
+function parseLimitParameter(rawLimit: string | undefined): number | string {
+  if (rawLimit === undefined) {
+    return DEFAULT_LIMIT;
+  }
+
+  const parsed = Number(rawLimit);
+
+  if (!Number.isInteger(parsed) || isNaN(parsed) || parsed < MIN_LIMIT || parsed > MAX_LIMIT) {
+    return 'Invalid limit parameter. Must be between 1 and 100.';
+  }
+
+  return parsed;
+}
+
+/**
+ * Validates and decodes the `cursor` query parameter.
+ *
+ * Cursors are base64-encoded JSON objects representing DynamoDB ExclusiveStartKey.
+ *
+ * @param rawCursor - Raw string value from query string, or undefined
+ * @returns Decoded object, undefined (when no cursor), or an error message string
+ */
+function parseCursorParameter(rawCursor: string | undefined): Record<string, unknown> | undefined | string {
+  if (rawCursor === undefined) {
+    return undefined;
+  }
+
+  let decoded: string;
+  try {
+    decoded = Buffer.from(rawCursor, 'base64').toString('utf-8');
+  } catch {
+    return 'Invalid pagination cursor';
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(decoded);
+  } catch {
+    return 'Invalid pagination cursor';
+  }
+
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    return 'Invalid pagination cursor';
+  }
+
+  return parsed as Record<string, unknown>;
+}
+
+/**
+ * GET /emails/{leadId} — Return a paginated chronological email thread.
+ *
+ * Flow:
+ *   1. Check TABLE_NAME is set (500 if missing)
+ *   2. Validate limit query param (400 if invalid)
+ *   3. Validate cursor query param (400 if invalid)
+ *   4. Extract leadId from pathParameters or path
+ *   5. Query DynamoDB (PK=LEAD#{leadId}, begins_with(SK, 'EMAIL#'), ScanIndexForward=true)
+ *   6. Run count query (Select='COUNT') for totalCount
+ *   7. Return { emails, nextCursor?, totalCount }
+ */
+async function handleGetEmails(
+  event: APIGatewayProxyEventV2WithJWTAuthorizer
+): Promise<APIGatewayProxyResultV2> {
+  if (!TABLE_NAME) {
+    console.error('TABLE_NAME environment variable is not set');
+    return serverError();
+  }
+
+  // Validate limit parameter
+  const rawLimit = event.queryStringParameters?.limit;
+  const limitResult = parseLimitParameter(rawLimit);
+  if (typeof limitResult === 'string') {
+    return badRequest(limitResult);
+  }
+  const limit = limitResult;
+
+  // Validate cursor parameter
+  const rawCursor = event.queryStringParameters?.cursor;
+  const cursorResult = parseCursorParameter(rawCursor);
+  if (typeof cursorResult === 'string') {
+    return badRequest(cursorResult);
+  }
+  const exclusiveStartKey = cursorResult;
+
+  // Extract leadId from pathParameters (set by API Gateway) or fall back to path parsing
+  const leadId =
+    event.pathParameters?.leadId ??
+    event.requestContext.http.path.replace(/^\/emails\//, '');
+
+  // Build paginated query command
+  const queryInput: Record<string, unknown> = {
+    TableName: TABLE_NAME,
+    KeyConditionExpression: '#PK = :pk AND begins_with(#SK, :skPrefix)',
+    ExpressionAttributeNames: {
+      '#PK': 'PK',
+      '#SK': 'SK',
+    },
+    ExpressionAttributeValues: {
+      ':pk': `LEAD#${leadId}`,
+      ':skPrefix': 'EMAIL#',
+    },
+    ScanIndexForward: true,
+    Limit: limit,
+    ...(exclusiveStartKey !== undefined ? { ExclusiveStartKey: exclusiveStartKey } : {}),
+  };
+
+  const queryCommand = tryConstruct(
+    QueryCommand as new (...args: unknown[]) => QueryCommand,
+    queryInput
+  );
+
+  let queryResult: {
+    Items?: Record<string, unknown>[];
+    LastEvaluatedKey?: Record<string, unknown>;
+  };
+
+  try {
+    queryResult = (await docClient.send(
+      queryCommand as Parameters<typeof docClient.send>[0]
+    )) as { Items?: Record<string, unknown>[]; LastEvaluatedKey?: Record<string, unknown> };
+  } catch (error) {
+    console.error('DynamoDB queryEmails failed:', error);
+    return serverError();
+  }
+
+  const emails = queryResult.Items ?? [];
+  const lastEvaluatedKey = queryResult.LastEvaluatedKey;
+
+  // Run count query for totalCount
+  const countQueryInput: Record<string, unknown> = {
+    TableName: TABLE_NAME,
+    KeyConditionExpression: '#PK = :pk AND begins_with(#SK, :skPrefix)',
+    ExpressionAttributeNames: {
+      '#PK': 'PK',
+      '#SK': 'SK',
+    },
+    ExpressionAttributeValues: {
+      ':pk': `LEAD#${leadId}`,
+      ':skPrefix': 'EMAIL#',
+    },
+    Select: 'COUNT',
+  };
+
+  const countQueryCommand = tryConstruct(
+    QueryCommand as new (...args: unknown[]) => QueryCommand,
+    countQueryInput
+  );
+
+  let countResult: { Count?: number };
+  try {
+    countResult = (await docClient.send(
+      countQueryCommand as Parameters<typeof docClient.send>[0]
+    )) as { Count?: number };
+  } catch (error) {
+    console.error('DynamoDB countEmails failed:', error);
+    return serverError();
+  }
+
+  const totalCount = countResult.Count ?? 0;
+
+  // Encode LastEvaluatedKey as base64 cursor if present
+  const nextCursor = lastEvaluatedKey !== undefined
+    ? Buffer.from(JSON.stringify(lastEvaluatedKey)).toString('base64')
+    : undefined;
+
+  const responseBody: {
+    emails: Record<string, unknown>[];
+    totalCount: number;
+    nextCursor?: string;
+  } = {
+    emails,
+    totalCount,
+    ...(nextCursor !== undefined ? { nextCursor } : {}),
+  };
+
+  return ok(responseBody);
 }
