@@ -1,3 +1,64 @@
+/** Email direction: outbound (sent by team) or inbound (received from lead) */
+export type EmailDirection = 'outbound' | 'inbound';
+
+/**
+ * Email attachment metadata stored alongside an email record.
+ */
+export interface EmailAttachment {
+  /** Filename of the attachment */
+  filename: string;
+  /** S3 key where the attachment content is stored */
+  s3Key: string;
+  /** MIME type of the attachment */
+  contentType: string;
+  /** File size in bytes */
+  size: number;
+}
+
+/**
+ * Email record entity stored in DynamoDB co-located with its lead.
+ *
+ * Table design:
+ * - PK: LEAD#{leadId} (co-located with lead for efficient queries)
+ * - SK: EMAIL#{timestamp}#{messageId} (chronological ordering, unique)
+ */
+export interface Email {
+  /** Primary key: LEAD#{leadId} */
+  PK: string;
+  /** Sort key: EMAIL#{timestamp}#{messageId} */
+  SK: string;
+  /** SES MessageId used as record identifier */
+  id: string;
+  /** ID of the lead this email belongs to */
+  leadId: string;
+  /** Email direction */
+  direction: EmailDirection;
+  /** Sender address (bare email, e.g. team@tropicoretreat.com) */
+  fromAddress: string;
+  /** Recipient address */
+  toAddress: string;
+  /** Email subject line */
+  subject: string;
+  /** Plain text body */
+  bodyText: string;
+  /** HTML body (optional) */
+  bodyHtml?: string;
+  /** Email attachments */
+  attachments: EmailAttachment[];
+  /** ISO 8601 timestamp when the email was sent */
+  sentAt: string;
+  /** ISO 8601 timestamp when the email was read (null if unread) */
+  readAt: string | null;
+  /** S3 key for stored email content (null for outbound) */
+  s3Key: string | null;
+  /** Email/sub of the operator who sent the email */
+  operator: string;
+  /** ISO 8601 timestamp of creation */
+  createdAt: string;
+  /** ISO 8601 timestamp of last update */
+  updatedAt: string;
+}
+
 /** Lead temperature indicating sales priority */
 export type Temperature = 'HOT' | 'WARM' | 'COLD';
 
@@ -56,6 +117,10 @@ export interface Lead {
   assigneeId?: string;
   /** Denormalized display name of assignee (optional) */
   assigneeName?: string;
+  /** ISO 8601 timestamp of the last email sent to or received from this lead */
+  lastEmailAt?: string;
+  /** Count of unread emails from this lead */
+  unreadEmailCount?: number;
   /** ISO 8601 timestamp of creation */
   createdAt: string;
   /** ISO 8601 timestamp of last update */
