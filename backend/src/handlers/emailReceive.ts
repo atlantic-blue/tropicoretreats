@@ -7,6 +7,7 @@ import {
   PutCommand,
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
+import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { simpleParser } from 'mailparser';
 import { ulid } from 'ulidx';
 import type { Lead, EmailAttachment } from '../lib/types.js';
@@ -31,6 +32,8 @@ function tryConstruct<T>(
 }
 
 const s3Client = tryConstruct(S3Client as new (...args: unknown[]) => S3Client, {});
+
+const sesClient = tryConstruct(SESClient as new (...args: unknown[]) => SESClient, {});
 
 const dynamoDBRawClient = tryConstruct(
   DynamoDBClient as new (...args: unknown[]) => DynamoDBClient,
@@ -344,5 +347,48 @@ export const handler = async (event: S3Event): Promise<void> => {
     await docClient.send(updateCommand as Parameters<typeof docClient.send>[0]);
   } catch (error) {
     console.error('Failed to update lead email metadata, continuing:', leadId, error);
+  }
+
+  // Step 9: Send backup forward via SES — non-blocking (last step)
+  const backupForwardEmail = process.env.BACKUP_FORWARD_EMAIL;
+
+  if (!backupForwardEmail) {
+    return;
+  }
+
+  const adminDashboardUrl = process.env.ADMIN_DASHBOARD_URL;
+
+  const metadataLines = [
+    `From: ${normalizedFromAddress}`,
+    `Lead: ${leadId}`,
+    `Received: ${now}`,
+    ...(adminDashboardUrl ? [`Dashboard: ${adminDashboardUrl}/leads/${leadId}`] : []),
+  ];
+
+  const backupBodyText = [
+    '---',
+    ...metadataLines,
+    '---',
+    bodyText,
+  ].join('\n');
+
+  try {
+    const sendEmailCommand = tryConstruct(
+      SendEmailCommand as new (...args: unknown[]) => SendEmailCommand,
+      {
+        Source: FROM_EMAIL_CRM,
+        Destination: { ToAddresses: [backupForwardEmail] },
+        Message: {
+          Subject: { Data: `[Tropico CRM] ${subject}` },
+          Body: {
+            Text: { Data: backupBodyText },
+          },
+        },
+      }
+    );
+
+    await sesClient.send(sendEmailCommand as Parameters<typeof sesClient.send>[0]);
+  } catch (error) {
+    console.error('Failed to send backup forward email, continuing:', leadId, error);
   }
 };
