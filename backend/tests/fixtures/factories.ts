@@ -1,5 +1,5 @@
 import type { APIGatewayProxyEventV2WithJWTAuthorizer } from 'aws-lambda';
-import type { Lead } from '../../src/lib/types.js';
+import type { Email, Lead } from '../../src/lib/types.js';
 
 /**
  * Default test operator identity extracted from JWT claims.
@@ -27,6 +27,7 @@ export function createMockApiEvent(
     sub?: string;
     email?: string;
     pathParameters?: Record<string, string>;
+    queryStringParameters?: Record<string, string>;
   } = {}
 ): APIGatewayProxyEventV2WithJWTAuthorizer {
   const {
@@ -36,6 +37,7 @@ export function createMockApiEvent(
     sub = DEFAULT_OPERATOR_SUB,
     email = DEFAULT_OPERATOR_EMAIL,
     pathParameters = {},
+    queryStringParameters,
   } = overrides;
 
   return {
@@ -80,7 +82,7 @@ export function createMockApiEvent(
     },
     body: body ?? undefined,
     pathParameters: Object.keys(pathParameters).length > 0 ? pathParameters : undefined,
-    queryStringParameters: undefined,
+    queryStringParameters: queryStringParameters ?? undefined,
     stageVariables: undefined,
     isBase64Encoded: false,
   } as unknown as APIGatewayProxyEventV2WithJWTAuthorizer;
@@ -138,6 +140,42 @@ export function createMockLead(overrides: Partial<Lead> = {}): Lead {
     lastName: 'Smith',
     email: 'guest@example.com',
     message: 'Interested in a corporate retreat for 20 people.',
+    createdAt: now,
+    updatedAt: now,
+    ...overrides,
+  };
+}
+
+/**
+ * Builds a mock Email entity as it would be returned from a DynamoDB Query.
+ * Conforms to the Email interface in src/lib/types.ts.
+ *
+ * The SK follows the EMAIL#{timestamp}#{messageId} pattern used by the handler
+ * when persisting email records, which also drives chronological ordering.
+ *
+ * @param overrides - Field overrides for specific test scenarios
+ */
+export function createMockEmail(overrides: Partial<Email> = {}): Email {
+  const leadId = overrides.leadId ?? 'lead_01HTEST123456789ABCDE';
+  const id = overrides.id ?? 'ses-msg-id-0123456789ABCDEF';
+  const sentAt = overrides.sentAt ?? '2026-01-15T10:00:00.000Z';
+  const now = sentAt;
+
+  return {
+    PK: `LEAD#${leadId}`,
+    SK: `EMAIL#${sentAt}#${id}`,
+    id,
+    leadId,
+    direction: 'outbound',
+    fromAddress: 'team@tropicoretreat.com',
+    toAddress: 'guest@example.com',
+    subject: 'Your Tropico Retreat Enquiry',
+    bodyText: 'Thank you for your enquiry. We will be in touch shortly.',
+    attachments: [],
+    sentAt,
+    readAt: null,
+    s3Key: null,
+    operator: 'operator@tropicoretreat.com',
     createdAt: now,
     updatedAt: now,
     ...overrides,

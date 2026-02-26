@@ -72,3 +72,42 @@ export function setupDynamoDBLeadNotFound(): void {
     $metadata: { httpStatusCode: 200 },
   });
 }
+
+/**
+ * Configures mockDynamoDBSend to return a paginated list of email items from a
+ * DynamoDB Query call (the GET /emails/{leadId} route).
+ *
+ * When nextCursor is provided the response includes a LastEvaluatedKey so the
+ * handler can encode and return it as a pagination cursor.
+ *
+ * The totalCount is returned as a separate Count field on the same response
+ * object, matching the shape the handler reads via QueryCommand.
+ *
+ * @param emails - Array of DynamoDB email items to return
+ * @param totalCount - Total number of emails stored for this lead
+ * @param nextCursor - Optional base64-encoded LastEvaluatedKey for pagination
+ */
+export function setupDynamoDBWithEmails(
+  emails: Record<string, unknown>[],
+  totalCount: number,
+  nextCursor?: string
+): void {
+  const lastEvaluatedKey = nextCursor
+    ? JSON.parse(Buffer.from(nextCursor, 'base64').toString('utf-8'))
+    : undefined;
+
+  mockDynamoDBSend.mockResolvedValueOnce({
+    Items: emails,
+    Count: emails.length,
+    ScannedCount: emails.length,
+    ...(lastEvaluatedKey !== undefined ? { LastEvaluatedKey: lastEvaluatedKey } : {}),
+    $metadata: { httpStatusCode: 200 },
+  });
+
+  // Second call is a Count query that returns the total for this lead
+  mockDynamoDBSend.mockResolvedValueOnce({
+    Count: totalCount,
+    ScannedCount: totalCount,
+    $metadata: { httpStatusCode: 200 },
+  });
+}
