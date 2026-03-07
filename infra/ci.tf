@@ -193,6 +193,7 @@ resource "aws_iam_role_policy" "github_actions_terraform_manage" {
         Action = [
           "iam:*",
           "route53:*",
+          "route53domains:*",
           "cloudfront:*",
           "acm:*",
           "s3:*"
