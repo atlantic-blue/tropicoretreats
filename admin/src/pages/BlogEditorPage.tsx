@@ -1,6 +1,9 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router';
-import { ChevronLeft, Save, Eye, Loader2, AlertCircle } from 'lucide-react';
+import {
+  ChevronLeft, Save, Eye, Loader2, AlertCircle,
+  Bold, Italic, Heading2, Heading3, List, ListOrdered, LinkIcon,
+} from 'lucide-react';
 import { useBlogPost, useCreateBlogPost, useUpdateBlogPost } from '../hooks/useBlog';
 import { setTokenGetter } from '../api/client';
 import { useAuth } from '../hooks/useAuth';
@@ -14,6 +17,74 @@ function generateSlug(title: string): string {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
+}
+
+/**
+ * Strips Google Docs cruft from pasted HTML while keeping semantic tags.
+ */
+function cleanPastedHtml(html: string): string {
+  const temp = document.createElement('div');
+  temp.innerHTML = html;
+
+  const ALLOWED_TAGS = new Set([
+    'P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
+    'STRONG', 'B', 'EM', 'I', 'U',
+    'UL', 'OL', 'LI',
+    'A', 'BR', 'BLOCKQUOTE', 'PRE', 'CODE',
+    'TABLE', 'THEAD', 'TBODY', 'TR', 'TH', 'TD',
+    'IMG', 'HR', 'SUP', 'SUB', 'SPAN',
+  ]);
+
+  function clean(node: Node): void {
+    const children = Array.from(node.childNodes);
+    for (const child of children) {
+      if (child.nodeType === Node.ELEMENT_NODE) {
+        const element = child as HTMLElement;
+        if (!ALLOWED_TAGS.has(element.tagName)) {
+          // Unwrap: keep children, remove the tag
+          while (element.firstChild) {
+            node.insertBefore(element.firstChild, element);
+          }
+          node.removeChild(element);
+        } else {
+          // Strip all attributes except href on links and src on images
+          const attrs = Array.from(element.attributes);
+          for (const attr of attrs) {
+            if (element.tagName === 'A' && attr.name === 'href') continue;
+            if (element.tagName === 'IMG' && (attr.name === 'src' || attr.name === 'alt')) continue;
+            element.removeAttribute(attr.name);
+          }
+          // Convert B to STRONG, I to EM for consistency
+          if (element.tagName === 'B') {
+            const strong = document.createElement('strong');
+            strong.innerHTML = element.innerHTML;
+            node.replaceChild(strong, element);
+            clean(strong);
+            continue;
+          }
+          if (element.tagName === 'I') {
+            const em = document.createElement('em');
+            em.innerHTML = element.innerHTML;
+            node.replaceChild(em, element);
+            clean(em);
+            continue;
+          }
+          // Remove empty spans (Google Docs inserts many)
+          if (element.tagName === 'SPAN') {
+            while (element.firstChild) {
+              node.insertBefore(element.firstChild, element);
+            }
+            node.removeChild(element);
+            continue;
+          }
+          clean(element);
+        }
+      }
+    }
+  }
+
+  clean(temp);
+  return temp.innerHTML;
 }
 
 interface FormState {
@@ -48,16 +119,143 @@ function FormField({
   label,
   children,
   hint,
+  charCount,
 }: {
   label: string;
   children: React.ReactNode;
   hint?: string;
+  charCount?: { current: number; max: number };
 }) {
+  const isOver = charCount ? charCount.current > charCount.max : false;
+
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <div className="flex justify-between items-baseline mb-1">
+        <label className="block text-sm font-medium text-gray-700">{label}</label>
+        {charCount && (
+          <span className={`text-xs ${isOver ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
+            {charCount.current}/{charCount.max}
+          </span>
+        )}
+      </div>
       {children}
       {hint && <p className="text-xs text-gray-400 mt-1">{hint}</p>}
+    </div>
+  );
+}
+
+function ToolbarButton({
+  onClick,
+  title,
+  children,
+}: {
+  onClick: () => void;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onMouseDown={(event) => {
+        event.preventDefault();
+        onClick();
+      }}
+      title={title}
+      className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+    >
+      {children}
+    </button>
+  );
+}
+
+function RichTextEditor({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (html: string) => void;
+}) {
+  const editorRef = useRef<HTMLDivElement>(null);
+  const isInternalUpdate = useRef(false);
+
+  // Sync value into editor only when it changes externally (initial load)
+  useEffect(() => {
+    if (editorRef.current && !isInternalUpdate.current) {
+      if (editorRef.current.innerHTML !== value) {
+        editorRef.current.innerHTML = value;
+      }
+    }
+    isInternalUpdate.current = false;
+  }, [value]);
+
+  const handleInput = () => {
+    if (editorRef.current) {
+      isInternalUpdate.current = true;
+      onChange(editorRef.current.innerHTML);
+    }
+  };
+
+  const handlePaste = (event: React.ClipboardEvent) => {
+    const html = event.clipboardData.getData('text/html');
+    if (html) {
+      event.preventDefault();
+      const cleaned = cleanPastedHtml(html);
+      document.execCommand('insertHTML', false, cleaned);
+      handleInput();
+    }
+    // If no HTML (plain text paste), let default behavior handle it
+  };
+
+  const exec = (command: string, value?: string) => {
+    document.execCommand(command, false, value);
+    editorRef.current?.focus();
+    handleInput();
+  };
+
+  const insertLink = () => {
+    const url = prompt('Enter URL:');
+    if (url) {
+      exec('createLink', url);
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center gap-0.5 px-2 py-1.5 border border-b-0 border-gray-300 rounded-t-md bg-gray-50">
+        <ToolbarButton onClick={() => exec('bold')} title="Bold">
+          <Bold className="w-4 h-4" />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => exec('italic')} title="Italic">
+          <Italic className="w-4 h-4" />
+        </ToolbarButton>
+        <div className="w-px h-5 bg-gray-300 mx-1" />
+        <ToolbarButton onClick={() => exec('formatBlock', 'h2')} title="Heading 2">
+          <Heading2 className="w-4 h-4" />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => exec('formatBlock', 'h3')} title="Heading 3">
+          <Heading3 className="w-4 h-4" />
+        </ToolbarButton>
+        <div className="w-px h-5 bg-gray-300 mx-1" />
+        <ToolbarButton onClick={() => exec('insertUnorderedList')} title="Bullet list">
+          <List className="w-4 h-4" />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => exec('insertOrderedList')} title="Numbered list">
+          <ListOrdered className="w-4 h-4" />
+        </ToolbarButton>
+        <div className="w-px h-5 bg-gray-300 mx-1" />
+        <ToolbarButton onClick={insertLink} title="Insert link">
+          <LinkIcon className="w-4 h-4" />
+        </ToolbarButton>
+      </div>
+      <div
+        ref={editorRef}
+        contentEditable
+        onInput={handleInput}
+        onPaste={handlePaste}
+        className="w-full min-h-64 px-3 py-2 border border-gray-300 rounded-b-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 overflow-y-auto bg-white [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-4 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-2 [&_li]:mb-1 [&_a]:text-blue-600 [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-600"
+        data-placeholder="Write your blog post content or paste from Google Docs..."
+        suppressContentEditableWarning
+      />
     </div>
   );
 }
@@ -69,11 +267,14 @@ function ContentPreview({ content }: { content: string }) {
         <Eye className="w-4 h-4 text-gray-400" />
         <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Preview</h3>
       </div>
-      <div className="prose max-w-none">
-        <pre className="whitespace-pre-wrap font-sans text-sm text-gray-800 leading-relaxed">
-          {content || 'Start writing to see a preview...'}
-        </pre>
-      </div>
+      {content ? (
+        <div
+          className="text-sm text-gray-800 leading-relaxed [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-3 [&_li]:mb-1 [&_a]:text-blue-600 [&_a]:underline [&_strong]:font-bold [&_em]:italic [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-600 [&_blockquote]:my-3 [&_pre]:bg-gray-100 [&_pre]:p-3 [&_pre]:rounded [&_pre]:overflow-x-auto [&_pre]:my-3 [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:rounded [&_code]:text-sm [&_img]:max-w-full [&_img]:rounded [&_hr]:my-6 [&_hr]:border-gray-200"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      ) : (
+        <p className="text-sm text-gray-400 italic">Start writing to see a preview...</p>
+      )}
     </div>
   );
 }
@@ -136,13 +337,9 @@ function EditorForm({
         </FormField>
 
         <FormField label="Content">
-          <textarea
+          <RichTextEditor
             value={form.content}
-            onChange={(event) => onChange('content', event.target.value)}
-            className={`${inputClasses} min-h-64 font-mono`}
-            placeholder="Write your blog post content..."
-            maxLength={50000}
-            rows={16}
+            onChange={(html) => onChange('content', html)}
           />
         </FormField>
 
@@ -171,22 +368,28 @@ function EditorForm({
       <div className="bg-white rounded-lg shadow-sm border p-6 space-y-4">
         <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">SEO</h3>
 
-        <FormField label="Meta Title" hint="Max 70 characters">
+        <FormField
+          label="Meta Title"
+          charCount={{ current: form.metaTitle.length, max: 70 }}
+        >
           <input
             type="text"
             value={form.metaTitle}
             onChange={(event) => onChange('metaTitle', event.target.value)}
-            className={inputClasses}
+            className={`${inputClasses} ${form.metaTitle.length > 70 ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
             placeholder="SEO title"
             maxLength={70}
           />
         </FormField>
 
-        <FormField label="Meta Description" hint="Max 160 characters">
+        <FormField
+          label="Meta Description"
+          charCount={{ current: form.metaDescription.length, max: 160 }}
+        >
           <textarea
             value={form.metaDescription}
             onChange={(event) => onChange('metaDescription', event.target.value)}
-            className={inputClasses}
+            className={`${inputClasses} ${form.metaDescription.length > 160 ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
             placeholder="SEO description"
             maxLength={160}
             rows={2}

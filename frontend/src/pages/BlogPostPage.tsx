@@ -4,8 +4,6 @@ import { ArrowLeft, Calendar, User, AlertCircle } from 'lucide-react';
 import SEO from '../components/SEO';
 import { fetchBlogPost } from '../api/fetchBlogPost';
 import { BlogPost } from '../types/blog';
-import { renderMarkdown } from './blog/renderMarkdown';
-
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
   return date.toLocaleDateString('en-GB', {
@@ -79,8 +77,6 @@ const BlogPostError: React.FC<{ message: string }> = ({ message }) => {
 };
 
 const BlogPostContent: React.FC<{ post: BlogPost }> = ({ post }) => {
-  const htmlContent = renderMarkdown(post.content);
-
   return (
     <>
       <SEO
@@ -140,7 +136,10 @@ const BlogPostContent: React.FC<{ post: BlogPost }> = ({ post }) => {
             Back to Blog
           </Link>
 
-          <div className="prose-custom" dangerouslySetInnerHTML={{ __html: htmlContent }} />
+          <div
+            className="text-gray-800 leading-relaxed [&_h1]:font-serif [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:mt-8 [&_h1]:mb-4 [&_h2]:font-serif [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mt-7 [&_h2]:mb-3 [&_h3]:font-serif [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mt-6 [&_h3]:mb-2 [&_p]:mb-4 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-4 [&_li]:mb-1.5 [&_a]:text-emerald-700 [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:text-emerald-800 [&_strong]:font-bold [&_em]:italic [&_blockquote]:border-l-4 [&_blockquote]:border-[#C9A227] [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-600 [&_blockquote]:my-4 [&_pre]:bg-gray-100 [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:my-4 [&_code]:bg-gray-100 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-4 [&_hr]:my-8 [&_hr]:border-gray-200 [&_table]:w-full [&_table]:my-4 [&_th]:text-left [&_th]:p-2 [&_th]:border-b-2 [&_th]:border-gray-200 [&_td]:p-2 [&_td]:border-b [&_td]:border-gray-100"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
         </div>
       </article>
     </>
