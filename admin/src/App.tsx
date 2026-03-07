@@ -6,6 +6,8 @@ import LoginPage from './pages/LoginPage';
 import AppShell from './components/layout/AppShell';
 import { LeadsListPage } from './pages/LeadsListPage';
 import { LeadDetailPage } from './pages/LeadDetailPage';
+import { BlogListPage } from './pages/BlogListPage';
+import { BlogEditorPage } from './pages/BlogEditorPage';
 
 function App() {
   return (
@@ -18,6 +20,9 @@ function App() {
               <Route index element={<Navigate to="/leads" replace />} />
               <Route path="leads" element={<LeadsListPage />} />
               <Route path="leads/:id" element={<LeadDetailPage />} />
+              <Route path="blog" element={<BlogListPage />} />
+              <Route path="blog/new" element={<BlogEditorPage />} />
+              <Route path="blog/:slug" element={<BlogEditorPage />} />
             </Route>
           </Routes>
         </BrowserRouter>

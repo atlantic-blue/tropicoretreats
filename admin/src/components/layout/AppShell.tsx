@@ -1,6 +1,24 @@
-import { Navigate, Outlet, useNavigate } from 'react-router';
+import { Navigate, Outlet, useNavigate, Link, useLocation } from 'react-router';
 import { useAuth } from '../../hooks/useAuth';
 import { LogOut } from 'lucide-react';
+
+function NavLink({ to, label }: { to: string; label: string }) {
+  const location = useLocation();
+  const isActive = location.pathname.startsWith(to);
+
+  return (
+    <Link
+      to={to}
+      className={`text-sm font-medium transition-colors ${
+        isActive
+          ? 'text-blue-600 underline underline-offset-4'
+          : 'text-gray-600 hover:text-gray-900'
+      }`}
+    >
+      {label}
+    </Link>
+  );
+}
 
 export default function AppShell() {
   const { isAuthenticated, isLoading, signOut, user } = useAuth();
@@ -27,7 +45,13 @@ export default function AppShell() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-semibold text-gray-900">Tropico Retreats</h1>
+          <div className="flex items-center gap-6">
+            <h1 className="text-xl font-semibold text-gray-900">Tropico Retreats</h1>
+            <nav className="flex items-center gap-4">
+              <NavLink to="/leads" label="Leads" />
+              <NavLink to="/blog" label="Blog" />
+            </nav>
+          </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-600">{user?.email}</span>
             <button
