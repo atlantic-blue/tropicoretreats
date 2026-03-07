@@ -89,9 +89,8 @@ jobs:
           npm run build:staging
           aws s3 sync dist/ s3://staging-admin.tropicoretreat.com --delete
 
-      # Frontend deploy (continue-on-error: webpack/ajv compat issue pending fix)
+      # Frontend deploy
       - name: Build and deploy frontend
-        continue-on-error: true
         working-directory: frontend
         run: |
           npm ci --legacy-peer-deps
