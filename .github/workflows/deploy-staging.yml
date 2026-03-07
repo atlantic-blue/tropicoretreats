@@ -93,6 +93,6 @@ jobs:
       - name: Build and deploy frontend
         working-directory: frontend
         run: |
-          npm ci
+          npm ci --legacy-peer-deps
           npm run build:staging
           aws s3 sync dist/ s3://staging.tropicoretreat.com --delete
