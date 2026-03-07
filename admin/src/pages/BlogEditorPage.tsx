@@ -3,12 +3,14 @@ import { useParams, useNavigate, Link } from 'react-router';
 import {
   ChevronLeft, Save, Eye, Loader2, AlertCircle,
   Bold, Italic, Heading2, Heading3, List, ListOrdered, LinkIcon, ImageIcon,
-  Calendar, User,
+  Calendar, User, ExternalLink,
 } from 'lucide-react';
 import { useBlogPost, useCreateBlogPost, useUpdateBlogPost } from '../hooks/useBlog';
 import { setTokenGetter } from '../api/client';
 import { useAuth } from '../hooks/useAuth';
 import type { BlogPost, BlogPostStatus } from '../types/blog';
+
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || '';
 
 function generateSlug(title: string): string {
   return title
@@ -675,9 +677,22 @@ function BlogEditorLoaded({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">
-        {isEditing ? 'Edit Post' : 'New Post'}
-      </h1>
+      <div className="flex items-center gap-3">
+        <h1 className="text-2xl font-bold text-gray-900">
+          {isEditing ? 'Edit Post' : 'New Post'}
+        </h1>
+        {isEditing && existingPost?.status === 'published' && FRONTEND_URL && (
+          <a
+            href={`${FRONTEND_URL}/blog/${existingPost.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-emerald-700 bg-emerald-50 rounded-md hover:bg-emerald-100 transition-colors"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            View on site
+          </a>
+        )}
+      </div>
 
       {/* Mobile tab toggle */}
       <div className="flex gap-1 p-1 bg-gray-100 rounded-lg lg:hidden">

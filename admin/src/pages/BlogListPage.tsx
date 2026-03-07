@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { Plus, Pencil, Trash2, AlertCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, AlertCircle, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { useBlogPosts, useDeleteBlogPost } from '../hooks/useBlog';
 import { setTokenGetter } from '../api/client';
 import { useAuth } from '../hooks/useAuth';
 import type { BlogPost } from '../types/blog';
+
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || '';
 
 function LoadingSkeleton() {
   return (
@@ -113,6 +115,17 @@ function BlogPostCard({
           </div>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
+          {post.status === 'published' && FRONTEND_URL && (
+            <a
+              href={`${FRONTEND_URL}/blog/${post.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1.5 text-gray-400 hover:text-emerald-600 transition-colors rounded-md hover:bg-emerald-50"
+              title="View on site"
+            >
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          )}
           <Link
             to={`/blog/${post.slug}`}
             className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50"
@@ -156,6 +169,17 @@ function BlogPostRow({
       </td>
       <td className="px-6 py-4">
         <div className="flex items-center gap-2">
+          {post.status === 'published' && FRONTEND_URL && (
+            <a
+              href={`${FRONTEND_URL}/blog/${post.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1.5 text-gray-400 hover:text-emerald-600 transition-colors rounded-md hover:bg-emerald-50"
+              title="View on site"
+            >
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          )}
           <Link
             to={`/blog/${post.slug}`}
             className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50"
