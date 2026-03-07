@@ -12,6 +12,8 @@ import TermsPage from '../pages/TermsPage';
 import CaribbeanPage from '../pages/destinations/CaribbeanPage';
 import CasanarePage from '../pages/destinations/CasanarePage';
 import CoffeeRegionPage from '../pages/destinations/CoffeeRegionPage';
+import BlogPage from '../pages/BlogPage';
+import BlogPostPage from '../pages/BlogPostPage';
 
 const Router: React.FC = () => {
   return (
@@ -26,6 +28,8 @@ const Router: React.FC = () => {
       <Route path={Routes.DESTINATION_CARIBBEAN} element={<CaribbeanPage />} />
       <Route path={Routes.DESTINATION_CASANARE} element={<CasanarePage />} />
       <Route path={Routes.DESTINATION_COFFEE} element={<CoffeeRegionPage />} />
+      <Route path={Routes.BLOG} element={<BlogPage />} />
+      <Route path={Routes.BLOG_POST} element={<BlogPostPage />} />
       {/* Fallback to landing page for unknown routes */}
       <Route path="*" element={<LandingPage />} />
     </ReactRoutes>

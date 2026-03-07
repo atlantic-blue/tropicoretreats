@@ -77,6 +77,12 @@ const Footer: React.FC = () => {
                 About Us
               </Link>
               <Link
+                to="/blog"
+                className="block text-sm text-gray-300 transition-all hover:text-white hover:translate-x-1"
+              >
+                Blog
+              </Link>
+              <Link
                 to="/faqs"
                 className="block text-sm text-gray-300 transition-all hover:text-white hover:translate-x-1"
               >

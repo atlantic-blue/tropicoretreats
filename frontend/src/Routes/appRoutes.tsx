@@ -6,6 +6,8 @@ export enum Routes {
   CONTACT = '/contact',
   PRIVACY = '/privacy',
   TERMS = '/terms',
+  BLOG = '/blog',
+  BLOG_POST = '/blog/:slug',
   DESTINATION_CARIBBEAN = '/destinations/caribbean',
   DESTINATION_CASANARE = '/destinations/casanare',
   DESTINATION_COFFEE = '/destinations/coffee-region',
@@ -50,6 +52,14 @@ class AppRoutes {
 
   getCoffeeRegionRoute() {
     return Routes.DESTINATION_COFFEE;
+  }
+
+  getBlogRoute() {
+    return Routes.BLOG;
+  }
+
+  getBlogPostRoute(slug: string) {
+    return `/blog/${slug}`;
   }
 }
 
