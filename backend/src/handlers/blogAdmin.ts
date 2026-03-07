@@ -268,7 +268,8 @@ async function handleCreatePost(
   const id = ulid();
   const slug = input.slug ?? generateSlug(input.title);
   const excerpt = generateExcerpt(input.content);
-  const authorName = extractAuthorName(event);
+  const authorName = input.authorName || extractAuthorName(event);
+  const authorOrg = input.authorOrg ?? 'Tropico Retreats';
 
   const post: BlogPostItem = buildBlogPostItem({
     id,
@@ -281,6 +282,7 @@ async function handleCreatePost(
     metaDescription: input.metaDescription ?? excerpt,
     ogImageUrl: input.ogImageUrl ?? input.heroImageUrl ?? '',
     authorName,
+    authorOrg,
     now,
     status: input.status,
   });
@@ -701,6 +703,7 @@ interface BuildBlogPostParams {
   metaDescription: string;
   ogImageUrl: string;
   authorName: string;
+  authorOrg: string;
   now: string;
 }
 
@@ -725,7 +728,7 @@ function buildBlogPostItem(
     metaDescription: params.metaDescription,
     ogImageUrl: params.ogImageUrl,
     authorName: params.authorName,
-    authorOrg: 'Tropico Retreats',
+    authorOrg: params.authorOrg,
     status,
     publishedAt: isPublished ? params.now : '',
     createdAt: params.now,
@@ -758,6 +761,12 @@ function applyUpdatesToPost(
   }
   if (input.ogImageUrl !== undefined) {
     post.ogImageUrl = input.ogImageUrl as string;
+  }
+  if (input.authorName !== undefined) {
+    post.authorName = input.authorName as string;
+  }
+  if (input.authorOrg !== undefined) {
+    post.authorOrg = input.authorOrg as string;
   }
   if (input.status !== undefined) {
     const newStatus = input.status as 'draft' | 'published';

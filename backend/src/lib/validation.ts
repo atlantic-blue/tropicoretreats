@@ -133,6 +133,8 @@ export const CreateBlogPostSchema = z.object({
     .max(160, 'metaDescription must be 160 characters or less')
     .optional(),
   ogImageUrl: httpsUrl.optional(),
+  authorName: z.string().max(100, 'Author name must be 100 characters or less').optional(),
+  authorOrg: z.string().max(100, 'Author org must be 100 characters or less').optional(),
   status: z.enum(['draft', 'published']).optional(),
 });
 
@@ -166,6 +168,8 @@ export const UpdateBlogPostSchema = z
       .max(160, 'metaDescription must be 160 characters or less')
       .optional(),
     ogImageUrl: httpsUrl.optional(),
+    authorName: z.string().max(100, 'Author name must be 100 characters or less').optional(),
+    authorOrg: z.string().max(100, 'Author org must be 100 characters or less').optional(),
     status: z.enum(['draft', 'published']).optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
