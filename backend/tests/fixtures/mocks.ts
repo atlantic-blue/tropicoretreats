@@ -36,6 +36,41 @@ export const mockS3Send = vi.fn().mockResolvedValue({
 });
 
 /**
+ * Mock getSignedUrl function for S3 presigned URL generation.
+ *
+ * Default behaviour: resolves with a test presigned URL string.
+ * Tests can override this with mockResolvedValueOnce / mockRejectedValueOnce.
+ */
+export const mockGetSignedUrl = vi.fn().mockResolvedValue(
+  'https://tropico-blog-images-test.s3.us-east-1.amazonaws.com/uploads/01HTESTULID0001/photo.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=300'
+);
+
+/**
+ * Mock sharp instance methods.
+ *
+ * Each method returns the mock instance itself (for chaining), except
+ * toBuffer() which resolves with processed image data.
+ */
+export const mockSharpInstance = {
+  metadata: vi.fn().mockResolvedValue({
+    format: 'jpeg',
+    width: 2400,
+    height: 1600,
+  }),
+  resize: vi.fn().mockReturnThis(),
+  webp: vi.fn().mockReturnThis(),
+  toBuffer: vi.fn().mockResolvedValue(Buffer.from('processed-image-data')),
+};
+
+/**
+ * Mock sharp constructor function.
+ *
+ * Returns mockSharpInstance when called with image bytes.
+ * Tests can inspect calls to mockSharpInstance.resize, .webp, .toBuffer.
+ */
+export const mockSharp = vi.fn().mockReturnValue(mockSharpInstance);
+
+/**
  * Resets all mocks to their default resolved values.
  * Call this in beforeEach to ensure test isolation.
  */
@@ -55,6 +90,27 @@ export function resetAllMocks(): void {
   mockS3Send.mockResolvedValue({
     $metadata: { httpStatusCode: 200 },
   });
+
+  mockGetSignedUrl.mockReset();
+  mockGetSignedUrl.mockResolvedValue(
+    'https://tropico-blog-images-test.s3.us-east-1.amazonaws.com/uploads/01HTESTULID0001/photo.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=300'
+  );
+
+  mockSharp.mockReset();
+  mockSharp.mockReturnValue(mockSharpInstance);
+
+  mockSharpInstance.metadata.mockReset();
+  mockSharpInstance.metadata.mockResolvedValue({
+    format: 'jpeg',
+    width: 2400,
+    height: 1600,
+  });
+  mockSharpInstance.resize.mockReset();
+  mockSharpInstance.resize.mockReturnValue(mockSharpInstance);
+  mockSharpInstance.webp.mockReset();
+  mockSharpInstance.webp.mockReturnValue(mockSharpInstance);
+  mockSharpInstance.toBuffer.mockReset();
+  mockSharpInstance.toBuffer.mockResolvedValue(Buffer.from('processed-image-data'));
 }
 
 /**
@@ -77,8 +133,48 @@ export function mockS3GetObject(rawContent: Buffer | string): void {
         throw new Error('transformToWebStream not mocked');
       },
     },
+    Metadata: {},
     $metadata: { httpStatusCode: 200 },
   });
+}
+
+/**
+ * Configures mockS3Send to return image bytes with metadata on GetObject call.
+ * Used by the image processor handler to read uploaded images from S3.
+ *
+ * @param imageContent - Image content as a Buffer or string
+ * @param metadata - S3 object metadata (e.g. { purpose: 'hero' })
+ */
+export function mockS3GetObjectWithMetadata(
+  imageContent: Buffer | string,
+  metadata: Record<string, string> = {}
+): void {
+  const buffer = Buffer.isBuffer(imageContent) ? imageContent : Buffer.from(imageContent);
+
+  mockS3Send.mockResolvedValueOnce({
+    Body: {
+      transformToByteArray: async () => new Uint8Array(buffer),
+      transformToString: async () => buffer.toString('utf-8'),
+      transformToWebStream: () => {
+        throw new Error('transformToWebStream not mocked');
+      },
+    },
+    Metadata: metadata,
+    $metadata: { httpStatusCode: 200 },
+  });
+}
+
+/**
+ * Configures mockS3Send to reject a GetObject call with an error.
+ * Used to test error handling when S3 read fails.
+ *
+ * @param errorMessage - Error message to return
+ */
+export function mockS3GetObjectError(errorMessage: string = 'NoSuchKey: The specified key does not exist.'): void {
+  const error = new Error(errorMessage);
+  (error as Record<string, unknown>).name = 'NoSuchKey';
+  (error as Record<string, unknown>).$metadata = { httpStatusCode: 404 };
+  mockS3Send.mockRejectedValueOnce(error);
 }
 
 /**
@@ -92,6 +188,26 @@ export function mockS3PutObject(): void {
     ETag: '"test-etag"',
     $metadata: { httpStatusCode: 200 },
   });
+}
+
+/**
+ * Configures mockS3Send to accept a DeleteObject call successfully.
+ * Used when the image processor deletes invalid files from uploads/.
+ */
+export function mockS3DeleteObject(): void {
+  mockS3Send.mockResolvedValueOnce({
+    $metadata: { httpStatusCode: 204 },
+  });
+}
+
+/**
+ * Configures mockGetSignedUrl to reject with an error.
+ * Used to test error handling when presigning fails.
+ *
+ * @param errorMessage - Error message to return
+ */
+export function mockPresignFailure(errorMessage: string = 'Failed to generate presigned URL'): void {
+  mockGetSignedUrl.mockRejectedValueOnce(new Error(errorMessage));
 }
 
 /**

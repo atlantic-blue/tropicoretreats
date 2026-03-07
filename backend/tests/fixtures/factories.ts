@@ -474,3 +474,109 @@ export function createMockSlugIndex(
     blogId,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Image Pipeline factories (Slice S-2)
+// ---------------------------------------------------------------------------
+
+/** Counter for unique image filenames across factory calls */
+let imageUploadCounter = 0;
+
+/**
+ * Builds a valid image upload presign request body.
+ * All fields comply with ImageUploadSchema constraints.
+ *
+ * @param overrides - Field overrides to test validation boundaries
+ */
+export function createImageUploadRequest(
+  overrides: {
+    filename?: string;
+    contentType?: string;
+    purpose?: string;
+  } = {}
+): {
+  filename: string;
+  contentType: string;
+  purpose: string;
+} {
+  imageUploadCounter++;
+  return {
+    filename: `test-image-${imageUploadCounter}.jpg`,
+    contentType: 'image/jpeg',
+    purpose: 'hero',
+    ...overrides,
+  };
+}
+
+/**
+ * Builds a mock S3 event for the image processor Lambda.
+ * Simulates an S3 PutObject event on the uploads/ prefix of the blog images bucket.
+ *
+ * @param overrides - Override bucket name, object key, or other fields
+ */
+export function createMockImageS3Event(
+  overrides: {
+    bucketName?: string;
+    objectKey?: string;
+    eventName?: string;
+    objectSize?: number;
+  } = {}
+): S3Event {
+  imageUploadCounter++;
+  const {
+    bucketName = 'tropico-blog-images-test',
+    objectKey = `uploads/01HTESTULID${String(imageUploadCounter).padStart(4, '0')}/photo.jpg`,
+    eventName = 'ObjectCreated:Put',
+    objectSize = 500000,
+  } = overrides;
+
+  return createMockS3Event({ bucketName, objectKey, eventName, objectSize });
+}
+
+/**
+ * Builds a mock event with NO JWT authorizer context, simulating a request
+ * that bypasses API Gateway auth (e.g., direct Lambda invocation, or
+ * misconfigured API Gateway route without authorizer).
+ */
+export function createUnauthenticatedApiEvent(
+  overrides: {
+    method?: string;
+    path?: string;
+    body?: string | null;
+  } = {}
+) {
+  const {
+    method = 'POST',
+    path = '/blog/images',
+    body = null,
+  } = overrides;
+
+  return {
+    version: '2.0',
+    routeKey: `${method} ${path}`,
+    rawPath: path,
+    rawQueryString: '',
+    headers: { 'content-type': 'application/json' },
+    requestContext: {
+      accountId: '123456789012',
+      apiId: 'test-api-id',
+      domainName: 'test.execute-api.us-east-1.amazonaws.com',
+      domainPrefix: 'test',
+      http: {
+        method,
+        path,
+        protocol: 'HTTP/1.1',
+        sourceIp: '127.0.0.1',
+        userAgent: 'test-agent',
+      },
+      requestId: 'test-request-id',
+      routeKey: `${method} ${path}`,
+      stage: '$default',
+      time: '01/Jan/2026:00:00:00 +0000',
+      timeEpoch: 1735689600000,
+      // NO authorizer field -- simulates missing JWT
+    },
+    body: body ?? undefined,
+    isBase64Encoded: false,
+  };
+}
