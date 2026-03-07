@@ -1,4 +1,5 @@
 import { vi } from 'vitest';
+import type { BlogPostItem, SlugIndexItem } from './factories.js';
 
 /**
  * Mock SES send function.
@@ -99,7 +100,7 @@ export function mockS3PutObject(): void {
  * The mark-read handler makes these DynamoDB calls in order:
  *   1. GetCommand    (getLead) — verifies lead exists; returns the lead Item
  *   2. QueryCommand  (findUnreadInboundEmails) — returns Items with direction='inbound' and readAt=null
- *   3. UpdateCommand × N (markEmailRead) — one per unread email: SET readAt = :now, updatedAt = :now
+ *   3. UpdateCommand x N (markEmailRead) — one per unread email: SET readAt = :now, updatedAt = :now
  *   4. UpdateCommand (resetLeadUnreadCount) — SET unreadEmailCount = :zero, updatedAt = :now on the lead
  *
  * When unreadEmails is empty the per-email UpdateCommand calls are skipped, but the
@@ -295,6 +296,177 @@ export function setupDynamoDBWithEmails(
   mockDynamoDBSend.mockResolvedValueOnce({
     Count: totalCount,
     ScannedCount: totalCount,
+    $metadata: { httpStatusCode: 200 },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Blog CMS mock helpers (Slice S-1)
+// ---------------------------------------------------------------------------
+
+/**
+ * Configures mockDynamoDBSend for the blog post creation flow.
+ *
+ * The create handler makes one DynamoDB call:
+ *   1. TransactWriteCommand — atomically creates blog post + slug index
+ *
+ * When slugConflict is true, the TransactWriteCommand rejects with a
+ * TransactionCanceledException to simulate a duplicate slug condition.
+ *
+ * @param options.slugConflict - If true, simulates slug already exists (409)
+ */
+export function setupDynamoDBForBlogCreate(options: {
+  slugConflict?: boolean;
+} = {}): void {
+  const { slugConflict = false } = options;
+
+  if (slugConflict) {
+    const error = new Error('Transaction cancelled');
+    (error as Record<string, unknown>).name = 'TransactionCanceledException';
+    (error as Record<string, unknown>).CancellationReasons = [
+      { Code: 'None' },
+      { Code: 'ConditionalCheckFailed' },
+    ];
+    mockDynamoDBSend.mockRejectedValueOnce(error);
+  } else {
+    // TransactWriteCommand succeeds
+    mockDynamoDBSend.mockResolvedValueOnce({
+      $metadata: { httpStatusCode: 200 },
+    });
+  }
+}
+
+/**
+ * Configures mockDynamoDBSend for blog post retrieval by slug.
+ *
+ * The get-by-slug handler makes two DynamoDB calls:
+ *   1. GetCommand (slug index) — returns SlugIndexItem with blogId
+ *   2. GetCommand (blog post) — returns BlogPostItem
+ *
+ * When blogPost is undefined, simulates a not-found scenario.
+ *
+ * @param blogPost - The BlogPostItem to return (omit for not-found)
+ * @param slugIndex - The SlugIndexItem to return (omit for slug not found)
+ */
+export function setupDynamoDBForBlogGet(
+  blogPost?: BlogPostItem,
+  slugIndex?: SlugIndexItem
+): void {
+  // Call 1: GetCommand (slug index lookup)
+  mockDynamoDBSend.mockResolvedValueOnce({
+    Item: slugIndex,
+    $metadata: { httpStatusCode: 200 },
+  });
+
+  if (slugIndex !== undefined) {
+    // Call 2: GetCommand (blog post lookup by ID)
+    mockDynamoDBSend.mockResolvedValueOnce({
+      Item: blogPost,
+      $metadata: { httpStatusCode: 200 },
+    });
+  }
+}
+
+/**
+ * Configures mockDynamoDBSend for listing published blog posts.
+ *
+ * The list handler makes one DynamoDB call:
+ *   1. QueryCommand (GSI1) — returns published posts ordered by publishedAt desc
+ *
+ * @param posts - Array of BlogPostItem to return
+ * @param nextCursor - Optional base64-encoded LastEvaluatedKey for pagination
+ */
+export function setupDynamoDBForBlogList(
+  posts: BlogPostItem[],
+  nextCursor?: string
+): void {
+  const lastEvaluatedKey = nextCursor
+    ? JSON.parse(Buffer.from(nextCursor, 'base64').toString('utf-8'))
+    : undefined;
+
+  mockDynamoDBSend.mockResolvedValueOnce({
+    Items: posts,
+    Count: posts.length,
+    ScannedCount: posts.length,
+    ...(lastEvaluatedKey !== undefined ? { LastEvaluatedKey: lastEvaluatedKey } : {}),
+    $metadata: { httpStatusCode: 200 },
+  });
+}
+
+/**
+ * Configures mockDynamoDBSend for the blog post update flow.
+ *
+ * The update handler makes these DynamoDB calls:
+ *   1. GetCommand (get existing post by ID) — returns the existing BlogPostItem
+ *   2. TransactWriteCommand or UpdateCommand — updates the post
+ *      (TransactWriteCommand if slug changes, UpdateCommand otherwise)
+ *
+ * When existingPost is undefined, simulates a not-found scenario.
+ * When slugConflict is true and a slug change is attempted, TransactWriteCommand fails.
+ *
+ * @param existingPost - Existing blog post to return from GetCommand (omit for not-found)
+ * @param options.slugConflict - If true, simulates slug already exists on update (409)
+ */
+export function setupDynamoDBForBlogUpdate(
+  existingPost?: BlogPostItem,
+  options: { slugConflict?: boolean } = {}
+): void {
+  const { slugConflict = false } = options;
+
+  // Call 1: GetCommand (get existing post by ID)
+  mockDynamoDBSend.mockResolvedValueOnce({
+    Item: existingPost,
+    $metadata: { httpStatusCode: 200 },
+  });
+
+  if (existingPost === undefined) {
+    // Post not found — handler returns 404 immediately; no further DynamoDB calls.
+    return;
+  }
+
+  if (slugConflict) {
+    const error = new Error('Transaction cancelled');
+    (error as Record<string, unknown>).name = 'TransactionCanceledException';
+    (error as Record<string, unknown>).CancellationReasons = [
+      { Code: 'None' },
+      { Code: 'ConditionalCheckFailed' },
+    ];
+    mockDynamoDBSend.mockRejectedValueOnce(error);
+  } else {
+    // TransactWriteCommand or UpdateCommand succeeds
+    mockDynamoDBSend.mockResolvedValueOnce({
+      $metadata: { httpStatusCode: 200 },
+    });
+  }
+}
+
+/**
+ * Configures mockDynamoDBSend for the blog post delete flow.
+ *
+ * The delete handler makes these DynamoDB calls:
+ *   1. GetCommand (get existing post by ID) — returns the existing BlogPostItem
+ *   2. TransactWriteCommand — atomically soft-deletes post + removes slug index
+ *
+ * When existingPost is undefined, simulates a not-found scenario.
+ *
+ * @param existingPost - Existing blog post to return from GetCommand (omit for not-found)
+ */
+export function setupDynamoDBForBlogDelete(
+  existingPost?: BlogPostItem
+): void {
+  // Call 1: GetCommand (get existing post by ID)
+  mockDynamoDBSend.mockResolvedValueOnce({
+    Item: existingPost,
+    $metadata: { httpStatusCode: 200 },
+  });
+
+  if (existingPost === undefined) {
+    // Post not found — handler returns 404 immediately; no further DynamoDB calls.
+    return;
+  }
+
+  // Call 2: TransactWriteCommand (soft delete post + remove slug index)
+  mockDynamoDBSend.mockResolvedValueOnce({
     $metadata: { httpStatusCode: 200 },
   });
 }

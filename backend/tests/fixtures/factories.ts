@@ -335,3 +335,142 @@ export function createMockEmail(overrides: Partial<Email> = {}): Email {
     ...overrides,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Blog CMS factories (Slice S-1)
+// ---------------------------------------------------------------------------
+
+/** Counter for unique slug generation across factory calls */
+let blogPostCounter = 0;
+
+/**
+ * Represents a BlogPostItem as stored in DynamoDB.
+ * Mirrors the BlogPostSchema contract.
+ */
+export interface BlogPostItem {
+  PK: string;
+  SK: string;
+  GSI1PK: string;
+  GSI1SK: string;
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string;
+  heroImageUrl: string;
+  metaTitle: string;
+  metaDescription: string;
+  ogImageUrl: string;
+  authorName: string;
+  authorOrg: string;
+  status: 'published' | 'deleted';
+  publishedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Represents a SlugIndexItem as stored in DynamoDB.
+ * Mirrors the BlogPostSchema contract for the slug uniqueness index.
+ */
+export interface SlugIndexItem {
+  PK: string;
+  SK: string;
+  slug: string;
+  blogId: string;
+}
+
+/**
+ * Builds a valid CreateBlogPost request body.
+ * All fields comply with CreateBlogPostSchema constraints.
+ *
+ * @param overrides - Field overrides to test validation boundaries
+ */
+export function createBlogPostRequest(
+  overrides: {
+    title?: string;
+    slug?: string;
+    content?: string;
+    heroImageUrl?: string;
+    metaTitle?: string;
+    metaDescription?: string;
+    ogImageUrl?: string;
+  } = {}
+): {
+  title: string;
+  content: string;
+  slug?: string;
+  heroImageUrl?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  ogImageUrl?: string;
+} {
+  blogPostCounter++;
+  return {
+    title: `Test Blog Post ${blogPostCounter}`,
+    content: `This is the content for test blog post ${blogPostCounter}. It contains enough text to generate a meaningful excerpt.`,
+    ...overrides,
+  };
+}
+
+/**
+ * Builds a mock BlogPostItem entity as it would be returned from DynamoDB.
+ * Conforms to the BlogPostSchema contract.
+ *
+ * @param overrides - Field overrides for specific test scenarios
+ */
+export function createMockBlogPost(overrides: Partial<BlogPostItem> = {}): BlogPostItem {
+  blogPostCounter++;
+  const id = overrides.id ?? `01HTEST_BLOG_${String(blogPostCounter).padStart(4, '0')}`;
+  const slug = overrides.slug ?? `test-blog-post-${blogPostCounter}`;
+  const now = overrides.createdAt ?? '2026-02-01T12:00:00.000Z';
+  const title = overrides.title ?? `Test Blog Post ${blogPostCounter}`;
+  const content = overrides.content ?? `This is the content for test blog post ${blogPostCounter}. It contains enough text to generate a meaningful excerpt for the listing page.`;
+  const excerpt = overrides.excerpt ?? content.slice(0, 200);
+
+  return {
+    PK: `BLOG#${id}`,
+    SK: `BLOG#${id}`,
+    GSI1PK: 'BLOG#PUBLISHED',
+    GSI1SK: now,
+    id,
+    title,
+    slug,
+    content,
+    excerpt,
+    heroImageUrl: '',
+    metaTitle: title,
+    metaDescription: excerpt,
+    ogImageUrl: '',
+    authorName: 'operator@tropicoretreat.com',
+    authorOrg: 'Tropico Retreats',
+    status: 'published',
+    publishedAt: now,
+    createdAt: now,
+    updatedAt: now,
+    ...overrides,
+  };
+}
+
+/**
+ * Builds a mock SlugIndexItem entity as it would be stored in DynamoDB.
+ * Conforms to the BlogPostSchema contract for slug uniqueness.
+ *
+ * @param overrides - Field overrides for specific test scenarios
+ */
+export function createMockSlugIndex(
+  overrides: {
+    slug?: string;
+    blogId?: string;
+  } = {}
+): SlugIndexItem {
+  const slug = overrides.slug ?? 'test-blog-post';
+  const blogId = overrides.blogId ?? '01HTEST_BLOG_0001';
+
+  return {
+    PK: `SLUG#${slug}`,
+    SK: `SLUG#${slug}`,
+    slug,
+    blogId,
+  };
+}
