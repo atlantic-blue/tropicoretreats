@@ -1,0 +1,98 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  NODE_VERSION: "22"
+  TERRAFORM_VERSION: "1.5.7"
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Backend tests
+        working-directory: backend
+        run: npx vitest run
+
+      - name: Admin lint
+        working-directory: admin
+        run: |
+          npm ci
+          npm run lint
+
+  deploy:
+    name: Deploy
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_STAGING }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      # Backend build
+      - name: Build backend
+        working-directory: backend
+        run: |
+          npm ci
+          npm run build
+
+      # Terraform
+      - name: Terraform init
+        working-directory: infra
+        run: terraform init -backend-config="profile="
+
+      - name: Terraform apply staging
+        working-directory: infra
+        run: |
+          terraform workspace select staging
+          terraform apply -var-file=staging.tfvars -auto-approve
+        env:
+          TF_VAR_www_google_site_verification_token: ${{ secrets.TF_VAR_GOOGLE_SITE_VERIFICATION }}
+
+      # Admin deploy
+      - name: Build and deploy admin
+        working-directory: admin
+        run: |
+          npm ci
+          npm run build:staging
+          aws s3 sync dist/ s3://staging-admin.tropicoretreat.com --delete
+
+      # Frontend deploy
+      - name: Build and deploy frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build:staging
+          aws s3 sync dist/ s3://staging.tropicoretreat.com --delete
