@@ -31,6 +31,8 @@ export default defineConfig({
       TABLE_NAME: 'test-tropico-leads',
       FROM_EMAIL_CRM: 'Tropico Retreats <team@tropicoretreat.com>',
       EMAIL_BUCKET: 'tropicoretreat-email-store-test',
+      IMAGES_BUCKET: 'tropico-blog-images-test',
+      IMAGES_DOMAIN: 'images.tropicoretreat.com',
       AWS_REGION: 'us-east-1',
     },
 

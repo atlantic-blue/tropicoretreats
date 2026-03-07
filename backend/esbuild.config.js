@@ -9,6 +9,7 @@ await esbuild.build({
     'src/handlers/emailAdmin.ts',
     'src/handlers/emailReceive.ts',
     'src/handlers/blogAdmin.ts',
+    'src/handlers/imageProcessor.ts',
   ],
   bundle: true,
   minify: true,
@@ -24,4 +25,4 @@ await esbuild.build({
   },
 });
 
-console.log('Build complete: dist/createLead.mjs, dist/processLeadNotifications.mjs, dist/leadsAdmin.mjs, dist/users.mjs, dist/emailAdmin.mjs, dist/emailReceive.mjs, dist/blogAdmin.mjs');
+console.log('Build complete: dist/createLead.mjs, dist/processLeadNotifications.mjs, dist/leadsAdmin.mjs, dist/users.mjs, dist/emailAdmin.mjs, dist/emailReceive.mjs, dist/blogAdmin.mjs, dist/imageProcessor.mjs');

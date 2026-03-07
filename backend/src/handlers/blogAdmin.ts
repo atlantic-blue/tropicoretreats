@@ -3,6 +3,8 @@ import type {
   APIGatewayProxyResultV2,
 } from 'aws-lambda';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import {
   DynamoDBDocumentClient,
   GetCommand,
@@ -13,6 +15,7 @@ import { ulid } from 'ulidx';
 import {
   CreateBlogPostSchema,
   UpdateBlogPostSchema,
+  ImageUploadSchema,
 } from '../lib/validation.js';
 import type { BlogPostItem, SlugIndexItem } from '../lib/types.js';
 import {
@@ -49,7 +52,14 @@ const docClient = DynamoDBDocumentClient.from(
   { marshallOptions: { removeUndefinedValues: true } }
 );
 
+const s3Client = tryConstruct(
+  S3Client as new (...args: unknown[]) => S3Client,
+  {}
+);
+
 const TABLE_NAME = process.env.TABLE_NAME;
+const IMAGES_BUCKET = process.env.IMAGES_BUCKET;
+const IMAGES_DOMAIN = process.env.IMAGES_DOMAIN;
 
 // ---------------------------------------------------------------------------
 // DynamoDB key field stripping
@@ -197,6 +207,7 @@ function isValidCursor(decoded: Record<string, unknown>): boolean {
  * Routes:
  * - GET    /blog/posts          -> handleListPosts (public)
  * - GET    /blog/posts/{slug}   -> handleGetPost (public)
+ * - POST   /blog/images         -> handlePresignImageUpload (JWT)
  * - POST   /blog/posts          -> handleCreatePost (JWT)
  * - PUT    /blog/posts/{id}     -> handleUpdatePost (JWT)
  * - DELETE /blog/posts/{id}     -> handleDeletePost (JWT)
@@ -218,6 +229,10 @@ export const handler = async (
 
     if (!hasValidJwtClaims(event)) {
       return unauthorized();
+    }
+
+    if (method === 'POST' && path === '/blog/images') {
+      return await handlePresignImageUpload(event);
     }
 
     if (method === 'POST' && path === '/blog/posts') {
@@ -245,6 +260,93 @@ export const handler = async (
 // ---------------------------------------------------------------------------
 // Route handlers
 // ---------------------------------------------------------------------------
+
+/**
+ * Extracts the sub claim from JWT authorizer context.
+ * Returns empty string if sub is not present.
+ */
+function extractSub(
+  event: APIGatewayProxyEventV2WithJWTAuthorizer
+): string {
+  const sub = event.requestContext?.authorizer?.jwt?.claims?.sub;
+  if (typeof sub === 'string') {
+    return sub;
+  }
+  return '';
+}
+
+/**
+ * POST /blog/images - Generate a presigned S3 upload URL for an image.
+ */
+async function handlePresignImageUpload(
+  event: APIGatewayProxyEventV2WithJWTAuthorizer
+): Promise<APIGatewayProxyResultV2> {
+  if (!extractSub(event)) {
+    return unauthorized();
+  }
+
+  const body = parseRequestBody(event);
+  if ('error' in body) {
+    return body.error;
+  }
+
+  const validation = ImageUploadSchema.safeParse(body.data);
+  if (!validation.success) {
+    return badRequest(
+      'Validation failed',
+      validation.error.flatten().fieldErrors
+    );
+  }
+
+  const input = validation.data;
+  const id = ulid();
+  const key = `uploads/${id}/${input.filename}`;
+  const processedFilename = input.purpose === 'hero' ? 'hero.webp' : 'inline.webp';
+  const imageUrl = `https://${IMAGES_DOMAIN}/processed/${id}/${processedFilename}`;
+
+  try {
+    const command = tryConstruct(
+      PutObjectCommand as unknown as new (
+        ...args: unknown[]
+      ) => PutObjectCommand,
+      {
+        Bucket: IMAGES_BUCKET,
+        Key: key,
+        ContentType: input.contentType,
+        Metadata: { purpose: input.purpose },
+      }
+    );
+
+    const uploadUrl = await getSignedUrl(
+      s3Client as Parameters<typeof getSignedUrl>[0],
+      command as Parameters<typeof getSignedUrl>[1],
+      { expiresIn: 300 }
+    );
+
+    return ok({ uploadUrl, imageUrl, key });
+  } catch (error) {
+    console.error('Failed to generate presigned URL:', error);
+    return serverError();
+  }
+}
+
+/**
+ * Parses the JSON request body from an API Gateway event.
+ * Returns either the parsed data or an error response.
+ */
+function parseRequestBody(
+  event: APIGatewayProxyEventV2WithJWTAuthorizer
+): { data: unknown } | { error: APIGatewayProxyResultV2 } {
+  const rawBody = event.body;
+  if (!rawBody) {
+    return { error: badRequest('Request body is required') };
+  }
+  try {
+    return { data: JSON.parse(rawBody) };
+  } catch {
+    return { error: badRequest('Invalid JSON in request body') };
+  }
+}
 
 /**
  * POST /blog/posts - Create a new blog post.

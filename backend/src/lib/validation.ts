@@ -179,6 +179,27 @@ export const UpdateBlogPostSchema = z
 export type UpdateBlogPostInput = z.infer<typeof UpdateBlogPostSchema>;
 
 /**
+ * Zod schema for image upload presign requests (POST /v1/blog/images).
+ * Validates filename, content type, and purpose before generating
+ * a presigned S3 upload URL.
+ */
+export const ImageUploadSchema = z.object({
+  filename: z
+    .string()
+    .min(1, 'Filename is required')
+    .max(255, 'Filename must be 255 characters or less'),
+  contentType: z.enum(
+    ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+    { message: 'Content type must be image/jpeg, image/png, image/webp, or image/gif' }
+  ),
+  purpose: z.enum(['hero', 'inline'], {
+    message: 'Purpose must be hero or inline',
+  }),
+});
+
+export type ImageUploadInput = z.infer<typeof ImageUploadSchema>;
+
+/**
  * Status progression order for validation.
  * Leads should progress forward: NEW -> CONTACTED -> QUOTED -> WON/LOST
  * ARCHIVED is a special status that can be reached from any status.
