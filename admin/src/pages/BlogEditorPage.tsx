@@ -20,7 +20,8 @@ function generateSlug(title: string): string {
 }
 
 /**
- * Strips Google Docs cruft from pasted HTML while keeping semantic tags.
+ * Converts Google Docs inline-style spans to semantic HTML tags,
+ * then strips remaining cruft while keeping all formatting.
  */
 function cleanPastedHtml(html: string): string {
   const temp = document.createElement('div');
@@ -32,58 +33,108 @@ function cleanPastedHtml(html: string): string {
     'UL', 'OL', 'LI',
     'A', 'BR', 'BLOCKQUOTE', 'PRE', 'CODE',
     'TABLE', 'THEAD', 'TBODY', 'TR', 'TH', 'TD',
-    'IMG', 'HR', 'SUP', 'SUB', 'SPAN',
+    'IMG', 'HR', 'SUP', 'SUB',
   ]);
 
+  /**
+   * Phase 1: Convert styled spans to semantic tags.
+   * Google Docs uses <span style="font-weight:700"> instead of <strong>.
+   */
+  function convertStyledSpans(node: Node): void {
+    const spans = Array.from(
+      (node as Element).querySelectorAll?.('span') ?? []
+    );
+    for (const span of spans) {
+      const style = span.style;
+      let current: HTMLElement = span;
+
+      // font-weight: bold / 700+
+      const weight = style.fontWeight;
+      if (weight === 'bold' || weight === 'bolder' || parseInt(weight) >= 600) {
+        const strong = document.createElement('strong');
+        strong.innerHTML = current.innerHTML;
+        current.replaceWith(strong);
+        current = strong;
+      }
+
+      // font-style: italic
+      if (style.fontStyle === 'italic') {
+        const em = document.createElement('em');
+        em.innerHTML = current.innerHTML;
+        current.replaceWith(em);
+        current = em;
+      }
+
+      // text-decoration: underline
+      if (style.textDecoration?.includes('underline')) {
+        const u = document.createElement('u');
+        u.innerHTML = current.innerHTML;
+        current.replaceWith(u);
+        current = u;
+      }
+
+      // text-decoration: line-through
+      if (style.textDecoration?.includes('line-through')) {
+        const s = document.createElement('s');
+        s.innerHTML = current.innerHTML;
+        current.replaceWith(s);
+        current = s;
+      }
+    }
+  }
+
+  /**
+   * Phase 2: Clean remaining nodes — unwrap unknown tags, strip attributes.
+   */
   function clean(node: Node): void {
     const children = Array.from(node.childNodes);
     for (const child of children) {
       if (child.nodeType === Node.ELEMENT_NODE) {
         const element = child as HTMLElement;
+
+        // Convert B to STRONG, I to EM
+        if (element.tagName === 'B') {
+          const strong = document.createElement('strong');
+          strong.innerHTML = element.innerHTML;
+          node.replaceChild(strong, element);
+          clean(strong);
+          continue;
+        }
+        if (element.tagName === 'I') {
+          const em = document.createElement('em');
+          em.innerHTML = element.innerHTML;
+          node.replaceChild(em, element);
+          clean(em);
+          continue;
+        }
+
         if (!ALLOWED_TAGS.has(element.tagName)) {
           // Unwrap: keep children, remove the tag
           while (element.firstChild) {
             node.insertBefore(element.firstChild, element);
           }
           node.removeChild(element);
-        } else {
-          // Strip all attributes except href on links and src on images
-          const attrs = Array.from(element.attributes);
-          for (const attr of attrs) {
-            if (element.tagName === 'A' && attr.name === 'href') continue;
-            if (element.tagName === 'IMG' && (attr.name === 'src' || attr.name === 'alt')) continue;
-            element.removeAttribute(attr.name);
-          }
-          // Convert B to STRONG, I to EM for consistency
-          if (element.tagName === 'B') {
-            const strong = document.createElement('strong');
-            strong.innerHTML = element.innerHTML;
-            node.replaceChild(strong, element);
-            clean(strong);
-            continue;
-          }
-          if (element.tagName === 'I') {
-            const em = document.createElement('em');
-            em.innerHTML = element.innerHTML;
-            node.replaceChild(em, element);
-            clean(em);
-            continue;
-          }
-          // Remove empty spans (Google Docs inserts many)
-          if (element.tagName === 'SPAN') {
-            while (element.firstChild) {
-              node.insertBefore(element.firstChild, element);
-            }
-            node.removeChild(element);
-            continue;
-          }
-          clean(element);
+          continue;
         }
+
+        // Strip all attributes except href on links, src/alt on images
+        const attrs = Array.from(element.attributes);
+        for (const attr of attrs) {
+          if (element.tagName === 'A' && attr.name === 'href') continue;
+          if (element.tagName === 'IMG' && (attr.name === 'src' || attr.name === 'alt')) continue;
+          element.removeAttribute(attr.name);
+        }
+
+        clean(element);
       }
     }
   }
 
+  // Phase 1: convert styled spans to semantic tags
+  convertStyledSpans(temp);
+  // Phase 2: clean up everything else
   clean(temp);
+
   return temp.innerHTML;
 }
 
