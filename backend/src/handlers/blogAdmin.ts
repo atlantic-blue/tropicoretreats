@@ -85,7 +85,15 @@ function generateSlug(title: string): string {
  * Generates a plain-text excerpt from content (first ~200 characters).
  */
 function generateExcerpt(content: string): string {
-  const plainText = content.replace(/[#*_~`>\[\]()!]/g, '').trim();
+  const plainText = content
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim();
   if (plainText.length <= 200) {
     return plainText;
   }
