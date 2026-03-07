@@ -32,6 +32,9 @@ const s3Client = tryConstruct(
 // ---------------------------------------------------------------------------
 
 const UPLOADS_PREFIX = 'uploads/';
+const ALLOWED_IMAGE_FORMATS = new Set(['jpeg', 'png', 'webp', 'gif']);
+const MAX_DIMENSION_PX = 10000;
+const MAX_PIXEL_COUNT = 100_000_000; // 100 million pixels
 
 interface ResizeConfig {
   width: number;
@@ -123,18 +126,47 @@ async function readS3Object(
 }
 
 /**
- * Validates image bytes using sharp metadata (magic bytes check).
- * Returns true if the file is a valid image, false otherwise.
+ * Validates image bytes using sharp metadata: checks magic bytes,
+ * enforces format allowlist, and rejects extreme pixel dimensions.
+ * Returns true if the file is a safe, valid raster image.
  */
 async function validateImageBytes(
   imageBytes: Uint8Array
 ): Promise<boolean> {
   try {
-    await sharp(Buffer.from(imageBytes)).metadata();
-    return true;
+    const metadata = await sharp(Buffer.from(imageBytes)).metadata();
+    return isAllowedFormat(metadata.format) && isWithinDimensionLimits(metadata.width, metadata.height);
   } catch {
     return false;
   }
+}
+
+/**
+ * Checks whether the detected image format is in the safe raster allowlist.
+ * Rejects SVG, TIFF, and other potentially dangerous formats.
+ */
+function isAllowedFormat(format: string | undefined): boolean {
+  if (!format) {
+    return false;
+  }
+  return ALLOWED_IMAGE_FORMATS.has(format);
+}
+
+/**
+ * Checks whether pixel dimensions are within safe limits.
+ * Rejects images that could cause memory exhaustion during resize.
+ */
+function isWithinDimensionLimits(
+  width: number | undefined,
+  height: number | undefined
+): boolean {
+  if (!width || !height) {
+    return false;
+  }
+  if (width > MAX_DIMENSION_PX || height > MAX_DIMENSION_PX) {
+    return false;
+  }
+  return width * height <= MAX_PIXEL_COUNT;
 }
 
 /**

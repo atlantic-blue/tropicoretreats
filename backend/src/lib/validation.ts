@@ -179,6 +179,17 @@ export const UpdateBlogPostSchema = z
 export type UpdateBlogPostInput = z.infer<typeof UpdateBlogPostSchema>;
 
 /**
+ * Regex to detect unsafe filename characters:
+ * - Path traversal sequences (..)
+ * - Forward slashes (/)
+ * - Backslashes (\)
+ * - URL-encoded sequences (%)
+ * - Null bytes (\0)
+ * - Control characters (U+0000 to U+001F, U+007F)
+ */
+const UNSAFE_FILENAME_PATTERN = /[/\\%]|\.\.|\x00|[\x00-\x1f\x7f]/;
+
+/**
  * Zod schema for image upload presign requests (POST /v1/blog/images).
  * Validates filename, content type, and purpose before generating
  * a presigned S3 upload URL.
@@ -187,7 +198,11 @@ export const ImageUploadSchema = z.object({
   filename: z
     .string()
     .min(1, 'Filename is required')
-    .max(255, 'Filename must be 255 characters or less'),
+    .max(255, 'Filename must be 255 characters or less')
+    .refine(
+      (value) => !UNSAFE_FILENAME_PATTERN.test(value),
+      { message: 'Filename contains unsafe characters' }
+    ),
   contentType: z.enum(
     ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
     { message: 'Content type must be image/jpeg, image/png, image/webp, or image/gif' }

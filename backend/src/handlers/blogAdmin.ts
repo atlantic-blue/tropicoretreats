@@ -304,6 +304,8 @@ async function handlePresignImageUpload(
   const processedFilename = input.purpose === 'hero' ? 'hero.webp' : 'inline.webp';
   const imageUrl = `https://${IMAGES_DOMAIN}/processed/${id}/${processedFilename}`;
 
+  const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+
   try {
     const command = tryConstruct(
       PutObjectCommand as unknown as new (
@@ -313,6 +315,7 @@ async function handlePresignImageUpload(
         Bucket: IMAGES_BUCKET,
         Key: key,
         ContentType: input.contentType,
+        ContentLength: MAX_IMAGE_SIZE_BYTES,
         Metadata: { purpose: input.purpose },
       }
     );
