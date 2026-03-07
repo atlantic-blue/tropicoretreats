@@ -94,6 +94,72 @@ export const SendEmailRequestSchema = z.object({
 export type SendEmailRequestInput = z.infer<typeof SendEmailRequestSchema>;
 
 /**
+ * Slug format regex: lowercase alphanumeric segments separated by single hyphens.
+ * Cannot start or end with a hyphen.
+ */
+const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/**
+ * Zod schema for creating a blog post (POST /v1/blog/posts).
+ */
+export const CreateBlogPostSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or less'),
+  slug: z
+    .string()
+    .regex(SLUG_REGEX, 'Slug must be lowercase alphanumeric with hyphens')
+    .max(200, 'Slug must be 200 characters or less')
+    .optional(),
+  content: z
+    .string()
+    .min(1, 'Content is required')
+    .max(102_400, 'Content must be 100KB or less'),
+  heroImageUrl: z.string().url('heroImageUrl must be a valid URL').optional(),
+  metaTitle: z.string().max(70, 'metaTitle must be 70 characters or less').optional(),
+  metaDescription: z
+    .string()
+    .max(160, 'metaDescription must be 160 characters or less')
+    .optional(),
+  ogImageUrl: z.string().url('ogImageUrl must be a valid URL').optional(),
+});
+
+export type CreateBlogPostInput = z.infer<typeof CreateBlogPostSchema>;
+
+/**
+ * Zod schema for updating a blog post (PUT /v1/blog/posts/{id}).
+ * At least one field must be provided.
+ */
+export const UpdateBlogPostSchema = z
+  .object({
+    title: z
+      .string()
+      .min(1, 'Title cannot be empty')
+      .max(200, 'Title must be 200 characters or less')
+      .optional(),
+    slug: z
+      .string()
+      .regex(SLUG_REGEX, 'Slug must be lowercase alphanumeric with hyphens')
+      .max(200, 'Slug must be 200 characters or less')
+      .optional(),
+    content: z
+      .string()
+      .min(1, 'Content cannot be empty')
+      .max(102_400, 'Content must be 100KB or less')
+      .optional(),
+    heroImageUrl: z.string().url('heroImageUrl must be a valid URL').optional(),
+    metaTitle: z.string().max(70, 'metaTitle must be 70 characters or less').optional(),
+    metaDescription: z
+      .string()
+      .max(160, 'metaDescription must be 160 characters or less')
+      .optional(),
+    ogImageUrl: z.string().url('ogImageUrl must be a valid URL').optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: 'At least one field must be provided',
+  });
+
+export type UpdateBlogPostInput = z.infer<typeof UpdateBlogPostSchema>;
+
+/**
  * Status progression order for validation.
  * Leads should progress forward: NEW -> CONTACTED -> QUOTED -> WON/LOST
  * ARCHIVED is a special status that can be reached from any status.

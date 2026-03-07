@@ -54,6 +54,16 @@ export const ok = (data: unknown): APIGatewayProxyResultV2 => ({
 });
 
 /**
+ * Returns a 409 Conflict response.
+ *
+ * @param message - Error message (default: 'Conflict')
+ */
+export const conflict = (message = 'Conflict'): APIGatewayProxyResultV2 => ({
+  statusCode: 409,
+  body: JSON.stringify({ error: message }),
+});
+
+/**
  * Returns a 404 Not Found response.
  *
  * @param message - Error message (default: 'Not found')

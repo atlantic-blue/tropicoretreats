@@ -1,0 +1,668 @@
+import type {
+  APIGatewayProxyEventV2WithJWTAuthorizer,
+  APIGatewayProxyResultV2,
+} from 'aws-lambda';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import {
+  DynamoDBDocumentClient,
+  GetCommand,
+  QueryCommand,
+  TransactWriteCommand,
+} from '@aws-sdk/lib-dynamodb';
+import { ulid } from 'ulidx';
+import {
+  CreateBlogPostSchema,
+  UpdateBlogPostSchema,
+} from '../lib/validation.js';
+import type { BlogPostItem, SlugIndexItem } from '../lib/types.js';
+import {
+  created,
+  ok,
+  badRequest,
+  serverError,
+  notFound,
+  conflict,
+} from '../utils/response.js';
+
+// ---------------------------------------------------------------------------
+// AWS client setup — uses tryConstruct pattern for Vitest 4+ compatibility
+// ---------------------------------------------------------------------------
+
+function tryConstruct<T>(
+  Constructor: new (...args: unknown[]) => T,
+  ...args: unknown[]
+): T {
+  try {
+    return new Constructor(...args);
+  } catch {
+    return (Constructor as unknown as (...args: unknown[]) => T)(...args);
+  }
+}
+
+const dynamoDBRawClient = tryConstruct(
+  DynamoDBClient as new (...args: unknown[]) => DynamoDBClient,
+  {}
+);
+const docClient = DynamoDBDocumentClient.from(
+  dynamoDBRawClient as Parameters<typeof DynamoDBDocumentClient.from>[0],
+  { marshallOptions: { removeUndefinedValues: true } }
+);
+
+const TABLE_NAME = process.env.TABLE_NAME;
+
+// ---------------------------------------------------------------------------
+// DynamoDB key field stripping
+// ---------------------------------------------------------------------------
+
+const DYNAMO_KEY_FIELDS = ['PK', 'SK', 'GSI1PK', 'GSI1SK'] as const;
+
+function stripKeyFields(
+  post: BlogPostItem
+): Omit<BlogPostItem, 'PK' | 'SK' | 'GSI1PK' | 'GSI1SK'> {
+  const result = { ...post };
+  for (const field of DYNAMO_KEY_FIELDS) {
+    delete (result as Record<string, unknown>)[field];
+  }
+  return result;
+}
+
+// ---------------------------------------------------------------------------
+// Utility functions
+// ---------------------------------------------------------------------------
+
+/**
+ * Generates a URL-safe slug from a title.
+ */
+function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
+ * Generates a plain-text excerpt from content (first ~200 characters).
+ */
+function generateExcerpt(content: string): string {
+  const plainText = content.replace(/[#*_~`>\[\]()!]/g, '').trim();
+  if (plainText.length <= 200) {
+    return plainText;
+  }
+  return plainText.slice(0, 200).trim();
+}
+
+/**
+ * Checks whether an error is a TransactionCanceledException (slug conflict).
+ */
+function isSlugConflictError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+  return (error as Record<string, unknown>).name === 'TransactionCanceledException';
+}
+
+/**
+ * Extracts author name from JWT claims.
+ */
+function extractAuthorName(
+  event: APIGatewayProxyEventV2WithJWTAuthorizer
+): string {
+  return (
+    (event.requestContext.authorizer?.jwt?.claims?.email as string) ||
+    (event.requestContext.authorizer?.jwt?.claims?.username as string) ||
+    'Unknown'
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Handler
+// ---------------------------------------------------------------------------
+
+/**
+ * Multi-route Lambda handler for blog CMS operations.
+ *
+ * Routes:
+ * - GET    /blog/posts          -> handleListPosts (public)
+ * - GET    /blog/posts/{slug}   -> handleGetPost (public)
+ * - POST   /blog/posts          -> handleCreatePost (JWT)
+ * - PUT    /blog/posts/{id}     -> handleUpdatePost (JWT)
+ * - DELETE /blog/posts/{id}     -> handleDeletePost (JWT)
+ */
+export const handler = async (
+  event: APIGatewayProxyEventV2WithJWTAuthorizer
+): Promise<APIGatewayProxyResultV2> => {
+  const method = event.requestContext.http.method;
+  const path = event.requestContext.http.path;
+
+  try {
+    if (method === 'GET' && path === '/blog/posts') {
+      return await handleListPosts(event);
+    }
+
+    if (method === 'POST' && path === '/blog/posts') {
+      return await handleCreatePost(event);
+    }
+
+    if (method === 'GET' && path.match(/^\/blog\/posts\/[^/]+$/)) {
+      return await handleGetPost(event);
+    }
+
+    if (method === 'PUT' && path.match(/^\/blog\/posts\/[^/]+$/)) {
+      return await handleUpdatePost(event);
+    }
+
+    if (method === 'DELETE' && path.match(/^\/blog\/posts\/[^/]+$/)) {
+      return await handleDeletePost(event);
+    }
+
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: 'Method not allowed' }),
+    };
+  } catch (error) {
+    console.error('Error in blogAdmin handler:', error);
+    return serverError();
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Route handlers
+// ---------------------------------------------------------------------------
+
+/**
+ * POST /blog/posts - Create a new blog post.
+ */
+async function handleCreatePost(
+  event: APIGatewayProxyEventV2WithJWTAuthorizer
+): Promise<APIGatewayProxyResultV2> {
+  let body: unknown;
+  try {
+    const rawBody = event.body;
+    if (!rawBody) {
+      return badRequest('Request body is required');
+    }
+    body = JSON.parse(rawBody);
+  } catch {
+    return badRequest('Invalid JSON in request body');
+  }
+
+  const validation = CreateBlogPostSchema.safeParse(body);
+  if (!validation.success) {
+    return badRequest(
+      'Validation failed',
+      validation.error.flatten().fieldErrors
+    );
+  }
+
+  const input = validation.data;
+  const now = new Date().toISOString();
+  const id = ulid();
+  const slug = input.slug ?? generateSlug(input.title);
+  const excerpt = generateExcerpt(input.content);
+  const authorName = extractAuthorName(event);
+
+  const post: BlogPostItem = buildBlogPostItem({
+    id,
+    title: input.title,
+    slug,
+    content: input.content,
+    excerpt,
+    heroImageUrl: input.heroImageUrl ?? '',
+    metaTitle: input.metaTitle ?? input.title,
+    metaDescription: input.metaDescription ?? excerpt,
+    ogImageUrl: input.ogImageUrl ?? input.heroImageUrl ?? '',
+    authorName,
+    now,
+  });
+
+  const slugItem: SlugIndexItem = {
+    PK: `SLUG#${slug}`,
+    SK: `SLUG#${slug}`,
+    slug,
+    blogId: id,
+  };
+
+  try {
+    await putBlogPostWithSlug(post, slugItem);
+  } catch (error) {
+    if (isSlugConflictError(error)) {
+      return conflict('Slug already exists');
+    }
+    throw error;
+  }
+
+  return created({ post: stripKeyFields(post) });
+}
+
+/**
+ * PUT /blog/posts/{id} - Update an existing blog post.
+ */
+async function handleUpdatePost(
+  event: APIGatewayProxyEventV2WithJWTAuthorizer
+): Promise<APIGatewayProxyResultV2> {
+  const id = event.pathParameters?.id;
+  if (!id) {
+    return badRequest('Post ID is required');
+  }
+
+  let body: unknown;
+  try {
+    body = JSON.parse(event.body ?? '{}');
+  } catch {
+    return badRequest('Invalid JSON in request body');
+  }
+
+  const validation = UpdateBlogPostSchema.safeParse(body);
+  if (!validation.success) {
+    return badRequest(
+      'Validation failed',
+      validation.error.flatten().fieldErrors
+    );
+  }
+
+  const input = validation.data;
+  const existingPost = await fetchBlogPost(id);
+
+  if (!existingPost || existingPost.status === 'deleted') {
+    return notFound('Post not found');
+  }
+
+  const now = new Date().toISOString();
+  const updatedPost: BlogPostItem = { ...existingPost };
+
+  applyUpdatesToPost(updatedPost, input);
+  updatedPost.updatedAt = now;
+
+  const slugChange =
+    input.slug && input.slug !== existingPost.slug
+      ? { oldSlug: existingPost.slug, newSlug: input.slug }
+      : undefined;
+
+  if (slugChange) {
+    updatedPost.slug = slugChange.newSlug;
+  }
+
+  try {
+    await updateBlogPostInDb(id, updatedPost, slugChange);
+  } catch (error) {
+    if (isSlugConflictError(error)) {
+      return conflict('Slug already exists');
+    }
+    throw error;
+  }
+
+  return ok({ post: stripKeyFields(updatedPost) });
+}
+
+/**
+ * DELETE /blog/posts/{id} - Soft-delete a blog post.
+ */
+async function handleDeletePost(
+  event: APIGatewayProxyEventV2WithJWTAuthorizer
+): Promise<APIGatewayProxyResultV2> {
+  const id = event.pathParameters?.id;
+  if (!id) {
+    return badRequest('Post ID is required');
+  }
+
+  const existingPost = await fetchBlogPost(id);
+
+  if (!existingPost || existingPost.status === 'deleted') {
+    return notFound('Post not found');
+  }
+
+  const now = new Date().toISOString();
+  const deletedPost: BlogPostItem = {
+    ...existingPost,
+    status: 'deleted',
+    GSI1PK: '',
+    GSI1SK: '',
+    updatedAt: now,
+  };
+
+  await softDeleteBlogPost(existingPost.slug, deletedPost);
+
+  return ok({ message: 'Post deleted' });
+}
+
+/**
+ * GET /blog/posts - List published blog posts with pagination.
+ */
+async function handleListPosts(
+  event: APIGatewayProxyEventV2WithJWTAuthorizer
+): Promise<APIGatewayProxyResultV2> {
+  const queryParams = event.queryStringParameters ?? {};
+
+  const limitParam = queryParams.limit;
+  let limit = 20;
+
+  if (limitParam !== undefined) {
+    limit = parseInt(limitParam, 10);
+    if (isNaN(limit) || limit < 1 || limit > 50) {
+      return badRequest('Limit must be between 1 and 50');
+    }
+  }
+
+  const cursor = queryParams.cursor;
+  if (cursor) {
+    try {
+      JSON.parse(Buffer.from(cursor, 'base64').toString('utf-8'));
+    } catch {
+      return badRequest('Invalid pagination cursor');
+    }
+  }
+
+  const result = await queryPublishedPosts(limit, cursor);
+
+  const posts = result.posts.map(toListingItem);
+
+  const response: Record<string, unknown> = { posts };
+  if (result.nextCursor) {
+    response.nextCursor = result.nextCursor;
+  }
+
+  return ok(response);
+}
+
+/**
+ * GET /blog/posts/{slug} - Get a single blog post by slug.
+ */
+async function handleGetPost(
+  event: APIGatewayProxyEventV2WithJWTAuthorizer
+): Promise<APIGatewayProxyResultV2> {
+  const slug = event.pathParameters?.slug;
+  if (!slug) {
+    return badRequest('Slug is required');
+  }
+
+  const post = await fetchBlogPostBySlug(slug);
+
+  if (!post || post.status === 'deleted') {
+    return notFound('Post not found');
+  }
+
+  return ok({ post: stripKeyFields(post) });
+}
+
+// ---------------------------------------------------------------------------
+// DynamoDB operations
+// ---------------------------------------------------------------------------
+
+/**
+ * Atomically creates a blog post and its slug index.
+ */
+async function putBlogPostWithSlug(
+  post: BlogPostItem,
+  slugItem: SlugIndexItem
+): Promise<void> {
+  const command = tryConstruct(
+    TransactWriteCommand as unknown as new (
+      ...args: unknown[]
+    ) => TransactWriteCommand,
+    {
+      TransactItems: [
+        { Put: { TableName: TABLE_NAME, Item: post } },
+        {
+          Put: {
+            TableName: TABLE_NAME,
+            Item: slugItem,
+            ConditionExpression: 'attribute_not_exists(PK)',
+          },
+        },
+      ],
+    }
+  );
+  await docClient.send(command);
+}
+
+/**
+ * Fetches a blog post by ID.
+ */
+async function fetchBlogPost(id: string): Promise<BlogPostItem | null> {
+  const command = tryConstruct(
+    GetCommand as unknown as new (...args: unknown[]) => GetCommand,
+    {
+      TableName: TABLE_NAME,
+      Key: { PK: `BLOG#${id}`, SK: `BLOG#${id}` },
+    }
+  );
+  const result = await docClient.send(command);
+  return (result.Item as BlogPostItem) ?? null;
+}
+
+/**
+ * Two-step slug lookup: SLUG#{slug} -> blogId -> BLOG#{blogId}.
+ */
+async function fetchBlogPostBySlug(
+  slug: string
+): Promise<BlogPostItem | null> {
+  const slugCommand = tryConstruct(
+    GetCommand as unknown as new (...args: unknown[]) => GetCommand,
+    {
+      TableName: TABLE_NAME,
+      Key: { PK: `SLUG#${slug}`, SK: `SLUG#${slug}` },
+    }
+  );
+  const slugResult = await docClient.send(slugCommand);
+  const slugItem = slugResult.Item as SlugIndexItem | undefined;
+
+  if (!slugItem) {
+    return null;
+  }
+
+  const postCommand = tryConstruct(
+    GetCommand as unknown as new (...args: unknown[]) => GetCommand,
+    {
+      TableName: TABLE_NAME,
+      Key: {
+        PK: `BLOG#${slugItem.blogId}`,
+        SK: `BLOG#${slugItem.blogId}`,
+      },
+    }
+  );
+  const postResult = await docClient.send(postCommand);
+  return (postResult.Item as BlogPostItem) ?? null;
+}
+
+/**
+ * Queries published posts via GSI1 in reverse chronological order.
+ */
+async function queryPublishedPosts(
+  limit: number,
+  cursor?: string
+): Promise<{ posts: BlogPostItem[]; nextCursor?: string }> {
+  let exclusiveStartKey: Record<string, unknown> | undefined;
+  if (cursor) {
+    exclusiveStartKey = JSON.parse(
+      Buffer.from(cursor, 'base64').toString('utf-8')
+    );
+  }
+
+  const command = tryConstruct(
+    QueryCommand as unknown as new (...args: unknown[]) => QueryCommand,
+    {
+      TableName: TABLE_NAME,
+      IndexName: 'GSI1',
+      KeyConditionExpression: 'GSI1PK = :gsi1pk',
+      ExpressionAttributeValues: { ':gsi1pk': 'BLOG#PUBLISHED' },
+      ScanIndexForward: false,
+      Limit: limit,
+      ExclusiveStartKey: exclusiveStartKey,
+    }
+  );
+
+  const result = await docClient.send(command);
+  const posts = (result.Items ?? []) as BlogPostItem[];
+
+  let nextCursor: string | undefined;
+  if (result.LastEvaluatedKey) {
+    nextCursor = Buffer.from(
+      JSON.stringify(result.LastEvaluatedKey)
+    ).toString('base64');
+  }
+
+  return { posts, nextCursor };
+}
+
+/**
+ * Updates a blog post, optionally changing the slug atomically.
+ */
+async function updateBlogPostInDb(
+  id: string,
+  updatedPost: BlogPostItem,
+  slugChange?: { oldSlug: string; newSlug: string }
+): Promise<void> {
+  const transactItems: Record<string, unknown>[] = [
+    { Put: { TableName: TABLE_NAME, Item: updatedPost } },
+  ];
+
+  if (slugChange) {
+    transactItems.push({
+      Delete: {
+        TableName: TABLE_NAME,
+        Key: {
+          PK: `SLUG#${slugChange.oldSlug}`,
+          SK: `SLUG#${slugChange.oldSlug}`,
+        },
+      },
+    });
+    transactItems.push({
+      Put: {
+        TableName: TABLE_NAME,
+        Item: {
+          PK: `SLUG#${slugChange.newSlug}`,
+          SK: `SLUG#${slugChange.newSlug}`,
+          slug: slugChange.newSlug,
+          blogId: id,
+        },
+        ConditionExpression: 'attribute_not_exists(PK)',
+      },
+    });
+  }
+
+  const command = tryConstruct(
+    TransactWriteCommand as unknown as new (
+      ...args: unknown[]
+    ) => TransactWriteCommand,
+    { TransactItems: transactItems }
+  );
+  await docClient.send(command);
+}
+
+/**
+ * Soft-deletes a blog post and removes its slug index atomically.
+ */
+async function softDeleteBlogPost(
+  slug: string,
+  deletedPost: BlogPostItem
+): Promise<void> {
+  const command = tryConstruct(
+    TransactWriteCommand as unknown as new (
+      ...args: unknown[]
+    ) => TransactWriteCommand,
+    {
+      TransactItems: [
+        { Put: { TableName: TABLE_NAME, Item: deletedPost } },
+        {
+          Delete: {
+            TableName: TABLE_NAME,
+            Key: { PK: `SLUG#${slug}`, SK: `SLUG#${slug}` },
+          },
+        },
+      ],
+    }
+  );
+  await docClient.send(command);
+}
+
+// ---------------------------------------------------------------------------
+// Helper builders
+// ---------------------------------------------------------------------------
+
+interface BuildBlogPostParams {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string;
+  heroImageUrl: string;
+  metaTitle: string;
+  metaDescription: string;
+  ogImageUrl: string;
+  authorName: string;
+  now: string;
+}
+
+function buildBlogPostItem(params: BuildBlogPostParams): BlogPostItem {
+  return {
+    PK: `BLOG#${params.id}`,
+    SK: `BLOG#${params.id}`,
+    GSI1PK: 'BLOG#PUBLISHED',
+    GSI1SK: params.now,
+    id: params.id,
+    title: params.title,
+    slug: params.slug,
+    content: params.content,
+    excerpt: params.excerpt,
+    heroImageUrl: params.heroImageUrl,
+    metaTitle: params.metaTitle,
+    metaDescription: params.metaDescription,
+    ogImageUrl: params.ogImageUrl,
+    authorName: params.authorName,
+    authorOrg: 'Tropico Retreats',
+    status: 'published',
+    publishedAt: params.now,
+    createdAt: params.now,
+    updatedAt: params.now,
+  };
+}
+
+/**
+ * Applies partial update fields to a blog post object.
+ */
+function applyUpdatesToPost(
+  post: BlogPostItem,
+  input: Record<string, unknown>
+): void {
+  if (input.title !== undefined) {
+    post.title = input.title as string;
+  }
+  if (input.content !== undefined) {
+    post.content = input.content as string;
+    post.excerpt = generateExcerpt(input.content as string);
+  }
+  if (input.heroImageUrl !== undefined) {
+    post.heroImageUrl = input.heroImageUrl as string;
+  }
+  if (input.metaTitle !== undefined) {
+    post.metaTitle = input.metaTitle as string;
+  }
+  if (input.metaDescription !== undefined) {
+    post.metaDescription = input.metaDescription as string;
+  }
+  if (input.ogImageUrl !== undefined) {
+    post.ogImageUrl = input.ogImageUrl as string;
+  }
+}
+
+/** Listing fields for the list endpoint (no content, no DynamoDB keys). */
+const LISTING_FIELDS = [
+  'id',
+  'title',
+  'slug',
+  'excerpt',
+  'heroImageUrl',
+  'authorName',
+  'authorOrg',
+  'publishedAt',
+] as const;
+
+function toListingItem(
+  post: BlogPostItem
+): Record<string, unknown> {
+  const listing: Record<string, unknown> = {};
+  for (const field of LISTING_FIELDS) {
+    listing[field] = post[field];
+  }
+  return listing;
+}

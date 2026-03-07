@@ -177,6 +177,71 @@ export interface Note {
   updatedAt: string;
 }
 
+/**
+ * Blog post entity type with DynamoDB keys and GSI attributes.
+ *
+ * Table design:
+ * - PK/SK: BLOG#{id} for single-item access
+ * - GSI1PK/GSI1SK: BLOG#PUBLISHED/publishedAt for listing published posts
+ */
+export interface BlogPostItem {
+  /** Primary key: BLOG#{id} */
+  PK: string;
+  /** Sort key: BLOG#{id} */
+  SK: string;
+  /** GSI1 hash key: BLOG#PUBLISHED (only when status=published) */
+  GSI1PK: string;
+  /** GSI1 sort key: ISO 8601 publishedAt */
+  GSI1SK: string;
+  /** ULID - sortable unique identifier */
+  id: string;
+  /** Blog post title */
+  title: string;
+  /** URL-safe slug for the post */
+  slug: string;
+  /** Markdown content */
+  content: string;
+  /** Auto-generated excerpt from content */
+  excerpt: string;
+  /** CloudFront URL for hero image */
+  heroImageUrl: string;
+  /** SEO meta title */
+  metaTitle: string;
+  /** SEO meta description */
+  metaDescription: string;
+  /** Open Graph image URL */
+  ogImageUrl: string;
+  /** Author name extracted from JWT */
+  authorName: string;
+  /** Author organization */
+  authorOrg: string;
+  /** Post status */
+  status: 'published' | 'deleted';
+  /** ISO 8601 publish timestamp */
+  publishedAt: string;
+  /** ISO 8601 creation timestamp */
+  createdAt: string;
+  /** ISO 8601 last update timestamp */
+  updatedAt: string;
+}
+
+/**
+ * Slug index item for enforcing global slug uniqueness.
+ *
+ * Table design:
+ * - PK/SK: SLUG#{slug} for single-item conditional writes
+ */
+export interface SlugIndexItem {
+  /** Primary key: SLUG#{slug} */
+  PK: string;
+  /** Sort key: SLUG#{slug} */
+  SK: string;
+  /** URL-safe slug */
+  slug: string;
+  /** ULID of the associated blog post */
+  blogId: string;
+}
+
 /** Notification channel settings */
 export interface NotificationChannels {
   email: boolean;
