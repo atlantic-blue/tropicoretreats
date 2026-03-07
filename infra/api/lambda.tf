@@ -131,3 +131,49 @@ resource "aws_lambda_permission" "users" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.leads.execution_arn}/*/*"
 }
+
+# ====================================================================
+# Blog Admin Lambda (handles CRUD /blog/posts, GET /blog/posts/{slug})
+# ====================================================================
+
+data "archive_file" "blog_admin" {
+  type        = "zip"
+  source_file = "${path.module}/../../backend/dist/blogAdmin.mjs"
+  output_path = "${path.module}/../../backend/dist/blogAdmin.zip"
+}
+
+resource "aws_cloudwatch_log_group" "blog_admin" {
+  name              = "/aws/lambda/tropico-blog-admin-${var.environment}"
+  retention_in_days = 14
+  tags              = local.tags
+}
+
+resource "aws_lambda_function" "blog_admin" {
+  filename         = data.archive_file.blog_admin.output_path
+  function_name    = "tropico-blog-admin-${var.environment}"
+  role             = aws_iam_role.lambda.arn
+  handler          = "blogAdmin.handler"
+  source_code_hash = data.archive_file.blog_admin.output_base64sha256
+  runtime          = "nodejs22.x"
+  architectures    = ["arm64"]
+  memory_size      = 256
+  timeout          = 30
+
+  environment {
+    variables = {
+      TABLE_NAME  = aws_dynamodb_table.leads.name
+      ENVIRONMENT = var.environment
+    }
+  }
+
+  depends_on = [aws_cloudwatch_log_group.blog_admin]
+  tags       = local.tags
+}
+
+resource "aws_lambda_permission" "blog_admin" {
+  statement_id  = "AllowAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.blog_admin.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.leads.execution_arn}/*/*"
+}

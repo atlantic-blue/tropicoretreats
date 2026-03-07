@@ -35,7 +35,9 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
           "dynamodb:GetItem",
           "dynamodb:Query",
           "dynamodb:Scan",
-          "dynamodb:UpdateItem"
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:TransactWriteItems"
         ]
         Resource = [
           aws_dynamodb_table.leads.arn,
@@ -65,7 +67,8 @@ resource "aws_iam_role_policy" "lambda_logs" {
           "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/tropico-create-lead-${var.environment}:*",
           "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/tropico-leads-admin-${var.environment}:*",
           "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/tropico-users-${var.environment}:*",
-          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/tropico-email-admin-${var.environment}:*"
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/tropico-email-admin-${var.environment}:*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/tropico-blog-admin-${var.environment}:*"
         ]
       }
     ]

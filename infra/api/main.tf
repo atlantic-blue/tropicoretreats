@@ -47,7 +47,7 @@ resource "aws_apigatewayv2_api" "leads" {
 
   cors_configuration {
     allow_origins = local.cors_origins
-    allow_methods = ["GET", "POST", "PATCH", "OPTIONS"]
+    allow_methods = ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"]
     allow_headers = ["Content-Type", "Authorization"]
     max_age       = 3600
   }
@@ -247,6 +247,58 @@ resource "aws_apigatewayv2_route" "mark_emails_read" {
   api_id             = aws_apigatewayv2_api.leads.id
   route_key          = "PATCH /emails/{leadId}/read"
   target             = "integrations/${aws_apigatewayv2_integration.email_admin.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+# ====================================================================
+# Blog Admin Integration (CRUD blog posts + public listing/reading)
+# ====================================================================
+resource "aws_apigatewayv2_integration" "blog_admin" {
+  api_id                 = aws_apigatewayv2_api.leads.id
+  integration_type       = "AWS_PROXY"
+  integration_method     = "POST"
+  integration_uri        = aws_lambda_function.blog_admin.invoke_arn
+  payload_format_version = "2.0"
+}
+
+# Public route for GET /blog/posts (list published posts — no auth)
+resource "aws_apigatewayv2_route" "list_blog_posts" {
+  api_id    = aws_apigatewayv2_api.leads.id
+  route_key = "GET /blog/posts"
+  target    = "integrations/${aws_apigatewayv2_integration.blog_admin.id}"
+}
+
+# Public route for GET /blog/posts/{slug} (read single post — no auth)
+resource "aws_apigatewayv2_route" "get_blog_post" {
+  api_id    = aws_apigatewayv2_api.leads.id
+  route_key = "GET /blog/posts/{slug}"
+  target    = "integrations/${aws_apigatewayv2_integration.blog_admin.id}"
+}
+
+# Protected route for POST /blog/posts (create post — requires JWT)
+resource "aws_apigatewayv2_route" "create_blog_post" {
+  api_id             = aws_apigatewayv2_api.leads.id
+  route_key          = "POST /blog/posts"
+  target             = "integrations/${aws_apigatewayv2_integration.blog_admin.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+# Protected route for PUT /blog/posts/{id} (update post — requires JWT)
+resource "aws_apigatewayv2_route" "update_blog_post" {
+  api_id             = aws_apigatewayv2_api.leads.id
+  route_key          = "PUT /blog/posts/{id}"
+  target             = "integrations/${aws_apigatewayv2_integration.blog_admin.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+# Protected route for DELETE /blog/posts/{id} (delete post — requires JWT)
+resource "aws_apigatewayv2_route" "delete_blog_post" {
+  api_id             = aws_apigatewayv2_api.leads.id
+  route_key          = "DELETE /blog/posts/{id}"
+  target             = "integrations/${aws_apigatewayv2_integration.blog_admin.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
 }
