@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router';
 import {
   ChevronLeft, Save, Eye, Loader2, AlertCircle,
-  Bold, Italic, Heading2, Heading3, List, ListOrdered, LinkIcon,
+  Bold, Italic, Heading2, Heading3, List, ListOrdered, LinkIcon, ImageIcon,
+  Calendar, User,
 } from 'lucide-react';
 import { useBlogPost, useCreateBlogPost, useUpdateBlogPost } from '../hooks/useBlog';
 import { setTokenGetter } from '../api/client';
@@ -270,9 +271,21 @@ function RichTextEditor({
     }
   };
 
+  const insertImage = () => {
+    const url = prompt('Enter image URL (https://):');
+    if (url) {
+      const alt = prompt('Enter alt text (optional):') ?? '';
+      const escapedUrl = url.replace(/"/g, '&quot;');
+      const escapedAlt = alt.replace(/"/g, '&quot;');
+      document.execCommand('insertHTML', false, `<img src="${escapedUrl}" alt="${escapedAlt}" />`);
+      editorRef.current?.focus();
+      handleInput();
+    }
+  };
+
   return (
     <div>
-      <div className="flex items-center gap-0.5 px-2 py-1.5 border border-b-0 border-gray-300 rounded-t-md bg-gray-50">
+      <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border border-b-0 border-gray-300 rounded-t-md bg-gray-50">
         <ToolbarButton onClick={() => exec('bold')} title="Bold">
           <Bold className="w-4 h-4" />
         </ToolbarButton>
@@ -297,13 +310,16 @@ function RichTextEditor({
         <ToolbarButton onClick={insertLink} title="Insert link">
           <LinkIcon className="w-4 h-4" />
         </ToolbarButton>
+        <ToolbarButton onClick={insertImage} title="Insert image">
+          <ImageIcon className="w-4 h-4" />
+        </ToolbarButton>
       </div>
       <div
         ref={editorRef}
         contentEditable
         onInput={handleInput}
         onPaste={handlePaste}
-        className="w-full min-h-64 px-3 py-2 border border-gray-300 rounded-b-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 overflow-y-auto bg-white [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-4 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-2 [&_li]:mb-1 [&_a]:text-blue-600 [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-600"
+        className="w-full min-h-64 px-3 py-2 border border-gray-300 rounded-b-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 overflow-y-auto bg-white [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-4 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-2 [&_li]:mb-1 [&_a]:text-blue-600 [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-600 [&_img]:max-w-full [&_img]:rounded [&_img]:my-2"
         data-placeholder="Write your blog post content or paste from Google Docs..."
         suppressContentEditableWarning
       />
@@ -311,21 +327,69 @@ function RichTextEditor({
   );
 }
 
-function ContentPreview({ content }: { content: string }) {
+function ContentPreview({ form }: { form: FormState }) {
+  const hasHero = !!form.heroImageUrl || !!form.title;
+  const today = new Date().toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-6 h-full">
-      <div className="flex items-center gap-2 mb-4">
+    <div className="bg-white rounded-lg shadow-sm border overflow-hidden h-full">
+      <div className="flex items-center gap-2 px-4 py-2 border-b bg-gray-50">
         <Eye className="w-4 h-4 text-gray-400" />
         <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Preview</h3>
       </div>
-      {content ? (
-        <div
-          className="text-sm text-gray-800 leading-relaxed [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-3 [&_li]:mb-1 [&_a]:text-blue-600 [&_a]:underline [&_strong]:font-bold [&_em]:italic [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-600 [&_blockquote]:my-3 [&_pre]:bg-gray-100 [&_pre]:p-3 [&_pre]:rounded [&_pre]:overflow-x-auto [&_pre]:my-3 [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:rounded [&_code]:text-sm [&_img]:max-w-full [&_img]:rounded [&_hr]:my-6 [&_hr]:border-gray-200"
-          dangerouslySetInnerHTML={{ __html: content }}
-        />
-      ) : (
-        <p className="text-sm text-gray-400 italic">Start writing to see a preview...</p>
-      )}
+
+      <div className="bg-[#F7F1EC] min-h-[400px]">
+        {/* Hero Section */}
+        {hasHero && (
+          <section className="relative h-[200px]">
+            <div className="absolute inset-0">
+              {form.heroImageUrl ? (
+                <img src={form.heroImageUrl} alt={form.title} className="h-full w-full object-cover" />
+              ) : (
+                <div className="h-full w-full bg-gradient-to-br from-emerald-800 to-emerald-600" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
+            </div>
+            <div className="relative flex h-full items-end pb-4">
+              <div className="w-full px-4">
+                {form.title && (
+                  <h1 className="font-serif text-lg font-bold text-white leading-tight">
+                    {form.title}
+                  </h1>
+                )}
+                <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-white/80">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {today}
+                  </span>
+                  {form.authorName && (
+                    <span className="flex items-center gap-1">
+                      <User className="h-3 w-3" />
+                      {form.authorName}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Content */}
+        <div className="px-4 py-6">
+          {form.content ? (
+            <div
+              className="text-sm text-gray-800 leading-relaxed [&_h1]:font-serif [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:font-serif [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:font-serif [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-3 [&_li]:mb-1 [&_a]:text-emerald-700 [&_a]:underline [&_a]:underline-offset-2 [&_strong]:font-bold [&_em]:italic [&_blockquote]:border-l-4 [&_blockquote]:border-[#C9A227] [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-600 [&_blockquote]:my-3 [&_pre]:bg-gray-100 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:my-3 [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:rounded [&_code]:text-sm [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-3 [&_hr]:my-6 [&_hr]:border-gray-200"
+              dangerouslySetInnerHTML={{ __html: form.content }}
+            />
+          ) : (
+            <p className="text-sm text-gray-400 italic">Start writing to see a preview...</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -573,6 +637,7 @@ function BlogEditorLoaded({
   const updatePost = useUpdateBlogPost();
 
   const [form, setForm] = useState<FormState>(() => buildFormFromPost(existingPost));
+  const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor');
 
   const handleChange = useCallback((field: keyof FormState, value: string) => {
     setForm((previous) => ({ ...previous, [field]: value }));
@@ -614,17 +679,46 @@ function BlogEditorLoaded({
         {isEditing ? 'Edit Post' : 'New Post'}
       </h1>
 
+      {/* Mobile tab toggle */}
+      <div className="flex gap-1 p-1 bg-gray-100 rounded-lg lg:hidden">
+        <button
+          type="button"
+          onClick={() => setMobileTab('editor')}
+          className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+            mobileTab === 'editor'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Editor
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileTab('preview')}
+          className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1.5 ${
+            mobileTab === 'preview'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Eye className="w-4 h-4" />
+          Preview
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <EditorForm
-          form={form}
-          onChange={handleChange}
-          onSave={handleSave}
-          isSaving={isSaving}
-          isEditing={isEditing}
-          saveError={saveError}
-        />
-        <div className="lg:sticky lg:top-6 lg:self-start">
-          <ContentPreview content={form.content} />
+        <div className={mobileTab === 'preview' ? 'hidden lg:block' : ''}>
+          <EditorForm
+            form={form}
+            onChange={handleChange}
+            onSave={handleSave}
+            isSaving={isSaving}
+            isEditing={isEditing}
+            saveError={saveError}
+          />
+        </div>
+        <div className={`lg:sticky lg:top-6 lg:self-start ${mobileTab === 'editor' ? 'hidden lg:block' : ''}`}>
+          <ContentPreview form={form} />
         </div>
       </div>
     </div>
