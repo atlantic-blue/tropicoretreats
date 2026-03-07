@@ -16,6 +16,7 @@ module "api" {
   environment              = var.environment
   product_name             = var.product_name
   aws_region               = var.aws_region
+  aws_account              = var.aws_account
   wildcard_certificate_arn = aws_acm_certificate.www_certificate.arn
   team_emails              = var.team_emails
   api_domain               = local.api_domain

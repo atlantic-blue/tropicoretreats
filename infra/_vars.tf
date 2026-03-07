@@ -1,5 +1,6 @@
 variable "aws_account" {
-  default = "atlantic-blue"
+  description = "AWS CLI profile name. Set to null in CI to use environment credentials."
+  default     = "atlantic-blue"
 }
 
 variable "aws_region" {

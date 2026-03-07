@@ -77,7 +77,7 @@ jobs:
         working-directory: infra
         run: |
           terraform workspace select staging
-          terraform apply -var-file=staging.tfvars -auto-approve
+          terraform apply -var-file=staging.tfvars -var="aws_account=" -auto-approve
         env:
           TF_VAR_www_google_site_verification_token: ${{ secrets.TF_VAR_GOOGLE_SITE_VERIFICATION }}
 

@@ -97,7 +97,7 @@ jobs:
         working-directory: infra
         run: |
           terraform workspace select default
-          terraform apply -auto-approve
+          terraform apply -var="aws_account=" -auto-approve
         env:
           TF_VAR_www_google_site_verification_token: ${{ secrets.TF_VAR_GOOGLE_SITE_VERIFICATION }}
           TF_VAR_team_emails: ${{ secrets.TF_VAR_TEAM_EMAILS }}
