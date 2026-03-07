@@ -41,9 +41,9 @@ export async function fetchBlogPosts(): Promise<FetchBlogPostsResponse> {
 
     return {
       success: true,
-      posts: result.data.posts,
-      totalCount: result.data.totalCount,
-      nextCursor: result.data.nextCursor,
+      posts: result.posts,
+      totalCount: result.posts.length,
+      nextCursor: result.nextCursor,
     };
   } catch (error) {
     clearTimeout(timeoutId);

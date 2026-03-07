@@ -133,6 +133,7 @@ export const CreateBlogPostSchema = z.object({
     .max(160, 'metaDescription must be 160 characters or less')
     .optional(),
   ogImageUrl: httpsUrl.optional(),
+  status: z.enum(['draft', 'published']).optional(),
 });
 
 export type CreateBlogPostInput = z.infer<typeof CreateBlogPostSchema>;
@@ -165,6 +166,7 @@ export const UpdateBlogPostSchema = z
       .max(160, 'metaDescription must be 160 characters or less')
       .optional(),
     ogImageUrl: httpsUrl.optional(),
+    status: z.enum(['draft', 'published']).optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: 'At least one field must be provided',

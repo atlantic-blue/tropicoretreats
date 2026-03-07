@@ -21,7 +21,6 @@ export interface BlogPost {
 export interface BlogPostsResponse {
   posts: BlogPost[];
   nextCursor?: string;
-  totalCount: number;
 }
 
 export interface CreateBlogPostPayload {

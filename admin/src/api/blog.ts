@@ -6,43 +6,34 @@ import type {
   UpdateBlogPostPayload,
 } from '../types/blog';
 
-interface BlogPostResponse {
-  data: BlogPost;
-}
-
-interface BlogPostsListResponse {
-  data: BlogPostsResponse;
-}
-
 export const blogApi = {
   list: async (): Promise<BlogPostsResponse> => {
-    const response = await fetchWithAuth<BlogPostsListResponse>('/blog/posts');
-    return response.data;
+    return fetchWithAuth<BlogPostsResponse>('/blog/posts?includeDrafts=true');
   },
 
   getBySlug: async (slug: string): Promise<BlogPost> => {
-    const response = await fetchWithAuth<BlogPostResponse>(`/blog/posts/${slug}`);
-    return response.data;
+    const response = await fetchWithAuth<{ post: BlogPost }>(`/blog/posts/${slug}`);
+    return response.post;
   },
 
   create: async (payload: CreateBlogPostPayload): Promise<BlogPost> => {
-    const response = await fetchWithAuth<BlogPostResponse>('/blog/posts', {
+    const response = await fetchWithAuth<{ post: BlogPost }>('/blog/posts', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
-    return response.data;
+    return response.post;
   },
 
   update: async (id: string, payload: UpdateBlogPostPayload): Promise<BlogPost> => {
-    const response = await fetchWithAuth<BlogPostResponse>(`/blog/posts/${id}`, {
+    const response = await fetchWithAuth<{ post: BlogPost }>(`/blog/posts/${id}`, {
       method: 'PUT',
       body: JSON.stringify(payload),
     });
-    return response.data;
+    return response.post;
   },
 
   delete: async (id: string): Promise<void> => {
-    await fetchWithAuth<void>(`/blog/posts/${id}`, {
+    await fetchWithAuth<{ message: string }>(`/blog/posts/${id}`, {
       method: 'DELETE',
     });
   },

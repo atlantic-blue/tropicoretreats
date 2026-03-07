@@ -282,6 +282,7 @@ async function handleCreatePost(
     ogImageUrl: input.ogImageUrl ?? input.heroImageUrl ?? '',
     authorName,
     now,
+    status: input.status,
   });
 
   const slugItem: SlugIndexItem = {
@@ -438,13 +439,32 @@ async function handleListPosts(
     }
   }
 
-  const result = await queryPublishedPosts(limit, cursor);
+  const includeDrafts =
+    queryParams.includeDrafts === 'true' && hasValidJwtClaims(event);
 
-  const posts = result.posts.map(toListingItem);
+  let allPosts: BlogPostItem[];
+  let nextCursor: string | undefined;
+
+  if (includeDrafts) {
+    const [published, drafts] = await Promise.all([
+      queryPostsByStatus('BLOG#PUBLISHED', limit),
+      queryPostsByStatus('BLOG#DRAFT', limit),
+    ]);
+    allPosts = [...published.posts, ...drafts.posts].sort(
+      (a, b) => b.updatedAt.localeCompare(a.updatedAt)
+    );
+    nextCursor = undefined;
+  } else {
+    const result = await queryPostsByStatus('BLOG#PUBLISHED', limit, cursor);
+    allPosts = result.posts;
+    nextCursor = result.nextCursor;
+  }
+
+  const posts = allPosts.map(toListingItem);
 
   const response: Record<string, unknown> = { posts };
-  if (result.nextCursor) {
-    response.nextCursor = result.nextCursor;
+  if (nextCursor) {
+    response.nextCursor = nextCursor;
   }
 
   return ok(response);
@@ -555,9 +575,10 @@ async function fetchBlogPostBySlug(
 }
 
 /**
- * Queries published posts via GSI1 in reverse chronological order.
+ * Queries posts by GSI1PK status partition in reverse chronological order.
  */
-async function queryPublishedPosts(
+async function queryPostsByStatus(
+  gsi1pk: string,
   limit: number,
   cursor?: string
 ): Promise<{ posts: BlogPostItem[]; nextCursor?: string }> {
@@ -574,7 +595,7 @@ async function queryPublishedPosts(
       TableName: TABLE_NAME,
       IndexName: 'GSI1',
       KeyConditionExpression: 'GSI1PK = :gsi1pk',
-      ExpressionAttributeValues: { ':gsi1pk': 'BLOG#PUBLISHED' },
+      ExpressionAttributeValues: { ':gsi1pk': gsi1pk },
       ScanIndexForward: false,
       Limit: limit,
       ExclusiveStartKey: exclusiveStartKey,
@@ -683,11 +704,16 @@ interface BuildBlogPostParams {
   now: string;
 }
 
-function buildBlogPostItem(params: BuildBlogPostParams): BlogPostItem {
+function buildBlogPostItem(
+  params: BuildBlogPostParams & { status?: 'draft' | 'published' }
+): BlogPostItem {
+  const status = params.status ?? 'published';
+  const isPublished = status === 'published';
+
   return {
     PK: `BLOG#${params.id}`,
     SK: `BLOG#${params.id}`,
-    GSI1PK: 'BLOG#PUBLISHED',
+    GSI1PK: isPublished ? 'BLOG#PUBLISHED' : 'BLOG#DRAFT',
     GSI1SK: params.now,
     id: params.id,
     title: params.title,
@@ -700,8 +726,8 @@ function buildBlogPostItem(params: BuildBlogPostParams): BlogPostItem {
     ogImageUrl: params.ogImageUrl,
     authorName: params.authorName,
     authorOrg: 'Tropico Retreats',
-    status: 'published',
-    publishedAt: params.now,
+    status,
+    publishedAt: isPublished ? params.now : '',
     createdAt: params.now,
     updatedAt: params.now,
   };
@@ -733,6 +759,18 @@ function applyUpdatesToPost(
   if (input.ogImageUrl !== undefined) {
     post.ogImageUrl = input.ogImageUrl as string;
   }
+  if (input.status !== undefined) {
+    const newStatus = input.status as 'draft' | 'published';
+    post.status = newStatus;
+    if (newStatus === 'published') {
+      post.GSI1PK = 'BLOG#PUBLISHED';
+      if (!post.publishedAt) {
+        post.publishedAt = new Date().toISOString();
+      }
+    } else {
+      post.GSI1PK = 'BLOG#DRAFT';
+    }
+  }
 }
 
 /** Listing fields for the list endpoint (no content, no DynamoDB keys). */
@@ -744,7 +782,10 @@ const LISTING_FIELDS = [
   'heroImageUrl',
   'authorName',
   'authorOrg',
+  'status',
   'publishedAt',
+  'createdAt',
+  'updatedAt',
 ] as const;
 
 function toListingItem(

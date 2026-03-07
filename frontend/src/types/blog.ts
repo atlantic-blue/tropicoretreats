@@ -17,13 +17,10 @@ export interface BlogPost {
 }
 
 export interface BlogListResponse {
-  data: {
-    posts: BlogPost[];
-    nextCursor?: string;
-    totalCount: number;
-  };
+  posts: BlogPost[];
+  nextCursor?: string;
 }
 
 export interface BlogPostResponse {
-  data: BlogPost;
+  post: BlogPost;
 }

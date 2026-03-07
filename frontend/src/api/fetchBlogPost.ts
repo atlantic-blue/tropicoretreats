@@ -46,7 +46,7 @@ export async function fetchBlogPost(slug: string): Promise<FetchBlogPostResponse
 
     return {
       success: true,
-      post: result.data,
+      post: result.post,
     };
   } catch (error) {
     clearTimeout(timeoutId);
