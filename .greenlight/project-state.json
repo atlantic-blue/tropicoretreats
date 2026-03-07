@@ -1,0 +1,12 @@
+{
+  "overview": {
+    "value_prop": "SEO growth engine for Tropico Retreats — blog CMS, custom analytics, GSC integration, and content performance tracking",
+    "stack": "TypeScript (React 19 + Vite admin, Webpack frontend, Node.js 22 Lambda, Terraform, DynamoDB, S3)",
+    "mode": "yolo"
+  },
+  "session": {
+    "last_session": "2026-03-07T02:30:00Z",
+    "resume_file": null
+  },
+  "blockers": []
+}

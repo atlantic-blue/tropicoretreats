@@ -1,694 +1,947 @@
-# Email CRM System Design
+# System Design: Tropico SEO Growth Engine
 
-## 1. Requirements Analysis
+## 1. Requirements
 
 ### 1.1 Functional Requirements
 
-**FR-1: Send email to a lead**
-- Operator composes an email from the admin dashboard
-- Email is sent via SES from `team@tropicoretreat.com`
-- Outbound email is recorded in DynamoDB linked to the lead
-- Subject auto-populated with `Re: <original subject>` for replies
-- Optimistic UI update on send
+**FR-1: Publish a blog post**
+- Operator writes content in Markdown via a side-by-side editor (Markdown left, live preview right)
+- Hero image uploaded via dedicated file picker (presigned S3 URL, auto-processed to WebP)
+- Inline images uploaded separately, inserted as Markdown `![alt](url)` syntax
+- Slug auto-generated from title (lowercase, hyphens, alphanumeric), editable before publishing
+- SEO meta fields: meta title, meta description, OG image (defaults to hero image)
+- On publish: post goes live immediately (no draft state for MVP)
+- Author captured automatically: operator name from JWT claims + "Tropico Retreats" as organization
+- Published post renders on public frontend at `/blog/<slug>` with clean URL
+- Blog index page at `/blog/` lists all published posts as cards with hero thumbnails and excerpts
+- Structured data (BlogPosting JSON-LD) generated automatically from post metadata
+- Prerender script expanded to fetch and prerender all published blog posts for SEO
 
-**FR-2: Receive and view inbound emails**
-- Emails sent to `team@tropicoretreat.com` arrive via SES receiving
-- Raw email stored in S3 for archival
-- MIME parsed to extract from, to, subject, body (text + HTML), attachments
-- Attachments stored in S3 under structured key path
-- Email record written to DynamoDB, matched to a lead by sender address
-- Backup forwarding to a configurable personal email address
+**FR-2: View traffic dashboard**
+- Custom lightweight analytics with zero third-party dependency
+- Tracking beacon fires on every page load on the public frontend
+- Beacon sends: page path, referrer (no cookies, no PII)
+- Visitor uniqueness approximated via one-way hash of IP + user-agent (hash stored, raw IP discarded)
+- Admin dashboard shows: total page views, unique visitors, average views per day
+- Top 10 pages by views with unique visitor count
+- Top 10 referral sources by count
+- Daily views line chart (using recharts library)
+- Time ranges: 7 days, 30 days, 90 days (default: 7 days)
 
-**FR-3: View email thread per lead**
-- Chronological conversation view (oldest first) when clicking on a lead
-- Inbound emails left-aligned, outbound emails right-aligned (chat-style)
-- Shows: sender, timestamp, subject (when it changes), body preview
-- Marks unread emails as read when the thread is viewed
+**FR-3: View keyword rankings**
+- Google Search Console API integration via service account (no interactive OAuth)
+- Service account email added as read-only user on GSC property for tropicoretreat.com
+- Dashboard shows: queries with clicks, impressions, CTR, average position
+- Dashboard shows: pages with clicks, impressions, CTR, average position
+- GSC data cached in DynamoDB for 6 hours (data is already 2-3 days stale)
+- Data end date displayed clearly so operators understand the lag
+- Time ranges: 7 days, 28 days, 90 days (default: 28 days)
 
-**FR-4: Auto-create lead from unknown sender**
-- Inbound email from an address not matching any existing lead creates a new lead
-- New lead populated with: email address, name from email headers (if available), message body as message field
-- Lead created with status `NEW`, temperature `WARM`
+**FR-4: Edit page SEO settings**
+- Operator can edit meta title, description, OG tags for any page from admin dashboard
+- Covers all existing pages: home, about, services, FAQs, contact, privacy, terms, 3 destinations
+- Covers all blog posts
+- Frontend checks DynamoDB for custom SEO overrides at render time
+- If override exists, use it; otherwise, fall back to hardcoded defaults in the SEO component
+- Prerender script fetches SEO overrides and applies them during build
 
-**FR-5: Unread indicators and sort by recency**
-- Lead list shows unread badge when lead has unread emails
-- Leads sortable by `lastEmailAt` (most recent email activity)
-- Last email preview (~100 chars) shown on lead card
+**FR-5: View content performance**
+- Combined view showing which blog posts perform best
+- Traffic data from custom analytics: page views, unique visitors per blog post
+- Search performance from GSC: clicks, impressions, CTR, average position per blog post
+- Top queries driving traffic to each blog post
+- Unified table sorted by total engagement (clicks + page views)
 
 ### 1.2 Non-Functional Requirements
 
 | Requirement | Target |
 |---|---|
-| Email delivery latency (outbound) | < 5 seconds from user click to SES acceptance |
-| Email processing latency (inbound) | < 30 seconds from SES receipt to dashboard visibility |
-| Email storage retention | Indefinite in DynamoDB; raw email in S3 with Glacier transition at 90 days |
-| Availability | Same as existing system (Lambda + DynamoDB on-demand) |
+| Blog publish latency | < 3 seconds from click to post visible via API |
+| Analytics beacon response | < 50ms (fire-and-forget, 204 No Content) |
+| Analytics dashboard load | < 2 seconds for 30-day aggregation |
+| GSC data freshness | Cached 6 hours; underlying data is 2-3 days behind |
+| Image processing time | < 10 seconds from upload to processed WebP available |
 | Concurrent operators | Up to 5 simultaneous dashboard users |
-| Email body size limit | 10 MB (SES receiving limit) |
-| Attachment storage | S3 with pre-signed URL access |
+| Blog content size limit | 100KB Markdown per post |
+| Image upload size limit | 10MB per image |
+| Availability | Same as existing system (Lambda + DynamoDB on-demand) |
 
 ### 1.3 Constraints
 
 - All Lambda handlers in TypeScript, Node.js 22, ESM via esbuild
-- SES receiving only in us-east-1 (current region)
-- Must use existing Cognito JWT auth for API endpoints
-- Email domain: `tropicoretreat.com` (Route53 + SES domain identity + DKIM already verified)
-- DNS records needed: SPF (TXT), DMARC (TXT), MX (for receiving)
-- Must integrate with existing DynamoDB single-table design
-- SES sandbox removal may take 24 hours (send to verified addresses only during sandbox)
-- Existing response helpers (`ok()`, `created()`, `badRequest()`, etc.) must be reused
-- Existing `fetchWithAuth<T>()` client pattern must be reused
-- Naming convention: `tropico-<component>-${environment}`
+- Extend existing DynamoDB single-table (`tropico-leads-{env}`)
+- Extend existing API Gateway (`api.tropicoretreat.com/v1`)
+- Extend existing admin dashboard (React 19 + Vite 7 + TailwindCSS v4 + TanStack Query v5)
+- Extend existing frontend (React 19 + Webpack 5 + react-helmet-async)
+- Extend existing Terraform modules (`infra/` root + `infra/api/` submodule)
+- Use existing Cognito JWT auth for admin endpoints
+- Use existing `fetchWithAuth<T>()` client pattern
+- Use existing response helpers (`ok()`, `created()`, `badRequest()`, etc.)
+- Use existing esbuild config pattern for new Lambda handlers
+- Follow existing naming convention: `tropico-<component>-${environment}`
+- No paid analytics or SEO services
+- Never touch production data directly
+- No WYSIWYG / rich text editor
 
 ### 1.4 Out of Scope (Deferred)
 
-- Rich text editor (basic textarea only for MVP)
-- Send-side attachment upload (receive-side attachments are handled)
-- Thread matching via In-Reply-To/References headers
-- CRM sync, calendar integration, WhatsApp improvements
-- Email templates/signatures
-- Email scheduling (send later)
-- Bulk email sending
-- Email analytics/tracking (open rates, click rates)
+- Draft / scheduled publishing workflow
+- Blog categories, tags, search
+- Rich text / WYSIWYG editor
+- Backlink tracker (manual or automated)
+- Competitor keyword tracking
+- A/B title testing
+- Social media sharing automation
+- Email newsletter integration with blog posts
+- Comment system
+- Real-time analytics (WebSocket updates)
+- Analytics aggregation Lambda (daily rollup for performance at scale)
+- Custom date range picker for analytics
+- Multi-language content
+- Blog post versioning / revision history
+- Collaborative editing
 
 ---
 
-## 2. Architecture
+## 2. Technical Decisions
 
-### 2.1 High-Level Architecture
+| Decision | Chosen | Rejected | Rationale |
+|----------|--------|----------|-----------|
+| Content authoring format | Markdown textarea + live preview | WYSIWYG editor, plain text | Markdown is simple, portable, and renders cleanly. WYSIWYG deferred per constraint. Plain text too limiting for blog content |
+| Image upload approach | Upload-first (presigned URL to S3) | Inline drag-and-drop, server-side upload | Simpler implementation, matches "keep it simple" constraint. Hero = dedicated picker, inline = upload then paste URL |
+| Blog post lifecycle | Publish immediately (no drafts) | Draft/published toggle, scheduled publish | MVP scope. Draft workflow deferred |
+| Image processing library | sharp (Node.js) | ImageMagick, Pillow, browser-side | sharp is the standard for Node.js -- fast, low memory, native WebP support, works well in Lambda |
+| Image output format | WebP | JPEG, PNG, AVIF | WebP has best compression-to-quality ratio with broad browser support. AVIF support still incomplete |
+| Analytics tracking method | sendBeacon POST to Lambda | Third-party analytics, pixel img tag, client-side only | Zero dependency on paid services. sendBeacon is non-blocking, fire-and-forget. Lambda + DynamoDB keeps data in-house |
+| Visitor uniqueness | Hash of IP + user-agent (no cookies) | Cookie-based, fingerprint.js, localStorage | Privacy-friendly, no consent banner needed, GDPR-compliant. Approximate uniqueness is sufficient for business metrics |
+| Analytics charting library | recharts | Chart.js, D3, Nivo, Tremor | recharts is React-native, lightweight, well-maintained, simple API for time-series line charts |
+| GSC authentication | Service account + property user access | OAuth2 interactive flow, API key | Service account avoids interactive OAuth dance. Add service account email as GSC property user. JSON key in Secrets Manager |
+| GSC data caching | DynamoDB cache with 6-hour TTL | No cache (fetch every request), Redis, S3 | DynamoDB is already in use, no new infrastructure. 6h TTL matches data staleness (2-3 day lag). Avoids GSC API quota issues |
+| SEO override storage | DynamoDB items with PK=SEO#{path} | JSON file in S3, hardcoded config, CMS | DynamoDB is consistent with existing patterns. Queryable. Supports per-page overrides without deployments |
+| Blog URL structure | /blog/{slug} | /posts/{slug}, /articles/{slug}, /blog/{year}/{slug} | Clean, standard blog URL pattern. Matches SEO strategy document. No date in URL avoids content looking stale |
+| Slug uniqueness enforcement | Separate SLUG#{slug} DynamoDB item | GSI on slug field, application-level check | Atomic conditional PutItem on slug item guarantees uniqueness. No GSI needed for a low-cardinality lookup |
+| Admin navigation | Sidebar with icons + labels | Header tabs, dropdown menu | Sidebar scales to 6+ sections. Collapsible on mobile. Standard admin dashboard pattern |
+| Blog editor layout | Side-by-side (Markdown left, preview right) | Stacked, tabbed | Standard desktop markdown editor pattern. More productive for content creation |
+| Blog listing style (public) | Cards with hero thumbnails + excerpts | Text-only list, full-content feed | Cards are visually engaging, match existing Tropico frontend design language |
+| Prerender strategy for blogs | Expand existing prerender script to fetch blog posts | SSR, ISR, separate static site generator | Follows existing pattern. Prerender script already handles all static pages. Adding blog post fetching is a natural extension |
+| Backlink tracking (MVP) | Deferred entirely | Manual entry tracker, free API integration | GSC API doesn't expose backlink data. Manual entry is low-value. Replaced with content performance dashboard |
+| DynamoDB analytics partitioning | Partition by date (PK=PAGEVIEW#{date}) | Single partition, partition by page, partition by month | Daily partitions prevent hot keys. Queries always target specific date ranges. Individual items stay small |
 
-The Email CRM adds two new data paths to the existing system:
+---
 
-**Outbound (operator sends email):**
+## 3. Architecture
+
+### 3.1 High-Level Architecture
+
 ```
-Admin Dashboard -> API Gateway (JWT auth) -> emailAdmin Lambda -> SES SendEmail -> recipient
-                                                              \-> DynamoDB (email record)
-                                                              \-> DynamoDB (lead.lastEmailAt update)
+                         INTERNET
+                            |
+              +-------------+-------------+
+              |             |             |
+              v             v             v
+     tropicoretreat.com   api.tropicoretreat.com   admin.tropicoretreat.com
+     (CloudFront/S3)      (API Gateway v2)          (CloudFront/S3)
+              |             |                        |
+         +----+       +-----+------+------+          |
+         |            |     |      |      |          |
+    blog images   Lambda  Lambda Lambda  Lambda      |
+    (CloudFront)  blog    seo    analytics gsc       |
+         |        Admin   Admin  collect   Proxy     |
+         |           |      |      |      |          |
+    S3 bucket        v      v      v      v          |
+    (uploads)           DynamoDB                     |
+         |           (tropico-leads-{env})           |
+         v                                           |
+    Lambda                                           |
+    (image processor)                                |
+         |                                           |
+    S3 bucket                                        |
+    (processed)                                      |
+              +--------------------------------------+
 ```
 
-**Inbound (client sends email to team@tropicoretreat.com):**
-```
-Internet -> SES Receiving -> S3 (raw email) -> S3 Event -> emailReceive Lambda -> DynamoDB (email record)
-                                                                                -> DynamoDB (lead match/create + lastEmailAt)
-                                                                                -> S3 (attachments)
-                                                                                -> SES (backup forward)
-```
+### 3.2 New Lambda Functions
 
-### 2.2 Component Placement
+| Lambda | Purpose | Trigger | Auth | Memory | Timeout |
+|--------|---------|---------|------|--------|---------|
+| `tropico-blog-admin-{env}` | Blog CRUD + image presign + public read | API Gateway | Mixed (CRUD=JWT, read=public) | 256 MB | 30s |
+| `tropico-seo-admin-{env}` | SEO settings CRUD | API Gateway | JWT | 128 MB | 10s |
+| `tropico-analytics-{env}` | Beacon collect + dashboard read | API Gateway | Mixed (collect=public, dashboard=JWT) | 128 MB | 10s |
+| `tropico-gsc-{env}` | GSC performance + content performance | API Gateway | JWT | 256 MB | 30s |
+| `tropico-image-processor-{env}` | Resize, compress to WebP, thumbnail | S3 PutObject event | S3 event | 512 MB | 60s |
+
+### 3.3 Component Placement
 
 Following the existing codebase structure:
 
 | Component | Location | Rationale |
 |---|---|---|
-| Email admin handler (send, list, mark-read) | `backend/src/handlers/emailAdmin.ts` | Multi-route pattern matches `leadsAdmin.ts` for admin API endpoints |
-| Email receive handler | `backend/src/handlers/emailReceive.ts` | Event-driven handler matches `processLeadNotifications.ts` pattern |
-| Email DynamoDB functions | `backend/src/lib/dynamodb.ts` (extend) | All DynamoDB access in single module matches existing pattern |
-| Email types | `backend/src/lib/types.ts` (extend) | All types in single module matches existing pattern |
-| Email validation schemas | `backend/src/lib/validation.ts` (extend) | All Zod schemas in single module matches existing pattern |
-| MIME parsing | `backend/src/lib/emailParser.ts` (new) | Isolated library concern, single responsibility |
-| Email API client functions | `admin/src/api/emails.ts` (new) | Parallel to `admin/src/api/leads.ts` |
-| Email types (frontend) | `admin/src/types/email.ts` (new) | Parallel to `admin/src/types/lead.ts` |
-| Email thread component | `admin/src/components/emails/EmailThread.tsx` (new) | Feature-grouped components |
-| Email compose component | `admin/src/components/emails/EmailCompose.tsx` (new) | Feature-grouped components |
-| Email hooks | `admin/src/hooks/useEmails.ts` (new) | TanStack Query hooks for email data |
-| Terraform email infra | `infra/api/email.tf` (new) | Feature-grouped Terraform matching flat file convention |
-| Terraform email IAM | `infra/api/iam.tf` (extend) | All IAM in single file matches existing pattern |
-| Terraform DNS records | `infra/api/ses.tf` (extend) | SES records in existing SES file |
-
-### 2.3 Lambda Architecture Decision
-
-Two Lambda functions:
-
-1. **`tropico-email-admin-${env}`** - Multi-route, API Gateway triggered, JWT protected
-   - `POST /emails/send` - Send email to a lead
-   - `GET /emails/{leadId}` - Get email thread for a lead
-   - `PATCH /emails/{leadId}/read` - Mark emails as read
-
-2. **`tropico-email-receive-${env}`** - Event-driven, S3 triggered
-   - Triggered by S3 PutObject in the email store bucket
-   - Parses MIME, matches lead, stores email record, forwards backup
-
-This follows the existing pattern: multi-route Lambda for admin API endpoints (like `leadsAdmin`), separate Lambda for event-driven processing (like `processLeadNotifications`).
+| Blog admin handler | `backend/src/handlers/blogAdmin.ts` | Multi-route pattern matching `leadsAdmin.ts` |
+| SEO admin handler | `backend/src/handlers/seoAdmin.ts` | Separate domain concern from blog |
+| Analytics handler | `backend/src/handlers/analytics.ts` | Mixed public/admin routes |
+| GSC proxy handler | `backend/src/handlers/gscProxy.ts` | Isolated GSC API interaction |
+| Image processor handler | `backend/src/handlers/imageProcessor.ts` | Event-driven, matching `processLeadNotifications.ts` pattern |
+| Blog DynamoDB functions | `backend/src/lib/dynamodb.ts` (extend) | All DynamoDB access in single module |
+| Blog types | `backend/src/lib/types.ts` (extend) | All types in single module |
+| Blog validation schemas | `backend/src/lib/validation.ts` (extend) | All Zod schemas in single module |
+| Markdown utilities | `backend/src/lib/markdown.ts` (new) | Excerpt generation, sanitization |
+| Blog API client | `admin/src/api/blog.ts` (new) | Parallel to `admin/src/api/leads.ts` |
+| SEO API client | `admin/src/api/seo.ts` (new) | Separate domain concern |
+| Analytics API client | `admin/src/api/analytics.ts` (new) | Separate domain concern |
+| GSC API client | `admin/src/api/gsc.ts` (new) | Separate domain concern |
+| Blog editor components | `admin/src/components/blog/` (new) | Feature-grouped components |
+| Analytics dashboard components | `admin/src/components/analytics/` (new) | Feature-grouped components |
+| SEO settings components | `admin/src/components/seo/` (new) | Feature-grouped components |
+| Blog pages (public) | `frontend/src/pages/BlogIndexPage.tsx`, `BlogPostPage.tsx` (new) | Parallel to existing pages |
+| Analytics beacon | `frontend/src/lib/analytics.ts` (new) | Lightweight tracking script |
+| Terraform blog infra | `infra/api/blog.tf` (new) | Feature-grouped, matching `notifications.tf` |
+| Terraform analytics infra | `infra/api/analytics.tf` (new) | Feature-grouped |
+| Terraform GSC infra | `infra/api/gsc.tf` (new) | Feature-grouped |
 
 ---
 
-## 3. Data Model
+## 4. Data Model
 
-### 3.1 DynamoDB Schema — Email Items
+All new entities live in the existing `tropico-leads-{env}` DynamoDB table (single-table design, PAY_PER_REQUEST billing).
 
-Emails live in the existing `tropico-leads-${env}` table (single-table design). This keeps email queries co-located with leads for efficient access patterns.
+### 4.1 Blog Post
 
-**Email Item:**
+```
+PK:     BLOG#{id}
+SK:     BLOG#{id}
+GSI1PK: BLOG#PUBLISHED           (only when status=published)
+GSI1SK: {publishedAt ISO 8601}    (chronological listing)
 
-| Attribute | Type | Value | Purpose |
-|---|---|---|---|
-| `PK` | String | `LEAD#<leadId>` | Partition key — co-located with lead |
-| `SK` | String | `EMAIL#<timestamp>#<messageId>` | Sort key — chronological ordering |
-| `GSI1PK` | String | `EMAIL#<direction>` | GSI for querying by direction (future use) |
-| `GSI1SK` | String | `<timestamp>` | GSI sort by time |
-| `id` | String | `<messageId>` | SES message ID (outbound) or generated ULID (inbound) |
-| `leadId` | String | `<leadId>` | Denormalized lead reference |
-| `direction` | String | `inbound` or `outbound` | Email direction |
-| `fromAddress` | String | email address | Sender address |
-| `toAddress` | String | email address | Recipient address |
-| `subject` | String | email subject | Subject line |
-| `bodyText` | String | plain text body | Plain text version |
-| `bodyHtml` | String | HTML body | HTML version (optional) |
-| `attachments` | List | `[{filename, s3Key, contentType, size}]` | Attachment metadata |
-| `sentAt` | String | ISO 8601 | When the email was sent |
-| `readAt` | String or null | ISO 8601 or null | When the email was read (null = unread) |
-| `operator` | String or null | operator email/name | Who sent it (outbound only) |
-| `s3Key` | String or null | S3 object key | Raw email location in S3 (inbound only) |
-| `createdAt` | String | ISO 8601 | Record creation timestamp |
-| `updatedAt` | String | ISO 8601 | Record update timestamp |
+id:              ULID
+title:           string
+slug:            string (unique, URL-safe, lowercase alphanumeric + hyphens)
+content:         string (Markdown, max 100KB)
+excerpt:         string (auto-generated, first ~200 chars of plain text)
+heroImageUrl:    string (CloudFront URL of processed hero WebP)
+metaTitle:       string (defaults to title if not set)
+metaDescription: string (defaults to excerpt if not set)
+ogImageUrl:      string (defaults to heroImageUrl)
+authorName:      string (operator name from JWT claims)
+authorOrg:       string ("Tropico Retreats")
+status:          "published" (MVP -- single status)
+publishedAt:     ISO 8601
+createdAt:       ISO 8601
+updatedAt:       ISO 8601
+```
 
-### 3.2 Lead Record Updates
+### 4.2 Slug Index (Uniqueness Enforcement)
 
-The existing Lead type needs two new optional fields:
+```
+PK:     SLUG#{slug}
+SK:     SLUG#{slug}
 
-| Attribute | Type | Purpose |
+slug:   string
+blogId: string (ULID of the blog post)
+```
+
+Conditional PutItem (`attribute_not_exists(PK)`) ensures slugs are globally unique. Blog read-by-slug uses GetItem on this record to find the blogId, then GetItem on the blog post.
+
+### 4.3 SEO Override
+
+```
+PK:     SEO#{path}               (e.g., SEO#/about, SEO#/blog/my-post)
+SK:     SEO#{path}
+GSI1PK: SEO#ALL
+GSI1SK: {path}
+
+path:            string (URL path, e.g., "/about", "/destinations/caribbean")
+metaTitle:       string
+metaDescription: string
+ogTitle:         string (optional, defaults to metaTitle)
+ogDescription:   string (optional, defaults to metaDescription)
+ogImageUrl:      string (optional)
+keywords:        string (optional)
+updatedAt:       ISO 8601
+updatedBy:       string (operator email from JWT)
+```
+
+### 4.4 Analytics Page View
+
+```
+PK:     PAGEVIEW#{date}          (e.g., PAGEVIEW#2026-03-07)
+SK:     PAGEVIEW#{timestamp}#{ulid}
+
+path:       string (e.g., "/blog/corporate-retreat-colombia")
+referrer:   string (e.g., "https://google.com", or empty)
+visitorId:  string (one-way hash of IP + user-agent, no PII)
+userAgent:  string (browser family only, e.g., "Chrome/120")
+country:    string (from CloudFront geo header, optional)
+createdAt:  ISO 8601
+```
+
+Partitioned by date for efficient range queries. The dashboard queries `PK = PAGEVIEW#2026-03-01` through `PK = PAGEVIEW#2026-03-07` for a 7-day view (one Query per day, parallelized).
+
+### 4.5 GSC Cache
+
+```
+PK:     GSC#CACHE
+SK:     GSC#{queryType}#{dateRange}    (e.g., GSC#performance#28d, GSC#pages#7d)
+
+data:       string (JSON-encoded GSC API response)
+fetchedAt:  ISO 8601
+expiresAt:  ISO 8601 (fetchedAt + 6 hours)
+```
+
+Single cache partition. Low write volume (at most a few writes per hour). On read, check `expiresAt > now`; if expired, fetch fresh from GSC API, write new cache item, return.
+
+### 4.6 Access Patterns
+
+| Access Pattern | Method | Key Condition |
 |---|---|---|
-| `lastEmailAt` | String (ISO 8601) or undefined | Timestamp of most recent email (inbound or outbound) for sorting |
-| `unreadEmailCount` | Number or undefined | Count of unread inbound emails for badge display |
-
-These are denormalized onto the lead record and updated atomically when emails are sent/received/read.
-
-### 3.3 Access Patterns
-
-| Access Pattern | Key Condition | Use Case |
-|---|---|---|
-| Get all emails for a lead | `PK = LEAD#<leadId> AND begins_with(SK, 'EMAIL#')` | Email thread view |
-| Get all emails for a lead (paginated) | Same + `ScanIndexForward=true` + `Limit` | Paginated thread |
-| Get lead with email metadata | `PK = LEAD#<leadId> AND SK = LEAD#<leadId>` | Lead card with unread count |
-| Find lead by email address | Scan with filter `email = :addr` (or GSI2 if needed) | Inbound email matching |
-| Sort leads by recent email | Client-side sort on `lastEmailAt` (existing scan pattern) | Lead list sorting |
-
-### 3.4 Lead Matching for Inbound Email
-
-For the MVP, lead matching uses a Scan + filter on the `email` attribute. This is acceptable because:
-
-- The dataset is small (~100 leads, per existing code comments)
-- The existing `getLeads()` already uses Scan for the same table
-- Adding a GSI for email lookup would be premature optimization
-
-If the dataset grows, a GSI with `GSI2PK = EMAIL#<normalized-email>` can be added later without application changes.
+| List published blog posts | Query GSI1 | `GSI1PK = BLOG#PUBLISHED`, `ScanIndexForward = false`, limit |
+| Get blog post by ID | GetItem | `PK = BLOG#{id}`, `SK = BLOG#{id}` |
+| Get blog post by slug | GetItem slug index | `PK = SLUG#{slug}`, `SK = SLUG#{slug}` -> blogId -> GetItem |
+| Create blog post | TransactWriteItems | PutItem blog + conditional PutItem slug (atomic) |
+| Delete blog post | TransactWriteItems | DeleteItem blog + DeleteItem slug (atomic) |
+| List all SEO overrides | Query GSI1 | `GSI1PK = SEO#ALL` |
+| Get SEO override for path | GetItem | `PK = SEO#{path}`, `SK = SEO#{path}` |
+| Upsert SEO override | PutItem | `PK = SEO#{path}`, `SK = SEO#{path}` |
+| Record page view | PutItem | `PK = PAGEVIEW#{date}`, `SK = PAGEVIEW#{ts}#{ulid}` |
+| Query page views for date | Query | `PK = PAGEVIEW#{date}` |
+| Get GSC cache | GetItem | `PK = GSC#CACHE`, `SK = GSC#{type}#{range}` |
+| Set GSC cache | PutItem | `PK = GSC#CACHE`, `SK = GSC#{type}#{range}` |
 
 ---
 
-## 4. API Surface
+## 5. API Surface
 
-### 4.1 Send Email
+### 5.1 Public Blog Endpoints (No Auth)
 
-```
-POST /emails/send
-Authorization: Bearer <JWT>
-
-Request Body:
-{
-  "leadId": "01HZ...",           // Required - ULID of the lead
-  "to": "client@example.com",    // Required - recipient email
-  "subject": "Re: Retreat Inquiry", // Required - email subject
-  "bodyText": "Hello...",        // Required - plain text body
-  "bodyHtml": "<p>Hello...</p>"  // Optional - HTML body
-}
-
-Response 201:
-{
-  "id": "<messageId>",
-  "leadId": "01HZ...",
-  "direction": "outbound",
-  "fromAddress": "team@tropicoretreat.com",
-  "toAddress": "client@example.com",
-  "subject": "Re: Retreat Inquiry",
-  "bodyText": "Hello...",
-  "bodyHtml": "<p>Hello...</p>",
-  "sentAt": "2026-02-26T12:00:00.000Z",
-  "operator": "admin@tropicoretreat.com",
-  "createdAt": "2026-02-26T12:00:00.000Z",
-  "updatedAt": "2026-02-26T12:00:00.000Z"
-}
-
-Response 400: { "error": "Validation failed", "details": {...} }
-Response 404: { "error": "Lead not found" }
-Response 500: { "error": "Internal server error" }
-```
-
-### 4.2 Get Email Thread
+**GET `/v1/blog/posts`** -- List published blog posts
 
 ```
-GET /emails/{leadId}?limit=50&cursor=<base64>
-Authorization: Bearer <JWT>
+Query params:
+  limit?:  number (1-50, default 20)
+  cursor?: string (base64-encoded pagination key)
 
 Response 200:
 {
-  "emails": [
-    {
-      "id": "<messageId>",
-      "leadId": "01HZ...",
-      "direction": "inbound",
-      "fromAddress": "client@example.com",
-      "toAddress": "team@tropicoretreat.com",
-      "subject": "Retreat Inquiry",
-      "bodyText": "We're interested...",
-      "bodyHtml": null,
-      "attachments": [
-        {
-          "filename": "proposal.pdf",
-          "s3Key": "attachments/01HZ.../abc123/proposal.pdf",
-          "contentType": "application/pdf",
-          "size": 245000
-        }
-      ],
-      "sentAt": "2026-02-25T10:00:00.000Z",
-      "readAt": "2026-02-25T11:00:00.000Z",
-      "operator": null,
-      "createdAt": "2026-02-25T10:00:05.000Z",
-      "updatedAt": "2026-02-25T11:00:00.000Z"
+  posts: [{
+    id: string,
+    title: string,
+    slug: string,
+    excerpt: string,
+    heroImageUrl: string,
+    authorName: string,
+    authorOrg: string,
+    publishedAt: string
+  }],
+  nextCursor?: string
+}
+```
+
+**GET `/v1/blog/posts/{slug}`** -- Get single blog post by slug
+
+```
+Response 200:
+{
+  post: {
+    id: string,
+    title: string,
+    slug: string,
+    content: string,         // Markdown
+    excerpt: string,
+    heroImageUrl: string,
+    metaTitle: string,
+    metaDescription: string,
+    ogImageUrl: string,
+    authorName: string,
+    authorOrg: string,
+    publishedAt: string,
+    updatedAt: string
+  }
+}
+
+Response 404: { error: "Post not found" }
+```
+
+### 5.2 Public Analytics Endpoint (No Auth)
+
+**POST `/v1/analytics/collect`** -- Record page view
+
+```
+Request body:
+{
+  path: string,          // required, max 500 chars, starts with "/"
+  referrer?: string      // optional, max 2000 chars
+}
+
+Response 204: (no body)
+Response 400: { error: "Invalid request" }
+```
+
+The Lambda extracts visitor fingerprint from request headers (IP hash + user-agent). Rate limited at API Gateway level.
+
+### 5.3 Admin Blog Endpoints (JWT Required)
+
+**POST `/v1/blog/posts`** -- Create and publish blog post
+
+```
+Request body:
+{
+  title: string,              // required, max 200 chars
+  slug?: string,              // optional, auto-generated from title if absent
+  content: string,            // required, Markdown, max 100KB
+  heroImageUrl?: string,      // optional, S3 URL
+  metaTitle?: string,         // optional, defaults to title
+  metaDescription?: string,   // optional, defaults to auto excerpt
+  ogImageUrl?: string         // optional, defaults to heroImageUrl
+}
+
+Response 201: { post: BlogPost }
+Response 400: { error: string, details: {...} }
+Response 409: { error: "Slug already exists" }
+```
+
+**PUT `/v1/blog/posts/{id}`** -- Update blog post
+
+```
+Request body:
+{
+  title?: string,
+  slug?: string,
+  content?: string,
+  heroImageUrl?: string,
+  metaTitle?: string,
+  metaDescription?: string,
+  ogImageUrl?: string
+}
+
+Response 200: { post: BlogPost }
+Response 404: { error: "Post not found" }
+Response 409: { error: "Slug already exists" }
+```
+
+**DELETE `/v1/blog/posts/{id}`** -- Soft delete blog post
+
+```
+Response 200: { message: "Post deleted" }
+Response 404: { error: "Post not found" }
+```
+
+Soft delete: sets `status = "deleted"`, removes `GSI1PK` (disappears from published listing), deletes slug index item (frees the slug for reuse).
+
+**POST `/v1/blog/images`** -- Get presigned S3 upload URL
+
+```
+Request body:
+{
+  filename: string,           // required
+  contentType: string,        // required, must be image/*
+  purpose: "hero" | "inline"  // required
+}
+
+Response 200:
+{
+  uploadUrl: string,          // presigned PUT URL (5 min expiry)
+  imageUrl: string,           // final CloudFront URL of processed image
+  key: string                 // S3 key
+}
+
+Response 400: { error: "Invalid content type" }
+```
+
+### 5.4 Admin SEO Endpoints (JWT Required)
+
+**GET `/v1/seo/settings`** -- List all SEO overrides
+
+```
+Response 200:
+{
+  settings: [{
+    path: string,
+    metaTitle: string,
+    metaDescription: string,
+    ogTitle?: string,
+    ogDescription?: string,
+    ogImageUrl?: string,
+    keywords?: string,
+    updatedAt: string,
+    updatedBy: string
+  }]
+}
+```
+
+**PUT `/v1/seo/settings/{encodedPath}`** -- Upsert SEO override for a page
+
+```
+Path param: encodedPath (URL-encoded, e.g., %2Fabout for /about)
+
+Request body:
+{
+  metaTitle: string,         // required, max 70 chars
+  metaDescription: string,   // required, max 160 chars
+  ogTitle?: string,          // optional, defaults to metaTitle
+  ogDescription?: string,    // optional, defaults to metaDescription
+  ogImageUrl?: string,       // optional
+  keywords?: string          // optional, max 500 chars
+}
+
+Response 200: { setting: SeoOverride }
+Response 400: { error: string, details: {...} }
+```
+
+### 5.5 Admin Analytics Endpoint (JWT Required)
+
+**GET `/v1/analytics/dashboard`** -- Traffic dashboard data
+
+```
+Query params:
+  period?: "7d" | "30d" | "90d" (default: "7d")
+
+Response 200:
+{
+  summary: {
+    totalPageViews: number,
+    uniqueVisitors: number,
+    avgViewsPerDay: number
+  },
+  topPages: [{
+    path: string,
+    views: number,
+    uniqueVisitors: number
+  }],
+  topReferrers: [{
+    referrer: string,
+    count: number
+  }],
+  dailyViews: [{
+    date: string,
+    views: number,
+    uniqueVisitors: number
+  }]
+}
+```
+
+### 5.6 Admin GSC Endpoints (JWT Required)
+
+**GET `/v1/gsc/performance`** -- Search performance from GSC
+
+```
+Query params:
+  period?: "7d" | "28d" | "90d" (default: "28d")
+
+Response 200:
+{
+  queries: [{
+    query: string,
+    clicks: number,
+    impressions: number,
+    ctr: number,
+    position: number
+  }],
+  pages: [{
+    page: string,
+    clicks: number,
+    impressions: number,
+    ctr: number,
+    position: number
+  }],
+  cachedAt: string,
+  dataEndDate: string
+}
+```
+
+**GET `/v1/gsc/content`** -- Content performance (combined traffic + GSC)
+
+```
+Query params:
+  period?: "28d" (default: "28d")
+
+Response 200:
+{
+  posts: [{
+    slug: string,
+    title: string,
+    publishedAt: string,
+    analytics: {
+      pageViews: number,
+      uniqueVisitors: number
+    },
+    gsc: {
+      clicks: number,
+      impressions: number,
+      ctr: number,
+      avgPosition: number,
+      topQueries: [string]
     }
-  ],
-  "nextCursor": "<base64>",
-  "totalCount": 12
+  }]
 }
 ```
 
-### 4.3 Mark Emails as Read
-
-```
-PATCH /emails/{leadId}/read
-Authorization: Bearer <JWT>
-
-Request Body: {} (empty - marks all unread emails for this lead as read)
-
-Response 200:
-{
-  "markedCount": 3,
-  "leadId": "01HZ..."
-}
-```
-
-### 4.4 API Gateway Route Table (Complete)
+### 5.7 Complete API Gateway Route Table
 
 | Method | Path | Lambda | Auth | Description |
 |---|---|---|---|---|
-| POST | /leads | tropico-create-lead | None | Create lead (public form) |
-| GET | /leads | tropico-leads-admin | JWT | List leads |
-| GET | /leads/{id} | tropico-leads-admin | JWT | Get lead detail |
-| PATCH | /leads/{id} | tropico-leads-admin | JWT | Update lead |
-| POST | /leads/{id}/notes | tropico-leads-admin | JWT | Add note |
-| PATCH | /leads/{id}/notes/{noteId} | tropico-leads-admin | JWT | Edit note |
-| GET | /users | tropico-users | JWT | List users |
-| **POST** | **/emails/send** | **tropico-email-admin** | **JWT** | **Send email** |
-| **GET** | **/emails/{leadId}** | **tropico-email-admin** | **JWT** | **Get thread** |
-| **PATCH** | **/emails/{leadId}/read** | **tropico-email-admin** | **JWT** | **Mark read** |
+| POST | /leads | tropico-create-lead | None | Create lead (existing) |
+| GET | /leads | tropico-leads-admin | JWT | List leads (existing) |
+| GET | /leads/{id} | tropico-leads-admin | JWT | Get lead (existing) |
+| PATCH | /leads/{id} | tropico-leads-admin | JWT | Update lead (existing) |
+| POST | /leads/{id}/notes | tropico-leads-admin | JWT | Add note (existing) |
+| PATCH | /leads/{id}/notes/{noteId} | tropico-leads-admin | JWT | Edit note (existing) |
+| GET | /users | tropico-users | JWT | List users (existing) |
+| POST | /emails/send | tropico-email-admin | JWT | Send email (existing) |
+| GET | /emails/{leadId} | tropico-email-admin | JWT | Get thread (existing) |
+| PATCH | /emails/{leadId}/read | tropico-email-admin | JWT | Mark read (existing) |
+| **GET** | **/blog/posts** | **tropico-blog-admin** | **None** | **List published posts** |
+| **GET** | **/blog/posts/{slug}** | **tropico-blog-admin** | **None** | **Get post by slug** |
+| **POST** | **/blog/posts** | **tropico-blog-admin** | **JWT** | **Create blog post** |
+| **PUT** | **/blog/posts/{id}** | **tropico-blog-admin** | **JWT** | **Update blog post** |
+| **DELETE** | **/blog/posts/{id}** | **tropico-blog-admin** | **JWT** | **Delete blog post** |
+| **POST** | **/blog/images** | **tropico-blog-admin** | **JWT** | **Get presigned upload URL** |
+| **GET** | **/seo/settings** | **tropico-seo-admin** | **JWT** | **List SEO overrides** |
+| **PUT** | **/seo/settings/{path}** | **tropico-seo-admin** | **JWT** | **Upsert SEO override** |
+| **POST** | **/analytics/collect** | **tropico-analytics** | **None** | **Record page view** |
+| **GET** | **/analytics/dashboard** | **tropico-analytics** | **JWT** | **Traffic dashboard** |
+| **GET** | **/gsc/performance** | **tropico-gsc** | **JWT** | **Keyword rankings** |
+| **GET** | **/gsc/content** | **tropico-gsc** | **JWT** | **Content performance** |
 
 ---
 
-## 5. Email Flows
+## 6. Image Processing Pipeline
 
-### 5.1 Outbound Flow (Operator Sends Email)
-
-```
-1. Operator types email in dashboard compose box
-2. Dashboard calls POST /emails/send with JWT
-3. emailAdmin Lambda validates request body (Zod schema)
-4. Lambda verifies lead exists (getLead)
-5. Lambda calls SES SendEmail:
-   - Source: "Tropico Retreats <team@tropicoretreat.com>"
-   - Destination: lead's email address
-   - ReplyTo: team@tropicoretreat.com
-6. Lambda writes email record to DynamoDB (PK=LEAD#<leadId>, SK=EMAIL#<ts>#<msgId>)
-7. Lambda updates lead record: lastEmailAt = now
-8. Lambda returns 201 with email record
-9. Dashboard performs optimistic update, then invalidates query
-```
-
-**Error handling:**
-- If SES send fails, return 500 to dashboard (email is not recorded)
-- If DynamoDB write fails after SES send, log error and return 500 (orphaned email in SES, but acceptable for MVP -- email was delivered, record can be reconciled)
-
-### 5.2 Inbound Flow (Client Sends Email)
+### 6.1 Upload Flow
 
 ```
-1. Client sends email to team@tropicoretreat.com
-2. SES receives email (MX record routing)
-3. SES receipt rule:
-   a. Stores raw email in S3: s3://tropicoretreat-email-store-${env}/incoming/<messageId>
-   b. S3 event triggers emailReceive Lambda
-4. emailReceive Lambda:
-   a. Reads raw email from S3
-   b. Parses MIME with mailparser: extracts from, to, subject, body, attachments
-   c. Extracts sender email address
-   d. Searches DynamoDB for lead with matching email (scan + filter)
-   e. If no match: creates new lead (auto-create) with status=NEW, temperature=WARM
-   f. Stores attachments in S3: attachments/<leadId>/<messageId>/<filename>
-   g. Writes email record to DynamoDB (direction=inbound, readAt=null)
-   h. Updates lead record: lastEmailAt=now, unreadEmailCount += 1
-   i. Forwards notification copy to backup personal email (env var)
-5. Dashboard auto-refreshes via TanStack Query staleTime (or manual refresh)
+1. Operator clicks "Upload hero image" in blog editor
+2. Admin frontend: POST /v1/blog/images { filename, contentType, purpose: "hero" }
+3. blogAdmin Lambda:
+   a. Validates contentType is image/* (jpeg, png, webp, gif)
+   b. Generates ULID for image group
+   c. Sets purpose in S3 object metadata via presigned URL conditions
+   d. Generates presigned PUT URL for S3 key:
+        tropico-blog-images-{env}/uploads/{ulid}/{filename}
+   e. Returns { uploadUrl, imageUrl (expected processed URL), key }
+4. Admin frontend: PUT to presigned URL with raw file bytes
+5. S3 PutObject event on uploads/ prefix triggers imageProcessor Lambda
 ```
 
-**Error handling:**
-- If MIME parsing fails, log error, store raw S3 key reference, still create email record with error flag
-- If lead matching scan fails, log error and re-throw (Lambda retry with SQS DLQ)
-- If backup forwarding fails, log error but do not block main processing
-- Maximum 3 retries via Lambda event source mapping, then DLQ
-
-### 5.3 Mark as Read Flow
+### 6.2 Processing
 
 ```
-1. Operator opens email thread for a lead (navigates to lead detail page)
-2. Dashboard calls PATCH /emails/{leadId}/read
-3. emailAdmin Lambda queries all unread emails for this lead
-   (PK=LEAD#<leadId>, begins_with(SK, 'EMAIL#'), filter readAt=null AND direction='inbound')
-4. Lambda batch-updates each unread email: readAt = now
-5. Lambda updates lead record: unreadEmailCount = 0
-6. Returns count of marked emails
-7. Dashboard invalidates lead query (refreshes unread badge)
+6. imageProcessor Lambda:
+   a. Downloads original from uploads/ prefix
+   b. Validates file is actually an image (magic bytes check via sharp)
+   c. Reads purpose from S3 object metadata
+   d. Uses sharp to:
+      - hero:   resize to max 1200px wide (maintain aspect ratio), WebP quality 80
+      - inline: resize to max 800px wide (maintain aspect ratio), WebP quality 80
+      - thumbnail: resize to max 400px wide, WebP quality 70
+   e. Writes processed files:
+      tropico-blog-images-{env}/processed/{ulid}/hero.webp     (or inline.webp)
+      tropico-blog-images-{env}/processed/{ulid}/thumbnail.webp
+   f. Original preserved in uploads/ prefix
 ```
 
-### 5.4 Backup Forwarding
+### 6.3 Serving
 
-Every inbound email is forwarded to a configurable personal email address (environment variable `BACKUP_FORWARD_EMAIL`). This ensures operators never miss an email even if the dashboard is down.
+```
+7. CloudFront distribution serves from tropico-blog-images-{env} S3 bucket
+8. Blog post stores CloudFront URL as heroImageUrl
+9. Public frontend renders processed WebP images via CloudFront
+```
 
-The forwarded email includes:
-- Original subject with `[Tropico CRM]` prefix
-- Original body
-- Metadata header: original sender, matched lead ID, timestamp
-- Attachments are NOT forwarded (too large); instead, a link to the admin dashboard lead page is included
+### 6.4 S3 Bucket Structure
+
+```
+tropico-blog-images-{env}/
+  uploads/
+    {ulid}/
+      original-filename.jpg       (original upload)
+  processed/
+    {ulid}/
+      hero.webp                   (1200px max width, quality 80)
+      inline.webp                 (800px max width, quality 80)
+      thumbnail.webp              (400px max width, quality 70)
+```
 
 ---
 
-## 6. Security
+## 7. Analytics Beacon Design
 
-### 6.1 Email Authentication (DNS)
+### 7.1 Frontend Script
 
-Three DNS records are required for email deliverability and security:
+A lightweight script included in the public frontend that fires on each page load:
 
-**SPF Record (TXT):**
-```
-Type: TXT
-Name: tropicoretreat.com
-Value: "v=spf1 include:amazonses.com ~all"
-```
-This tells receiving mail servers that Amazon SES is authorized to send on behalf of tropicoretreat.com. The `~all` soft-fail ensures other senders are flagged but not rejected.
-
-Note: The existing Google verification TXT record is on the same domain. Route53 supports multiple TXT records for the same name, but they must be in the same record resource. The SPF value will be added as an additional string in the existing TXT record, or as a separate TXT record if there is no collision.
-
-**DMARC Record (TXT):**
-```
-Type: TXT
-Name: _dmarc.tropicoretreat.com
-Value: "v=DMARC1; p=quarantine; rua=mailto:dmarc@tropicoretreat.com; pct=100"
-```
-DMARC policy set to `quarantine` (not `reject`) for the initial rollout. This allows monitoring of alignment failures before tightening. Aggregate reports sent to a dedicated address.
-
-**MX Record:**
-```
-Type: MX
-Name: tropicoretreat.com
-Value: 10 inbound-smtp.us-east-1.amazonaws.com
-```
-Routes inbound email for `tropicoretreat.com` to SES receiving in us-east-1.
-
-**DKIM:** Already configured and verified (3 CNAME records exist in `infra/api/ses.tf`).
-
-### 6.2 IAM Policies (Least Privilege)
-
-**Email Admin Lambda IAM Role:**
-- `ses:SendEmail`, `ses:SendRawEmail` - Scoped to `FromAddress = team@tropicoretreat.com`
-- `dynamodb:PutItem`, `dynamodb:GetItem`, `dynamodb:Query`, `dynamodb:UpdateItem` - Scoped to table ARN + GSI
-- `logs:CreateLogGroup`, `logs:CreateLogStream`, `logs:PutLogEvents` - Scoped to log group ARN
-
-**Email Receive Lambda IAM Role:**
-- `s3:GetObject` - Scoped to email store bucket ARN + `incoming/*` prefix
-- `s3:PutObject` - Scoped to email store bucket ARN + `attachments/*` prefix
-- `dynamodb:PutItem`, `dynamodb:GetItem`, `dynamodb:Query`, `dynamodb:Scan`, `dynamodb:UpdateItem` - Scoped to table ARN + GSI
-- `ses:SendEmail`, `ses:SendRawEmail` - Scoped to `FromAddress = team@tropicoretreat.com` (for backup forwarding)
-- `logs:CreateLogGroup`, `logs:CreateLogStream`, `logs:PutLogEvents` - Scoped to log group ARN
-
-**SES Receiving Permission:**
-- S3 bucket policy allowing SES to PutObject
-- Lambda resource-based policy allowing S3 to invoke
-
-### 6.3 Input Validation
-
-All API inputs validated with Zod schemas before processing:
-
-**Send Email Schema:**
 ```typescript
-const SendEmailSchema = z.object({
-  leadId: z.string().min(1).max(100),
-  to: z.string().email(),
-  subject: z.string().min(1).max(500),
-  bodyText: z.string().min(1).max(100000),
-  bodyHtml: z.string().max(500000).optional(),
+// frontend/src/lib/analytics.ts
+const ANALYTICS_URL = `${env.api.url}/analytics/collect`;
+
+export function trackPageView(): void {
+  const payload = {
+    path: window.location.pathname,
+    referrer: document.referrer || '',
+  };
+
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon(ANALYTICS_URL, JSON.stringify(payload));
+  } else {
+    fetch(ANALYTICS_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      keepalive: true,
+    }).catch(() => {});  // fire-and-forget
+  }
+}
+```
+
+Called once on initial page load and on each route change (via react-router navigation listener).
+
+### 7.2 Lambda Processing
+
+The analytics Lambda:
+1. Parses request body (path, referrer)
+2. Validates: path starts with `/`, max 500 chars; referrer max 2000 chars
+3. Extracts visitor fingerprint: `SHA256(sourceIp + userAgent)` -- one-way hash, no PII stored
+4. Extracts browser family from user-agent (e.g., "Chrome/120") -- no full UA string stored
+5. Extracts country from `CloudFront-Viewer-Country` header (if available via API Gateway)
+6. Writes DynamoDB item: `PK=PAGEVIEW#{today}, SK=PAGEVIEW#{timestamp}#{ulid}`
+7. Returns 204 No Content
+
+### 7.3 Dashboard Aggregation
+
+The dashboard Lambda queries DynamoDB for the requested date range (one Query per day, parallelized with `Promise.all`), then aggregates in-memory:
+
+- Total page views: count of all items
+- Unique visitors: count of distinct `visitorId` values
+- Top pages: group by `path`, sort by count descending, limit 10
+- Top referrers: group by `referrer` (domain only), sort by count descending, limit 10
+- Daily views: count per day, returned as array for the line chart
+
+For 90-day queries at moderate traffic (~1000 views/day), this processes ~90,000 items in memory. Acceptable for MVP on a 128MB Lambda within 10s timeout.
+
+### 7.4 Bot Filtering
+
+Basic bot filtering at the Lambda level:
+- Reject if no `Origin` or `Referer` header present (most bots don't set these)
+- Reject if `Origin` doesn't match `tropicoretreat.com` or `staging.tropicoretreat.com`
+- Skip known bot user-agents (Googlebot, Bingbot, etc.)
+
+---
+
+## 8. GSC Integration
+
+### 8.1 Authentication
+
+1. Create Google Cloud project (or use existing)
+2. Enable Search Console API
+3. Create service account, download JSON key
+4. Add service account email as read-only user on GSC property `sc-domain:tropicoretreat.com`
+5. Store JSON key in AWS Secrets Manager: `tropico/gsc-credentials-{env}`
+6. Lambda reads key from Secrets Manager on cold start, caches in module scope
+
+### 8.2 API Calls
+
+The GSC proxy Lambda uses `googleapis` npm package:
+
+```typescript
+const auth = new google.auth.GoogleAuth({
+  credentials: JSON.parse(secretValue),
+  scopes: ['https://www.googleapis.com/auth/webmasters.readonly'],
+});
+const searchconsole = google.searchconsole({ version: 'v1', auth });
+
+// Performance query (queries dimension)
+await searchconsole.searchanalytics.query({
+  siteUrl: 'sc-domain:tropicoretreat.com',
+  requestBody: {
+    startDate: startDate,
+    endDate: endDate,          // 2-3 days before today
+    dimensions: ['query'],
+    rowLimit: 100,
+  },
+});
+
+// Performance query (pages dimension)
+await searchconsole.searchanalytics.query({
+  siteUrl: 'sc-domain:tropicoretreat.com',
+  requestBody: {
+    startDate: startDate,
+    endDate: endDate,
+    dimensions: ['page'],
+    rowLimit: 100,
+  },
 });
 ```
 
-**Inbound email sanitization:**
-- HTML body sanitized before storage (strip `<script>`, `<iframe>`, event handlers)
-- Attachment filenames sanitized (remove path traversal characters)
-- Email addresses normalized to lowercase for matching
-- Body size capped at DynamoDB item limit considerations (400KB total item size)
+### 8.3 Caching Strategy
 
-### 6.4 S3 Security
-
-- Email store bucket: private, no public access
-- Server-side encryption: AES-256 (S3 managed keys)
-- Attachment access via pre-signed URLs only (15-minute expiry)
-- Lifecycle policy: transition to Glacier after 90 days, delete after 365 days
-- Bucket policy restricts PutObject to SES service principal and Lambda execution role
-
-### 6.5 Data Privacy
-
-- Email bodies stored in DynamoDB (encrypted at rest by default)
-- Raw emails in S3 (encrypted at rest with SSE-S3)
-- No email content logged (only metadata: leadId, messageId, direction)
-- Operator JWT sub logged for audit trail on outbound emails
+1. Admin requests `GET /v1/gsc/performance?period=28d`
+2. Lambda checks DynamoDB cache: `PK=GSC#CACHE, SK=GSC#performance#28d`
+3. If `expiresAt > now`: return cached `data`
+4. If expired or missing: fetch from GSC API, write to cache with `expiresAt = now + 6h`, return fresh data
+5. GSC API quotas: 1200 queries/min (generous, caching makes this a non-issue)
 
 ---
 
-## 7. Error Handling
+## 9. Security
 
-### 7.1 Outbound Errors
+### 9.1 Authentication
 
-| Error | Handling | User Experience |
+- All admin endpoints use existing Cognito JWT authorizer (no changes to auth infrastructure)
+- Public endpoints (analytics collect, blog read) have no auth
+- GSC proxy and content performance endpoints are admin-only (JWT required)
+
+### 9.2 Analytics Beacon Hardening
+
+- Rate limited at API Gateway level (existing 10 req/s burst -- shared across all routes)
+- Origin validation: reject requests where Origin header doesn't match tropicoretreat.com
+- Input validation: path must start with `/`, max 500 chars; referrer max 2000 chars
+- No PII stored: visitor ID is SHA256 hash of IP + user-agent (irreversible)
+- Raw IP address is never written to DynamoDB
+- User-agent stored as browser family only (e.g., "Chrome/120"), not full string
+
+### 9.3 Image Upload Security
+
+- Presigned URLs expire in 5 minutes
+- Content-type restricted to `image/jpeg`, `image/png`, `image/webp`, `image/gif`
+- Max file size enforced via presigned URL content-length condition (10 MB)
+- S3 bucket is private -- served through CloudFront only (OAC)
+- Image processor validates file is actually an image (magic bytes check with sharp)
+- If magic bytes don't match content type, file is rejected (deleted from uploads/, not processed)
+
+### 9.4 GSC Credentials
+
+- Service account JSON key stored in AWS Secrets Manager (`tropico/gsc-credentials-{env}`)
+- Key value set manually after Terraform apply (never in Terraform state as plaintext)
+- Lambda reads key on cold start, caches in Lambda module scope (not in DynamoDB)
+- Key never exposed to frontend -- admin frontend calls the GSC proxy Lambda, which calls GSC API server-side
+- Service account has read-only access to GSC property (cannot modify site settings)
+
+### 9.5 Blog Content Security
+
+- Markdown content sanitized on render (frontend): strip any raw HTML tags, prevent XSS
+- Use a Markdown renderer that does not allow raw HTML by default (e.g., `react-markdown` with `allowedElements` whitelist)
+- Slugs validated: lowercase `[a-z0-9-]` only, max 200 chars, must not start/end with hyphen
+- Blog content max size: 100KB (validated server-side with Zod)
+- Blog posts are soft-deleted (never hard-deleted), preserving audit trail
+
+### 9.6 Input Validation
+
+All API inputs validated with Zod schemas before processing:
+
+| Schema | Endpoint | Key Constraints |
 |---|---|---|
-| Invalid request body | Return 400 with Zod error details | Form validation error shown |
-| Lead not found | Return 404 | "Lead not found" toast |
-| SES send failure (throttling) | Return 500, log error | "Failed to send email" toast, retry button |
-| SES send failure (bounce) | Return 500, log error with bounce reason | "Failed to send email" toast |
-| DynamoDB write failure after SES success | Log error, return 500 | "Email sent but failed to record" (acceptable for MVP) |
-| SES sandbox - unverified recipient | Return 400 with specific message | "Recipient not verified (sandbox mode)" |
-
-### 7.2 Inbound Errors
-
-| Error | Handling | User Experience |
-|---|---|---|
-| MIME parse failure | Log error, store partial record with `parseError` flag | Email appears with "Parse error" indicator |
-| S3 read failure | Log error, Lambda retry (3x) then DLQ | Email delayed; operator notified via DLQ alarm |
-| Lead matching scan failure | Log error, Lambda retry (3x) then DLQ | Email delayed |
-| Auto-create lead failure | Log error, Lambda retry (3x) then DLQ | Email delayed |
-| DynamoDB write failure | Log error, Lambda retry (3x) then DLQ | Email delayed |
-| Backup forward failure | Log error, continue processing | No user impact; alarm on CloudWatch |
-| S3 attachment storage failure | Log error, store email without attachments | Attachments missing but email visible |
-
-### 7.3 Read/Thread Errors
-
-| Error | Handling | User Experience |
-|---|---|---|
-| Lead has no emails | Return 200 with empty array | "No emails yet" empty state |
-| Mark-read on nonexistent lead | Return 404 | Silent (mark-read is fire-and-forget from UI) |
-| DynamoDB query timeout | Return 500, log | "Failed to load emails" with retry |
-
-### 7.4 Dead Letter Queue
-
-Failed inbound email processing goes to `tropico-email-dlq-${env}` SQS queue:
-- 14-day retention
-- CloudWatch alarm when messages appear
-- Manual investigation and replay via console or CLI
+| `CreateBlogPostSchema` | POST /blog/posts | title max 200, content max 100KB, slug pattern |
+| `UpdateBlogPostSchema` | PUT /blog/posts/{id} | at least one field required |
+| `ImageUploadSchema` | POST /blog/images | contentType must be image/*, purpose enum |
+| `SeoOverrideSchema` | PUT /seo/settings/{path} | metaTitle max 70, metaDescription max 160 |
+| `AnalyticsCollectSchema` | POST /analytics/collect | path required, starts with "/", max 500 |
 
 ---
 
-## 8. Deployment
+## 10. Deployment
 
-### 8.1 Terraform Changes
+### 10.1 New Terraform Resources
 
-**New file: `infra/api/email.tf`**
-Contains all email-specific infrastructure:
-- S3 bucket for email storage (`tropicoretreat-email-store-${env}`)
-- S3 bucket policy (SES PutObject permission)
-- S3 lifecycle rules (Glacier at 90 days)
-- SES receipt rule set and receipt rule
-- Lambda function: `tropico-email-admin-${env}`
-- Lambda function: `tropico-email-receive-${env}`
-- Lambda permissions (S3 invoke, API Gateway invoke)
-- S3 event notification -> Lambda
-- SQS dead letter queue for email processing
-- CloudWatch log groups
-- API Gateway integration, routes, and authorizer references
+| Resource | Name Pattern | File |
+|---|---|---|
+| S3 bucket (blog images) | `tropico-blog-images-{env}` | `infra/api/blog.tf` (new) |
+| S3 bucket policy + OAC | for blog images CloudFront | `infra/api/blog.tf` |
+| CloudFront distribution | blog images CDN | `infra/blog-cloudfront.tf` (new, root module) |
+| Route53 record | `images.tropicoretreat.com` | `infra/blog-route53.tf` (new, root module) |
+| Lambda: blog admin | `tropico-blog-admin-{env}` | `infra/api/blog.tf` |
+| Lambda: SEO admin | `tropico-seo-admin-{env}` | `infra/api/blog.tf` |
+| Lambda: image processor | `tropico-image-processor-{env}` | `infra/api/blog.tf` |
+| S3 event notification | uploads/ -> image processor | `infra/api/blog.tf` |
+| Lambda: analytics | `tropico-analytics-{env}` | `infra/api/analytics.tf` (new) |
+| Lambda: GSC proxy | `tropico-gsc-{env}` | `infra/api/gsc.tf` (new) |
+| Secrets Manager | `tropico/gsc-credentials-{env}` | `infra/api/gsc.tf` |
+| API Gateway routes | 12 new routes | `infra/api/main.tf` (extend) |
+| IAM roles + policies | per Lambda | `infra/api/iam.tf` (extend) |
+| CloudWatch log groups | per Lambda | respective .tf files |
 
-**Modified file: `infra/api/ses.tf`**
-Add:
-- SPF TXT record
-- DMARC TXT record
-- MX record for receiving
+### 10.2 New Backend Handlers
 
-**Modified file: `infra/api/iam.tf`**
-Add:
-- IAM role for email admin Lambda
-- IAM role for email receive Lambda
-- IAM policies for each role (least-privilege)
+| Handler File | esbuild Entry | Output |
+|---|---|---|
+| `backend/src/handlers/blogAdmin.ts` | `src/handlers/blogAdmin.ts` | `dist/blogAdmin.mjs` |
+| `backend/src/handlers/seoAdmin.ts` | `src/handlers/seoAdmin.ts` | `dist/seoAdmin.mjs` |
+| `backend/src/handlers/analytics.ts` | `src/handlers/analytics.ts` | `dist/analytics.mjs` |
+| `backend/src/handlers/gscProxy.ts` | `src/handlers/gscProxy.ts` | `dist/gscProxy.mjs` |
+| `backend/src/handlers/imageProcessor.ts` | `src/handlers/imageProcessor.ts` | `dist/imageProcessor.mjs` |
 
-**Modified file: `infra/api/main.tf`**
-Add:
-- CORS allow methods: add `PUT` if needed (current: GET, POST, PATCH, OPTIONS)
-- New API Gateway routes for email endpoints
+### 10.3 New Backend Dependencies
 
-**Modified file: `infra/api/variables.tf`**
-Add:
-- `backup_forward_email` variable
-- `from_email_crm` variable (default: `team@tropicoretreat.com`)
+| Package | Purpose |
+|---|---|
+| `sharp` | Image processing (resize, WebP, thumbnails) |
+| `googleapis` | Google Search Console API client |
 
-### 8.2 Backend Changes
+### 10.4 New Admin Dependencies
 
-**New file: `backend/src/handlers/emailAdmin.ts`**
-- Multi-route handler for POST /emails/send, GET /emails/{leadId}, PATCH /emails/{leadId}/read
+| Package | Purpose |
+|---|---|
+| `recharts` | Charts for analytics dashboard |
+| `react-markdown` | Render Markdown to HTML in blog preview |
+| `remark-gfm` | GitHub Flavored Markdown support (tables, strikethrough) |
 
-**New file: `backend/src/handlers/emailReceive.ts`**
-- S3 event handler for processing inbound emails
+### 10.5 New Frontend Dependencies
 
-**New file: `backend/src/lib/emailParser.ts`**
-- MIME parsing wrapper around `mailparser` package
+| Package | Purpose |
+|---|---|
+| `react-markdown` | Render Markdown to HTML on blog post pages |
+| `remark-gfm` | GitHub Flavored Markdown support |
 
-**Modified file: `backend/src/lib/dynamodb.ts`**
-Add functions:
-- `putEmail()` - Store email record
-- `getEmails()` - Query emails for a lead (paginated)
-- `markEmailsAsRead()` - Batch update readAt on unread emails
-- `findLeadByEmail()` - Scan for lead with matching email address
-- `updateLeadEmailMetadata()` - Update lastEmailAt and unreadEmailCount
+### 10.6 New Admin Pages
 
-**Modified file: `backend/src/lib/types.ts`**
-Add:
-- `Email` interface
-- `EmailAttachment` interface
-- `EmailDirection` type
-- Extend `Lead` interface with `lastEmailAt` and `unreadEmailCount`
+| Route | Page | Purpose |
+|---|---|---|
+| `/blog` | BlogListPage | List blog posts, create new |
+| `/blog/new` | BlogEditorPage | Create blog post (Markdown editor) |
+| `/blog/:id/edit` | BlogEditorPage | Edit blog post |
+| `/analytics` | AnalyticsDashboardPage | Traffic dashboard with charts |
+| `/seo` | SeoSettingsPage | SEO settings for all pages |
+| `/gsc` | GscPerformancePage | Keyword rankings from GSC |
+| `/content` | ContentPerformancePage | Combined content performance |
 
-**Modified file: `backend/src/lib/validation.ts`**
-Add:
-- `SendEmailSchema` - Zod schema for send email request
+Admin navigation sidebar sections:
+- Leads (existing, icon: Users)
+- Blog (new, icon: FileText)
+- Analytics (new, icon: BarChart3)
+- SEO (new, icon: Search)
+- Keywords (new, icon: TrendingUp)
+- Content (new, icon: PieChart)
 
-**Modified file: `backend/package.json`**
-Add dependency:
-- `mailparser` (MIME parsing)
-- `@types/mailparser` (dev dependency)
+### 10.7 Frontend Additions
 
-**Modified file: `backend/esbuild.config.js`**
-Add entry points:
-- `emailAdmin`
-- `emailReceive`
-
-### 8.3 Frontend Changes
-
-**New file: `admin/src/api/emails.ts`**
-- `emailsApi.send()` - POST /emails/send
-- `emailsApi.list()` - GET /emails/{leadId}
-- `emailsApi.markRead()` - PATCH /emails/{leadId}/read
-
-**New file: `admin/src/types/email.ts`**
-- `Email` interface
-- `EmailAttachment` interface
-- `EmailsResponse` interface
-
-**New file: `admin/src/hooks/useEmails.ts`**
-- `useEmailThread()` - TanStack Query hook for email thread
-- `useSendEmail()` - Mutation hook for sending email
-- `useMarkEmailsRead()` - Mutation hook for marking as read
-
-**New file: `admin/src/components/emails/EmailThread.tsx`**
-- Chronological thread view with chat-style alignment
-
-**New file: `admin/src/components/emails/EmailCompose.tsx`**
-- Textarea compose box with send button
-
-**New file: `admin/src/components/emails/EmailBubble.tsx`**
-- Single email message bubble (inbound left, outbound right)
-
-**Modified file: `admin/src/components/leads/LeadDetail.tsx`**
-- Add EmailThread component below existing contact card and message
-- Add EmailCompose component at bottom
-
-**Modified file: `admin/src/components/leads/LeadCard.tsx`**
-- Add unread email badge indicator
-- Add last email preview text
-- Support sorting by `lastEmailAt`
-
-**Modified file: `admin/src/types/lead.ts`**
-- Extend `Lead` interface with `lastEmailAt` and `unreadEmailCount`
-
-### 8.4 Deployment Order
-
-The deployment must happen in a specific order due to DNS propagation and SES requirements:
-
-1. **Phase 1: DNS + SES setup** (can take up to 48 hours for propagation)
-   - Deploy SPF, DMARC, MX records via Terraform
-   - Request SES production access (sandbox removal) if not done
-   - Create S3 email store bucket
-   - Create SES receipt rule set
-
-2. **Phase 2: Backend + Infrastructure**
-   - Deploy email receive Lambda + S3 event trigger
-   - Deploy email admin Lambda + API Gateway routes
-   - Deploy IAM roles and policies
-   - Verify inbound email flow with test email
-
-3. **Phase 3: Frontend**
-   - Deploy email thread view
-   - Deploy compose/send functionality
-   - Deploy unread indicators and sorting
-   - End-to-end testing
-
-### 8.5 Rollback Strategy
-
-Each phase is independently rollable:
-- Phase 1: Remove MX record to stop inbound email (SPF/DMARC are additive, safe to leave)
-- Phase 2: Disable Lambda functions or remove API routes
-- Phase 3: Frontend is a separate S3 deployment, previous version can be re-deployed
+| File | Purpose |
+|---|---|
+| `frontend/src/pages/BlogIndexPage.tsx` | Public blog listing (/blog/) |
+| `frontend/src/pages/BlogPostPage.tsx` | Public blog post (/blog/:slug) |
+| `frontend/src/lib/analytics.ts` | Tracking beacon script |
+| `frontend/src/Routes/appRoutes.tsx` (extend) | Add BLOG_INDEX, BLOG_POST routes |
+| `frontend/src/Routes/router.tsx` (extend) | Add blog route components |
+| `frontend/scripts/prerender.js` (extend) | Fetch and prerender blog posts + apply SEO overrides |
 
 ---
 
-## 9. Monitoring and Observability
+## 11. User Decisions
 
-### 9.1 CloudWatch Metrics
+Locked decisions from design session gray area discussions:
 
-| Metric | Source | Alarm Threshold |
-|---|---|---|
-| Email receive Lambda errors | Lambda ErrorCount | > 0 in 5 min window |
-| Email receive Lambda duration | Lambda Duration | p99 > 25s (of 60s timeout) |
-| Email admin Lambda errors | Lambda ErrorCount | > 0 in 5 min window |
-| DLQ message count | SQS ApproximateNumberOfMessagesVisible | > 0 |
-| SES send bounces | SES Bounce | > 0 |
-| SES send complaints | SES Complaint | > 0 |
-| S3 email store size | S3 BucketSizeBytes | > 5 GB (informational) |
-
-### 9.2 Structured Logging
-
-All Lambda handlers log structured JSON with:
-- `correlationId` (request ID or S3 event ID)
-- `leadId` (when available)
-- `messageId` (email message ID)
-- `direction` (inbound/outbound)
-- `action` (send, receive, markRead, etc.)
-- No email body content logged (privacy)
-
-### 9.3 Dashboard Refresh Strategy
-
-The admin dashboard uses TanStack Query with:
-- `staleTime: 5 minutes` for email thread queries
-- `refetchOnWindowFocus: true` for automatic refresh
-- Manual refresh button on the email thread view
-- Polling interval of 30 seconds when the email thread is visible (optional enhancement)
-
-For the MVP, polling is sufficient. WebSocket/SSE for real-time updates is deferred.
+| Area | Decision |
+|---|---|
+| Blog editor layout | Side-by-side (Markdown left, preview right) |
+| Analytics visualization | Line charts for daily trends using recharts |
+| Blog listing on public site | Cards with hero image thumbnails + excerpts, matching existing Tropico frontend design language |
+| Admin navigation | Sidebar with icons + labels, collapsible on mobile |
+| Content authoring format | Markdown in textarea with live preview |
+| Image handling | Upload-first approach: hero = dedicated picker, inline = upload separately + paste URL |
+| Blog post lifecycle | Publish immediately, no drafts for MVP |
+| Slug generation | Auto-generated from title, editable before publish |
+| Blog URL structure | /blog/{slug} for posts, /blog/ for index |
+| Blog author | Operator name from JWT + "Tropico Retreats" as organization |
+| Analytics tracking | sendBeacon, no cookies, hashed IP for visitor uniqueness |
+| Analytics time ranges | 7d, 30d, 90d (default 7d) |
+| GSC authentication | Service account, no interactive OAuth |
+| GSC caching | DynamoDB cache, 6-hour TTL |
+| SEO settings scope | All pages editable from admin (existing pages + blog posts) |
+| Frontend SEO for blogs | Expand existing prerender script to fetch and prerender blog posts |
+| Backlink tracking | Dropped from MVP, replaced with content performance dashboard |
+| Image optimization | Auto-process on upload: resize, compress to WebP, generate thumbnail |

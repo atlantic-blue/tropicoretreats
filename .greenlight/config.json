@@ -32,14 +32,14 @@
     "run_full_suite_after_slice": true
   },
   "test": {
-    "command": "npx jest",
-    "filter_flag": "--testPathPattern",
-    "coverage_command": "npx jest --coverage",
+    "command": "npx vitest run",
+    "filter_flag": "--filter",
+    "coverage_command": "npx vitest run --coverage",
     "security_filter": "security"
   },
   "project": {
-    "name": "tropico-retreats-email-crm",
-    "stack": "TypeScript (React + Node.js Lambda + Terraform + DynamoDB)",
+    "name": "tropico-seo-growth",
+    "stack": "TypeScript (React 19 + Vite admin, Webpack frontend, Node.js Lambda, Terraform, DynamoDB, S3)",
     "src_dir": "src",
     "test_dir": "tests"
   }

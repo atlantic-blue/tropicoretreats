@@ -1,40 +1,44 @@
 # Project Interview
 
 ## Value Proposition
-Add email sending and receiving capabilities to the Tropico Retreats admin dashboard so operators can manage leads and respond to clients directly, with all email flowing through `team@tropicoretreat.com`.
+SEO growth engine for Tropico Retreats — blog CMS, custom analytics, GSC integration, and backlink tracking so the team can drive and measure organic traffic without developer involvement.
 
 ## Users
-- Tropico Retreats operators (admin dashboard users) who manage leads and communicate with corporate retreat clients
+Tropico Retreats team (non-technical operators) managing content and SEO from the admin dashboard.
 
-## MVP Scope (5 User Actions)
-1. **Send email to a lead** — operator composes and sends an email from the dashboard, delivered via SES from `team@tropicoretreat.com`
-2. **Receive and view inbound emails** — emails sent to `team@tropicoretreat.com` are parsed, matched to leads, and displayed in the dashboard
-3. **View email thread per lead** — chronological conversation view (chat-style, inbound vs outbound) when clicking on a lead
-4. **Auto-create lead from unknown sender** — inbound email from unknown address creates a new lead automatically
-5. **See unread indicators and sort by recency** — lead list shows unread badges and sorts by last email activity
+## MVP Scope
+1. Publish a blog post — write content with images (hero + inline), links, slug, SEO meta tags → renders on public frontend with clean URLs and structured data
+2. View traffic dashboard — page views, unique visitors, top pages, referral sources (custom lightweight analytics, zero third-party dependency)
+3. View keyword rankings — Google Search Console integration showing queries, impressions, clicks, CTR, average position
+4. Edit page SEO settings — meta title, description, OG tags for any page (blog or landing)
+5. View backlink report — who links to the site, manual entry + GSC links report
 
 ## Stack
-- **Frontend/Admin**: React + TypeScript (Vite for admin, Webpack for marketing site)
-- **Backend**: TypeScript Lambda handlers (esbuild)
-- **Database**: DynamoDB (single-table design with PK/SK patterns)
-- **Infrastructure**: Terraform (flat files, AWS — API Gateway, Lambda, DynamoDB, S3, Route53, CloudFront, SES)
-- **Email**: AWS SES (sending + receiving)
-- **Storage**: S3 (email store with attachments, lifecycle to Glacier after 90 days)
+- Admin: React 19 + Vite (existing, extend)
+- Frontend: Webpack + React (existing, extend with blog pages)
+- Backend: Node.js + TypeScript Lambda handlers (existing pattern)
+- Infra: Terraform (existing, extend)
+- Storage: DynamoDB (single-table, existing) + S3 (blog images)
+- Analytics: Custom Lambda endpoint + DynamoDB (no third-party)
+- GSC: Google Search Console API (OAuth2 service account)
 
 ## Constraints
-- All Lambdas in TypeScript (matching existing backend)
-- SES receiving only available in us-east-1, us-west-2, eu-west-1
-- Must use existing auth mechanism from the dashboard
-- Email domain: `tropicoretreat.com` (already on Route53)
-- DNS records needed: SPF, DKIM (3x CNAME), DMARC, MX
-- SES sandbox removal may take 24 hours
-- Must integrate with existing DynamoDB leads table
-- Must include backup forwarding to personal email
+- Same monorepo structure (backend/, admin/, frontend/, infra/)
+- Extend existing admin dashboard (React 19 + Vite)
+- Extend existing frontend (Webpack + React)
+- Extend existing API Gateway and Lambda pattern
+- DynamoDB single-table design (extend existing table)
+- No paid analytics services — custom or free only
+- Blog content supports: markdown/plain text, inline images, hero images, links
+- No rich text editor (WYSIWYG) — keep it simple
+- Never touch production data directly
 
 ## Deferred Ideas
-- Rich text editor (start with basic textarea, upgrade later)
-- Attachment upload from dashboard (receive-side attachments handled, send-side deferred)
-- Thread matching via In-Reply-To/References headers (nice-to-have, not MVP-critical)
-- CRM sync (HubSpot/Pipedrive)
-- Calendar integration
-- WhatsApp integration improvements
+- Rich text / WYSIWYG editor
+- Blog categories, tags, search
+- Scheduled/draft publishing workflow
+- A/B title testing
+- Competitor keyword tracking
+- Social media sharing automation
+- Email newsletter integration with blog posts
+- Comment system
