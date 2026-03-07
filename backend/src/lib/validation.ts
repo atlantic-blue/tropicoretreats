@@ -100,6 +100,19 @@ export type SendEmailRequestInput = z.infer<typeof SendEmailRequestSchema>;
 const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /**
+ * Custom Zod refinement for URL fields: only allows https:// protocol.
+ * Prevents SSRF (file://, http://internal), XSS (javascript:), and
+ * other dangerous URL schemes.
+ */
+const httpsUrl = z
+  .string()
+  .url()
+  .refine(
+    (value) => value.startsWith('https://'),
+    { message: 'URL must use https:// protocol' }
+  );
+
+/**
  * Zod schema for creating a blog post (POST /v1/blog/posts).
  */
 export const CreateBlogPostSchema = z.object({
@@ -113,13 +126,13 @@ export const CreateBlogPostSchema = z.object({
     .string()
     .min(1, 'Content is required')
     .max(102_400, 'Content must be 100KB or less'),
-  heroImageUrl: z.string().url('heroImageUrl must be a valid URL').optional(),
+  heroImageUrl: httpsUrl.optional(),
   metaTitle: z.string().max(70, 'metaTitle must be 70 characters or less').optional(),
   metaDescription: z
     .string()
     .max(160, 'metaDescription must be 160 characters or less')
     .optional(),
-  ogImageUrl: z.string().url('ogImageUrl must be a valid URL').optional(),
+  ogImageUrl: httpsUrl.optional(),
 });
 
 export type CreateBlogPostInput = z.infer<typeof CreateBlogPostSchema>;
@@ -145,13 +158,13 @@ export const UpdateBlogPostSchema = z
       .min(1, 'Content cannot be empty')
       .max(102_400, 'Content must be 100KB or less')
       .optional(),
-    heroImageUrl: z.string().url('heroImageUrl must be a valid URL').optional(),
+    heroImageUrl: httpsUrl.optional(),
     metaTitle: z.string().max(70, 'metaTitle must be 70 characters or less').optional(),
     metaDescription: z
       .string()
       .max(160, 'metaDescription must be 160 characters or less')
       .optional(),
-    ogImageUrl: z.string().url('ogImageUrl must be a valid URL').optional(),
+    ogImageUrl: httpsUrl.optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: 'At least one field must be provided',

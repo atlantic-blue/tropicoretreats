@@ -22,6 +22,7 @@ import {
   serverError,
   notFound,
   conflict,
+  unauthorized,
 } from '../utils/response.js';
 
 // ---------------------------------------------------------------------------
@@ -114,6 +115,70 @@ function extractAuthorName(
   );
 }
 
+/**
+ * Checks whether valid JWT claims exist on the event.
+ * Returns true if the request has a valid authenticated identity.
+ */
+function hasValidJwtClaims(
+  event: APIGatewayProxyEventV2WithJWTAuthorizer
+): boolean {
+  const claims = event.requestContext?.authorizer?.jwt?.claims;
+  if (!claims) {
+    return false;
+  }
+  const hasSub = typeof claims.sub === 'string' && claims.sub.length > 0;
+  const hasEmail = typeof claims.email === 'string' && claims.email.length > 0;
+  const hasUsername =
+    typeof claims.username === 'string' && claims.username.length > 0;
+  return hasSub || hasEmail || hasUsername;
+}
+
+/** ULID pattern: 26 alphanumeric characters (Crockford Base32). */
+const ULID_PATTERN = /^[0-9A-Za-z_-]{1,128}$/;
+
+/** Slug pattern: lowercase alphanumeric segments separated by hyphens. */
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/**
+ * Validates a blog post ID matches the expected format.
+ * Rejects path traversal, DynamoDB key prefixes, and other injection.
+ */
+function isValidBlogId(id: string): boolean {
+  if (id.includes('..') || id.includes('/')) {
+    return false;
+  }
+  if (id.includes('#')) {
+    return false;
+  }
+  return ULID_PATTERN.test(id);
+}
+
+/**
+ * Validates a slug matches the expected format.
+ * Rejects path traversal, URL-encoded traversal, and DynamoDB key patterns.
+ */
+function isValidSlug(slug: string): boolean {
+  if (slug.includes('..') || slug.includes('#') || slug.includes('%')) {
+    return false;
+  }
+  return SLUG_PATTERN.test(slug);
+}
+
+/** Expected keys in a valid blog pagination cursor. */
+const VALID_CURSOR_KEYS = new Set(['GSI1PK', 'GSI1SK']);
+
+/**
+ * Validates a decoded pagination cursor contains only expected
+ * DynamoDB GSI1 keys (GSI1PK, GSI1SK) and no others (PK, SK, etc.).
+ */
+function isValidCursor(decoded: Record<string, unknown>): boolean {
+  const keys = Object.keys(decoded);
+  if (keys.length === 0) {
+    return false;
+  }
+  return keys.every((key) => VALID_CURSOR_KEYS.has(key));
+}
+
 // ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
@@ -139,19 +204,23 @@ export const handler = async (
       return await handleListPosts(event);
     }
 
+    if (method === 'GET' && path.startsWith('/blog/posts/')) {
+      return await handleGetPost(event);
+    }
+
+    if (!hasValidJwtClaims(event)) {
+      return unauthorized();
+    }
+
     if (method === 'POST' && path === '/blog/posts') {
       return await handleCreatePost(event);
     }
 
-    if (method === 'GET' && path.match(/^\/blog\/posts\/[^/]+$/)) {
-      return await handleGetPost(event);
-    }
-
-    if (method === 'PUT' && path.match(/^\/blog\/posts\/[^/]+$/)) {
+    if (method === 'PUT' && path.startsWith('/blog/posts/')) {
       return await handleUpdatePost(event);
     }
 
-    if (method === 'DELETE' && path.match(/^\/blog\/posts\/[^/]+$/)) {
+    if (method === 'DELETE' && path.startsWith('/blog/posts/')) {
       return await handleDeletePost(event);
     }
 
@@ -245,9 +314,17 @@ async function handleUpdatePost(
     return badRequest('Post ID is required');
   }
 
+  if (!isValidBlogId(id)) {
+    return badRequest('Invalid post ID format');
+  }
+
+  if (!event.body) {
+    return badRequest('Request body is required');
+  }
+
   let body: unknown;
   try {
-    body = JSON.parse(event.body ?? '{}');
+    body = JSON.parse(event.body);
   } catch {
     return badRequest('Invalid JSON in request body');
   }
@@ -305,6 +382,10 @@ async function handleDeletePost(
     return badRequest('Post ID is required');
   }
 
+  if (!isValidBlogId(id)) {
+    return badRequest('Invalid post ID format');
+  }
+
   const existingPost = await fetchBlogPost(id);
 
   if (!existingPost || existingPost.status === 'deleted') {
@@ -346,7 +427,12 @@ async function handleListPosts(
   const cursor = queryParams.cursor;
   if (cursor) {
     try {
-      JSON.parse(Buffer.from(cursor, 'base64').toString('utf-8'));
+      const decoded = JSON.parse(
+        Buffer.from(cursor, 'base64').toString('utf-8')
+      ) as Record<string, unknown>;
+      if (!isValidCursor(decoded)) {
+        return badRequest('Invalid pagination cursor');
+      }
     } catch {
       return badRequest('Invalid pagination cursor');
     }
@@ -373,6 +459,10 @@ async function handleGetPost(
   const slug = event.pathParameters?.slug;
   if (!slug) {
     return badRequest('Slug is required');
+  }
+
+  if (!isValidSlug(slug)) {
+    return badRequest('Invalid slug format');
   }
 
   const post = await fetchBlogPostBySlug(slug);

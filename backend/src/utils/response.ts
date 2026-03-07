@@ -64,6 +64,18 @@ export const conflict = (message = 'Conflict'): APIGatewayProxyResultV2 => ({
 });
 
 /**
+ * Returns a 401 Unauthorized response.
+ *
+ * @param message - Error message (default: 'Unauthorized')
+ */
+export const unauthorized = (
+  message = 'Unauthorized'
+): APIGatewayProxyResultV2 => ({
+  statusCode: 401,
+  body: JSON.stringify({ error: message }),
+});
+
+/**
  * Returns a 404 Not Found response.
  *
  * @param message - Error message (default: 'Not found')
