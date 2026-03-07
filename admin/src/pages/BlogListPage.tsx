@@ -92,6 +92,47 @@ function DeleteConfirmation({
   );
 }
 
+function BlogPostCard({
+  post,
+  onDelete,
+}: {
+  post: BlogPost;
+  onDelete: (post: BlogPost) => void;
+}) {
+  return (
+    <div className="p-4 border-b last:border-b-0">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <Link to={`/blog/${post.slug}`} className="text-sm font-medium text-gray-900 hover:text-blue-600 line-clamp-2">
+            {post.title}
+          </Link>
+          <p className="text-xs text-gray-500 mt-0.5 truncate">/{post.slug}</p>
+          <div className="flex items-center gap-2 mt-2">
+            <StatusBadge status={post.status} />
+            <span className="text-xs text-gray-400">{format(new Date(post.createdAt), 'MMM d, yyyy')}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <Link
+            to={`/blog/${post.slug}`}
+            className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50"
+            title="Edit"
+          >
+            <Pencil className="w-4 h-4" />
+          </Link>
+          <button
+            onClick={() => onDelete(post)}
+            className="p-1.5 text-gray-400 hover:text-red-600 transition-colors rounded-md hover:bg-red-50"
+            title="Delete"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BlogPostRow({
   post,
   onDelete,
@@ -182,7 +223,15 @@ export function BlogListPage() {
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-          <table className="min-w-full">
+          {/* Mobile: card layout */}
+          <div className="md:hidden">
+            {posts.map((post) => (
+              <BlogPostCard key={post.id} post={post} onDelete={setPostToDelete} />
+            ))}
+          </div>
+
+          {/* Desktop: table layout */}
+          <table className="min-w-full hidden md:table">
             <thead className="bg-gray-50 border-b">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
