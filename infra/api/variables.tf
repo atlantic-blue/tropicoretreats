@@ -88,3 +88,19 @@ variable "route53_zone_id" {
   description = "Route53 hosted zone ID (passed from root module)"
   type        = string
 }
+
+# ====================================================================
+# Image Pipeline Configuration
+# ====================================================================
+
+variable "images_domain" {
+  description = "CloudFront domain for serving processed blog images"
+  type        = string
+  default     = "images.tropicoretreat.com"
+}
+
+variable "sharp_layer_arn" {
+  description = "ARN of the Lambda layer containing the sharp image processing library"
+  type        = string
+}
+

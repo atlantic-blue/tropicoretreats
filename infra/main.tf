@@ -21,7 +21,9 @@ module "api" {
   team_emails              = var.team_emails
   api_domain               = local.api_domain
   admin_domain             = local.admin_domain
-  route53_zone_id          = local.route53_zone_id
-  from_email_crm           = var.from_email_crm
-  backup_forward_email     = var.backup_forward_email
+  route53_zone_id           = local.route53_zone_id
+  from_email_crm            = var.from_email_crm
+  backup_forward_email      = var.backup_forward_email
+  images_domain   = local.images_domain
+  sharp_layer_arn = var.sharp_layer_arn
 }

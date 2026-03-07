@@ -15,4 +15,5 @@ locals {
   www_domain        = var.is_staging ? "staging.tropicoretreat.com" : "tropicoretreat.com"
   admin_bucket_name = var.is_staging ? "staging-admin.tropicoretreat.com" : "admin.tropicoretreat.com"
   www_bucket_name   = var.is_staging ? "staging.tropicoretreat.com" : "tropicoretreat.com"
+  images_domain     = var.is_staging ? "staging-images.tropicoretreat.com" : "images.tropicoretreat.com"
 }

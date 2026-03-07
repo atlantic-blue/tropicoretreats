@@ -302,3 +302,12 @@ resource "aws_apigatewayv2_route" "delete_blog_post" {
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
 }
+
+# Protected route for POST /blog/images (presign image upload — requires JWT)
+resource "aws_apigatewayv2_route" "presign_blog_image" {
+  api_id             = aws_apigatewayv2_api.leads.id
+  route_key          = "POST /blog/images"
+  target             = "integrations/${aws_apigatewayv2_integration.blog_admin.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}

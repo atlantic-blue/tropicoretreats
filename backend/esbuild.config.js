@@ -19,7 +19,7 @@ await esbuild.build({
   outdir: 'dist',
   outExtension: { '.js': '.mjs' },
   format: 'esm',
-  external: ['@aws-sdk/*'],
+  external: ['@aws-sdk/*', 'sharp'],
   banner: {
     js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);",
   },

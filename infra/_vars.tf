@@ -54,3 +54,9 @@ variable "backup_forward_email" {
   type        = string
   default     = "atlanticbluesolutionslimited@gmail.com"
 }
+
+variable "sharp_layer_arn" {
+  description = "ARN of the Lambda layer containing the sharp image processing library (arm64, Node 22)"
+  type        = string
+  default     = ""
+}

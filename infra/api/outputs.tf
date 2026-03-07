@@ -62,3 +62,32 @@ output "email_receive_function_name" {
   description = "Email Receive Lambda function name"
   value       = aws_lambda_function.email_receive.function_name
 }
+
+# ====================================================================
+# Image Pipeline Outputs
+# ====================================================================
+
+output "blog_images_bucket_name" {
+  description = "S3 bucket name for blog images"
+  value       = aws_s3_bucket.blog_images.bucket
+}
+
+output "blog_images_bucket_arn" {
+  description = "S3 bucket ARN for blog images"
+  value       = aws_s3_bucket.blog_images.arn
+}
+
+output "blog_images_bucket_regional_domain" {
+  description = "S3 bucket regional domain for CloudFront origin"
+  value       = aws_s3_bucket.blog_images.bucket_regional_domain_name
+}
+
+output "blog_images_bucket_id" {
+  description = "S3 bucket ID for blog images (for bucket policy)"
+  value       = aws_s3_bucket.blog_images.id
+}
+
+output "image_processor_function_name" {
+  description = "Image Processor Lambda function name"
+  value       = aws_lambda_function.image_processor.function_name
+}

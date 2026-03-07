@@ -161,8 +161,10 @@ resource "aws_lambda_function" "blog_admin" {
 
   environment {
     variables = {
-      TABLE_NAME  = aws_dynamodb_table.leads.name
-      ENVIRONMENT = var.environment
+      TABLE_NAME    = aws_dynamodb_table.leads.name
+      ENVIRONMENT   = var.environment
+      IMAGES_BUCKET = aws_s3_bucket.blog_images.bucket
+      IMAGES_DOMAIN = var.images_domain
     }
   }
 

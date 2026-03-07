@@ -74,3 +74,19 @@ output "api_custom_domain" {
   description = "Custom domain URL for the API"
   value       = "https://${local.api_domain}/v1"
 }
+
+# Image Pipeline Outputs
+output "blog_images_bucket_name" {
+  description = "S3 bucket name for blog images"
+  value       = module.api.blog_images_bucket_name
+}
+
+output "blog_images_cloudfront_distribution_id" {
+  description = "CloudFront distribution ID for blog images"
+  value       = aws_cloudfront_distribution.blog_images.id
+}
+
+output "blog_images_domain" {
+  description = "Domain for serving processed blog images"
+  value       = local.images_domain
+}
