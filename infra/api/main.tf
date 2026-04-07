@@ -311,3 +311,32 @@ resource "aws_apigatewayv2_route" "presign_blog_image" {
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
 }
+
+# ====================================================================
+# SEO Admin Integration (GET /seo/settings, PUT /seo/settings/{proxy+})
+# ====================================================================
+resource "aws_apigatewayv2_integration" "seo_admin" {
+  api_id                 = aws_apigatewayv2_api.leads.id
+  integration_type       = "AWS_PROXY"
+  integration_method     = "POST"
+  integration_uri        = aws_lambda_function.seo_admin.invoke_arn
+  payload_format_version = "2.0"
+}
+
+# Protected route for GET /seo/settings (list all SEO overrides — requires JWT)
+resource "aws_apigatewayv2_route" "get_seo_settings" {
+  api_id             = aws_apigatewayv2_api.leads.id
+  route_key          = "GET /seo/settings"
+  target             = "integrations/${aws_apigatewayv2_integration.seo_admin.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+# Protected route for PUT /seo/settings/{proxy+} (upsert SEO override — requires JWT)
+resource "aws_apigatewayv2_route" "upsert_seo_setting" {
+  api_id             = aws_apigatewayv2_api.leads.id
+  route_key          = "PUT /seo/settings/{proxy+}"
+  target             = "integrations/${aws_apigatewayv2_integration.seo_admin.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}

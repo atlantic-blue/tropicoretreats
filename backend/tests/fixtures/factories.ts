@@ -538,6 +538,88 @@ export function createMockImageS3Event(
  * that bypasses API Gateway auth (e.g., direct Lambda invocation, or
  * misconfigured API Gateway route without authorizer).
  */
+// ---------------------------------------------------------------------------
+// SEO Settings factories (Slice S-3)
+// ---------------------------------------------------------------------------
+
+/**
+ * Represents a SeoOverrideItem as stored in DynamoDB.
+ * Mirrors the SeoOverrideSchema contract.
+ */
+export interface SeoOverrideItem {
+  PK: string;
+  SK: string;
+  GSI1PK: string;
+  GSI1SK: string;
+  path: string;
+  metaTitle: string;
+  metaDescription: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImageUrl?: string;
+  keywords?: string;
+  updatedAt: string;
+  updatedBy: string;
+}
+
+/**
+ * Builds a valid SEO override upsert request body.
+ * All fields comply with SeoOverrideSchema constraints.
+ *
+ * @param overrides - Field overrides to test validation boundaries
+ */
+export function createSeoOverrideRequest(
+  overrides: {
+    metaTitle?: string;
+    metaDescription?: string;
+    ogTitle?: string;
+    ogDescription?: string;
+    ogImageUrl?: string;
+    keywords?: string;
+  } = {}
+): {
+  metaTitle: string;
+  metaDescription: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImageUrl?: string;
+  keywords?: string;
+} {
+  return {
+    metaTitle: 'About Tropico Retreats',
+    metaDescription: 'Learn about our luxury retreat experiences in the Caribbean.',
+    ...overrides,
+  };
+}
+
+/**
+ * Builds a mock SeoOverrideItem entity as it would be returned from DynamoDB.
+ * Conforms to the SeoOverrideSchema contract.
+ *
+ * @param overrides - Field overrides for specific test scenarios
+ */
+export function createMockSeoOverride(
+  overrides: Partial<SeoOverrideItem> = {}
+): SeoOverrideItem {
+  const path = overrides.path ?? '/about';
+  const now = overrides.updatedAt ?? '2026-03-01T12:00:00.000Z';
+
+  return {
+    PK: `SEO#${path}`,
+    SK: `SEO#${path}`,
+    GSI1PK: 'SEO#ALL',
+    GSI1SK: path,
+    path,
+    metaTitle: 'About Tropico Retreats',
+    metaDescription: 'Learn about our luxury retreat experiences in the Caribbean.',
+    ogTitle: 'About Tropico Retreats',
+    ogDescription: 'Learn about our luxury retreat experiences in the Caribbean.',
+    updatedAt: now,
+    updatedBy: 'operator@tropicoretreat.com',
+    ...overrides,
+  };
+}
+
 export function createUnauthenticatedApiEvent(
   overrides: {
     method?: string;

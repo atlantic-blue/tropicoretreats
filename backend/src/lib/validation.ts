@@ -215,6 +215,21 @@ export const ImageUploadSchema = z.object({
 export type ImageUploadInput = z.infer<typeof ImageUploadSchema>;
 
 /**
+ * Zod schema for SEO override upsert requests (PUT /v1/seo/settings/{path}).
+ * Validates meta tag fields with character limits matching SEO best practices.
+ */
+export const SeoOverrideSchema = z.object({
+  metaTitle: z.string().min(1, 'Meta title is required').max(70, 'Meta title must be 70 characters or less'),
+  metaDescription: z.string().min(1, 'Meta description is required').max(160, 'Meta description must be 160 characters or less'),
+  ogTitle: z.string().max(70, 'OG title must be 70 characters or less').optional(),
+  ogDescription: z.string().max(160, 'OG description must be 160 characters or less').optional(),
+  ogImageUrl: z.string().url('OG image must be a valid URL').optional(),
+  keywords: z.string().max(500, 'Keywords must be 500 characters or less').optional(),
+});
+
+export type SeoOverrideInput = z.infer<typeof SeoOverrideSchema>;
+
+/**
  * Status progression order for validation.
  * Leads should progress forward: NEW -> CONTACTED -> QUOTED -> WON/LOST
  * ARCHIVED is a special status that can be reached from any status.

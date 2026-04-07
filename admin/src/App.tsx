@@ -8,6 +8,7 @@ import { LeadsListPage } from './pages/LeadsListPage';
 import { LeadDetailPage } from './pages/LeadDetailPage';
 import { BlogListPage } from './pages/BlogListPage';
 import { BlogEditorPage } from './pages/BlogEditorPage';
+import { SeoSettingsPage } from './pages/SeoSettingsPage';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
               <Route path="blog" element={<BlogListPage />} />
               <Route path="blog/new" element={<BlogEditorPage />} />
               <Route path="blog/:slug" element={<BlogEditorPage />} />
+              <Route path="seo" element={<SeoSettingsPage />} />
             </Route>
           </Routes>
         </BrowserRouter>

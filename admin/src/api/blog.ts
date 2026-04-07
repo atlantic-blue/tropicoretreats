@@ -6,7 +6,24 @@ import type {
   UpdateBlogPostPayload,
 } from '../types/blog';
 
+export interface PresignResponse {
+  uploadUrl: string;
+  imageUrl: string;
+  key: string;
+}
+
 export const blogApi = {
+  presignImageUpload: async (
+    filename: string,
+    contentType: string,
+    purpose: 'hero' | 'inline',
+  ): Promise<PresignResponse> => {
+    return fetchWithAuth<PresignResponse>('/blog/images', {
+      method: 'POST',
+      body: JSON.stringify({ filename, contentType, purpose }),
+    });
+  },
+
   list: async (): Promise<BlogPostsResponse> => {
     return fetchWithAuth<BlogPostsResponse>('/blog/posts?includeDrafts=true');
   },

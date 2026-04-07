@@ -3,11 +3,12 @@ import { useParams, useNavigate, Link } from 'react-router';
 import {
   ChevronLeft, Save, Eye, Loader2, AlertCircle,
   Bold, Italic, Heading2, Heading3, List, ListOrdered, LinkIcon, ImageIcon,
-  Calendar, User, ExternalLink,
+  Calendar, User, ExternalLink, Upload,
 } from 'lucide-react';
 import { useBlogPost, useCreateBlogPost, useUpdateBlogPost } from '../hooks/useBlog';
 import { setTokenGetter } from '../api/client';
 import { useAuth } from '../hooks/useAuth';
+import { blogApi } from '../api/blog';
 import type { BlogPost, BlogPostStatus } from '../types/blog';
 
 const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || '';
@@ -273,15 +274,48 @@ function RichTextEditor({
     }
   };
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
   const insertImage = () => {
-    const url = prompt('Enter image URL (https://):');
-    if (url) {
-      const alt = prompt('Enter alt text (optional):') ?? '';
-      const escapedUrl = url.replace(/"/g, '&quot;');
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Please select a JPEG, PNG, WebP, or GIF image.');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const { uploadUrl, imageUrl } = await blogApi.presignImageUpload(
+        file.name,
+        file.type as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif',
+        'inline',
+      );
+
+      await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      });
+
+      const alt = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+      const escapedUrl = imageUrl.replace(/"/g, '&quot;');
       const escapedAlt = alt.replace(/"/g, '&quot;');
       document.execCommand('insertHTML', false, `<img src="${escapedUrl}" alt="${escapedAlt}" />`);
       editorRef.current?.focus();
       handleInput();
+    } catch (error) {
+      alert(`Image upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -312,9 +346,20 @@ function RichTextEditor({
         <ToolbarButton onClick={insertLink} title="Insert link">
           <LinkIcon className="w-4 h-4" />
         </ToolbarButton>
-        <ToolbarButton onClick={insertImage} title="Insert image">
-          <ImageIcon className="w-4 h-4" />
+        <ToolbarButton onClick={insertImage} title="Upload image">
+          {isUploading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <ImageIcon className="w-4 h-4" />
+          )}
         </ToolbarButton>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
       </div>
       <div
         ref={editorRef}
@@ -396,6 +441,97 @@ function ContentPreview({ form }: { form: FormState }) {
   );
 }
 
+function HeroImageUpload({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (url: string) => void;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Please select a JPEG, PNG, WebP, or GIF image.');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const { uploadUrl, imageUrl } = await blogApi.presignImageUpload(
+        file.name,
+        file.type as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif',
+        'hero',
+      );
+
+      await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      });
+
+      onChange(imageUrl);
+    } catch (error) {
+      alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const inputClasses =
+    'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500';
+
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <input
+          type="url"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          className={`${inputClasses} flex-1`}
+          placeholder="https://images.tropicoretreat.com/..."
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading}
+          className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
+        >
+          {isUploading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Upload className="w-4 h-4" />
+          )}
+          {isUploading ? 'Uploading...' : 'Upload'}
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+      </div>
+      {value && (
+        <img
+          src={value}
+          alt="Hero preview"
+          className="w-full h-32 object-cover rounded-md border"
+          onError={(event) => {
+            (event.target as HTMLImageElement).style.display = 'none';
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
 function EditorForm({
   form,
   onChange,
@@ -471,13 +607,10 @@ function EditorForm({
           />
         </FormField>
 
-        <FormField label="Hero Image URL" hint="Must start with https://">
-          <input
-            type="url"
+        <FormField label="Hero Image" hint="Upload an image or paste a URL">
+          <HeroImageUpload
             value={form.heroImageUrl}
-            onChange={(event) => onChange('heroImageUrl', event.target.value)}
-            className={inputClasses}
-            placeholder="https://example.com/image.jpg"
+            onChange={(value) => onChange('heroImageUrl', value)}
           />
         </FormField>
       </div>

@@ -50,6 +50,7 @@ export default function AppShell() {
             <nav className="flex items-center gap-4">
               <NavLink to="/leads" label="Leads" />
               <NavLink to="/blog" label="Blog" />
+              <NavLink to="/seo" label="SEO" />
             </nav>
           </div>
           <div className="flex items-center gap-4">
