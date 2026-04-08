@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { SOCIAL_LINKS } from '../../../shared/socialLinks';
 
 interface SEOProps {
   title?: string;
@@ -111,9 +112,8 @@ export const localBusinessSchema = {
     },
   ],
   sameAs: [
-    'https://www.instagram.com/tropicoretreat',
-    'https://www.linkedin.com/company/tropicoretreat',
-    'https://www.facebook.com/tropicoretreat',
+    SOCIAL_LINKS.instagram,
+    SOCIAL_LINKS.linkedin,
   ],
   hasOfferCatalog: {
     '@type': 'OfferCatalog',

@@ -17,11 +17,12 @@
       "jsx": "react-jsx",
       "outDir": "./dist",
       "sourceMap": true,
+      "rootDir": "..",
       "baseUrl": ".",
       "paths": {
         "@/*": ["src/*"]
       }
     },
-    "include": ["src"],
+    "include": ["src", "../shared"],
     "exclude": ["node_modules", "**/*.spec.ts", "webpack.config.ts"]
   }

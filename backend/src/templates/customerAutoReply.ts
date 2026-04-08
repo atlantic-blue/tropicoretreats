@@ -1,5 +1,6 @@
 import type { Lead } from '../lib/types.js';
 import { formatLondonTime } from '../utils/formatTime.js';
+import { SOCIAL_LINKS } from '../../../shared/socialLinks.js';
 
 export interface CustomerAutoReplyEmail {
   subject: string;
@@ -143,12 +144,12 @@ export const customerAutoReplyTemplate = (
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin-bottom: 20px;">
                 <tr>
                   <td style="padding: 0 10px;">
-                    <a href="https://instagram.com/tropicoretreat" style="display: inline-block;">
+                    <a href="${SOCIAL_LINKS.instagram}" style="display: inline-block;">
                       <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram" width="28" height="28" style="display: block;">
                     </a>
                   </td>
                   <td style="padding: 0 10px;">
-                    <a href="https://linkedin.com/company/tropicoretreat" style="display: inline-block;">
+                    <a href="${SOCIAL_LINKS.linkedin}" style="display: inline-block;">
                       <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn" width="28" height="28" style="display: block;">
                     </a>
                   </td>
@@ -198,8 +199,8 @@ Submitted: ${formattedTime}
 ---
 
 Follow us:
-Instagram: https://instagram.com/tropicoretreat
-LinkedIn: https://linkedin.com/company/tropicoretreat
+Instagram: ${SOCIAL_LINKS.instagram}
+LinkedIn: ${SOCIAL_LINKS.linkedin}
 
 Tropico Retreats
 London, United Kingdom

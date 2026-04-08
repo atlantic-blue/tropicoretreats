@@ -1,6 +1,7 @@
 import { IMAGES } from '../Routes/LandingPage';
 import React from 'react';
 import { Link } from 'react-router';
+import { SOCIAL_LINKS } from '../../../shared/socialLinks';
 
 const Footer: React.FC = () => {
   return (
@@ -136,25 +137,22 @@ const Footer: React.FC = () => {
             </h3>
             <nav aria-label="Social links" className="flex gap-3">
               <a
-                href="#"
+                href={SOCIAL_LINKS.instagram}
                 aria-label="Instagram"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-sm font-medium transition-all hover:bg-[#C9A227] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
               >
                 IG
               </a>
               <a
-                href="#"
+                href={SOCIAL_LINKS.linkedin}
                 aria-label="LinkedIn"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-sm font-medium transition-all hover:bg-[#C9A227] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
               >
                 IN
-              </a>
-              <a
-                href="#"
-                aria-label="Facebook"
-                className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-sm font-medium transition-all hover:bg-[#C9A227] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A227]"
-              >
-                FB
               </a>
             </nav>
           </div>
