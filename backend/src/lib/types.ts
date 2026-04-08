@@ -216,7 +216,7 @@ export interface BlogPostItem {
   /** Author organization */
   authorOrg: string;
   /** Post status */
-  status: 'published' | 'deleted';
+  status: 'draft' | 'published' | 'deleted';
   /** ISO 8601 publish timestamp */
   publishedAt: string;
   /** ISO 8601 creation timestamp */

@@ -14,7 +14,7 @@ const TEMPERATURE_EMOJI: Record<Temperature, string> = {
  */
 export interface SlackNotificationResult {
   /** Block Kit blocks for rich message formatting */
-  blocks: unknown[];
+  blocks: Record<string, unknown>[];
   /** Fallback text for notifications (required by Slack) */
   text: string;
 }
@@ -75,7 +75,7 @@ export const buildLeadNotificationBlocks = (
       : lead.message;
 
   // Build Block Kit message
-  const blocks: unknown[] = [
+  const blocks: Record<string, unknown>[] = [
     // Header block with emoji and display name
     {
       type: 'header',

@@ -335,8 +335,8 @@ export const getLead = async (id: string): Promise<Lead | null> => {
 export const updateLead = async (
   id: string,
   updates: Partial<
-    Pick<Lead, 'status' | 'temperature' | 'assigneeId' | 'assigneeName' | 'previousStatus'>
-  >
+    Pick<Lead, 'status' | 'temperature' | 'assigneeId' | 'assigneeName'>
+  > & { previousStatus?: string | null }
 ): Promise<Lead> => {
   if (!TABLE_NAME) {
     throw new Error('TABLE_NAME environment variable is not set');

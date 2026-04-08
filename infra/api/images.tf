@@ -114,13 +114,13 @@ resource "aws_iam_role_policy" "image_processor_s3" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
-        Action = ["s3:GetObject", "s3:DeleteObject"]
+        Effect   = "Allow"
+        Action   = ["s3:GetObject", "s3:DeleteObject"]
         Resource = "${aws_s3_bucket.blog_images.arn}/uploads/*"
       },
       {
-        Effect = "Allow"
-        Action = ["s3:PutObject"]
+        Effect   = "Allow"
+        Action   = ["s3:PutObject"]
         Resource = "${aws_s3_bucket.blog_images.arn}/processed/*"
       }
     ]
@@ -184,8 +184,8 @@ resource "aws_iam_role_policy" "lambda_s3_presign" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
-        Action = ["s3:PutObject"]
+        Effect   = "Allow"
+        Action   = ["s3:PutObject"]
         Resource = "${aws_s3_bucket.blog_images.arn}/uploads/*"
       }
     ]

@@ -42,8 +42,9 @@ const getWebhookUrl = async (): Promise<string> => {
     throw new Error('Slack webhook secret is empty');
   }
 
-  cachedWebhookUrl = response.SecretString;
-  return cachedWebhookUrl;
+  const url = response.SecretString;
+  cachedWebhookUrl = url;
+  return url;
 };
 
 /**
@@ -70,12 +71,12 @@ const getWebhook = async (): Promise<IncomingWebhook> => {
  * @throws Error if webhook send fails (message logged without exposing URL)
  */
 export const sendSlackNotification = async (
-  blocks: unknown[],
+  blocks: Record<string, unknown>[],
   text: string
 ): Promise<void> => {
   try {
     const webhook = await getWebhook();
-    await webhook.send({ blocks, text });
+    await webhook.send({ blocks: blocks as never[], text });
   } catch (error) {
     // Only log error message, not full error object (may contain webhook URL)
     const message = error instanceof Error ? error.message : 'Unknown error';

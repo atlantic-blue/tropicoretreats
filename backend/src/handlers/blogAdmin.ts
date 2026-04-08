@@ -117,7 +117,7 @@ function isSlugConflictError(error: unknown): boolean {
   if (!(error instanceof Error)) {
     return false;
   }
-  return (error as Record<string, unknown>).name === 'TransactionCanceledException';
+  return (error as unknown as Record<string, unknown>).name === 'TransactionCanceledException';
 }
 
 /**

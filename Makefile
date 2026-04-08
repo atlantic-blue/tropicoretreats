@@ -1,8 +1,16 @@
 # Tropico Retreats Deployment
 
-.PHONY: staging-plan staging-apply production-plan production-apply test-staging test-production help cli
+.PHONY: staging-plan staging-apply production-plan production-apply test-staging test-production help cli check check-shared check-backend check-frontend check-admin check-infra
 
 help:
+	@echo "Checks:"
+	@echo "  make check             - Run all pre-push checks"
+	@echo "  make check-shared      - TypeScript (shared)"
+	@echo "  make check-backend     - TypeScript + tests (backend)"
+	@echo "  make check-frontend    - TypeScript + lint + prettier + tests (frontend)"
+	@echo "  make check-admin       - TypeScript + lint (admin)"
+	@echo "  make check-infra       - Terraform fmt (infra)"
+	@echo ""
 	@echo "Deployment:"
 	@echo "  make staging-plan      - Plan staging deployment"
 	@echo "  make staging-apply     - Deploy everything to staging"
@@ -19,6 +27,40 @@ help:
 	@echo "  ./cli.sh admin:list [staging|production]"
 	@echo "  ./cli.sh admin:create [env] <email>"
 	@echo "  ./cli.sh admin:password [env] <email> <password>"
+
+# Checks
+check: check-shared check-backend check-frontend check-admin check-infra
+	@echo "All checks passed."
+
+check-shared:
+	@echo "→ TypeScript (shared)"
+	@cd backend && npx tsc --project ../shared/tsconfig.json --noEmit
+
+check-backend:
+	@echo "→ TypeScript (backend)"
+	@cd backend && npm run typecheck
+	@echo "→ Tests (backend)"
+	@cd backend && npx vitest run
+
+check-frontend:
+	@echo "→ TypeScript (frontend)"
+	@cd frontend && npx tsc --noEmit
+	@echo "→ Lint (frontend)"
+	@cd frontend && npm run lint
+	@echo "→ Prettier (frontend)"
+	@cd frontend && npm run format
+	@echo "→ Tests (frontend)"
+	@cd frontend && npm test
+
+check-admin:
+	@echo "→ TypeScript (admin)"
+	@cd admin && npx tsc -b
+	@echo "→ Lint (admin)"
+	@cd admin && npm run lint
+
+check-infra:
+	@echo "→ Terraform fmt (infra)"
+	@cd infra && terraform fmt -check -recursive
 
 # Staging
 staging-plan:

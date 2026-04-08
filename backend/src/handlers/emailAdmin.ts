@@ -151,9 +151,9 @@ async function handleSendEmail(
     }
   );
 
-  const getResult = await docClient.send(
+  const getResult = (await docClient.send(
     getCommand as Parameters<typeof docClient.send>[0]
-  );
+  )) as { Item?: Record<string, unknown> };
 
   if (!getResult.Item) {
     return notFound('Lead not found');
@@ -267,7 +267,7 @@ async function handleSendEmail(
   }
 
   // Suppress unused variable warning
-  void (getResult.Item as Lead);
+  void (getResult.Item as unknown as Lead);
 
   return created(emailRecord);
 }
