@@ -6,9 +6,9 @@ help:
 	@echo "Checks:"
 	@echo "  make check             - Run all pre-push checks"
 	@echo "  make check-shared      - TypeScript (shared)"
-	@echo "  make check-backend     - TypeScript + tests (backend)"
-	@echo "  make check-frontend    - TypeScript + lint + prettier + tests (frontend)"
-	@echo "  make check-admin       - TypeScript + lint (admin)"
+	@echo "  make check-backend     - TypeScript + build + tests (backend)"
+	@echo "  make check-frontend    - TypeScript + lint + prettier + tests + build (frontend)"
+	@echo "  make check-admin       - TypeScript + lint + build (admin)"
 	@echo "  make check-infra       - Terraform fmt (infra)"
 	@echo ""
 	@echo "Deployment:"
@@ -39,6 +39,8 @@ check-shared:
 check-backend:
 	@echo "→ TypeScript (backend)"
 	@cd backend && npm run typecheck
+	@echo "→ Build (backend)"
+	@cd backend && npm run build
 	@echo "→ Tests (backend)"
 	@cd backend && npx vitest run
 
@@ -51,12 +53,16 @@ check-frontend:
 	@cd frontend && npm run format
 	@echo "→ Tests (frontend)"
 	@cd frontend && npm test
+	@echo "→ Build (frontend)"
+	@cd frontend && npm run build:staging
 
 check-admin:
 	@echo "→ TypeScript (admin)"
 	@cd admin && npx tsc -b
 	@echo "→ Lint (admin)"
 	@cd admin && npm run lint
+	@echo "→ Build (admin)"
+	@cd admin && npm run build:staging
 
 check-infra:
 	@echo "→ Terraform fmt (infra)"
