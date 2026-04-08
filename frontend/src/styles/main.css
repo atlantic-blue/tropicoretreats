@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @layer base {
   :root {
@@ -11,12 +11,12 @@
     --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 
     /* Colours */
-    --color-gold: #C9A227;
-    --color-gold-light: #D4AF37;
-    --color-gold-dark: #B8860B;
-    --color-cream: #F7F1EC;
+    --color-gold: #c9a227;
+    --color-gold-light: #d4af37;
+    --color-gold-dark: #b8860b;
+    --color-cream: #f7f1ec;
     --color-emerald: #047857;
-    --color-emerald-dark: #065F46;
+    --color-emerald-dark: #065f46;
   }
 
   html {
@@ -30,7 +30,12 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-serif);
     line-height: 1.2;
   }

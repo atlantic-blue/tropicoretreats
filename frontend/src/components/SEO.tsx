@@ -111,10 +111,7 @@ export const localBusinessSchema = {
       closes: '13:00',
     },
   ],
-  sameAs: [
-    SOCIAL_LINKS.instagram,
-    SOCIAL_LINKS.linkedin,
-  ],
+  sameAs: [SOCIAL_LINKS.instagram, SOCIAL_LINKS.linkedin],
   hasOfferCatalog: {
     '@type': 'OfferCatalog',
     name: 'Corporate Retreat Services',

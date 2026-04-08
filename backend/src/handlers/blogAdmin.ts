@@ -313,6 +313,7 @@ async function handlePresignImageUpload(
         Bucket: IMAGES_BUCKET,
         Key: key,
         ContentType: input.contentType,
+        ContentLength: 10 * 1024 * 1024,
         Metadata: { purpose: input.purpose },
       }
     );
